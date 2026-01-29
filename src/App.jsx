@@ -231,36 +231,36 @@ ${invoice.showPaymentDetails ? `
       </div>
 
       {/* Main */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
         
         {/* Left Panel - Invoice Details */}
-        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', width: '100%', maxWidth: '480px', minWidth: '320px', flex: '1 1 420px' }}>
+        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', width: '100%', maxWidth: '600px', minWidth: '520px', flex: '1 1 550px' }}>
           <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '18px' }}>📋</span>
             <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
           </div>
           
-          <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, overflowX: 'auto', padding: '0 12px' }}>
+          <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '8px 16px', justifyContent: 'space-between' }}>
             {tabs.map(tab => (
               <button 
                 key={tab.id} 
                 className="tab-btn"
                 onClick={() => setActiveTab(tab.id)} 
                 style={{ 
-                  padding: '14px 16px', 
+                  padding: '12px 16px', 
                   background: activeTab === tab.id ? colors.accent : 'transparent', 
                   border: 'none', 
                   fontSize: '13px', 
                   fontWeight: '500', 
                   color: activeTab === tab.id ? '#0f172a' : colors.textMuted, 
                   cursor: 'pointer', 
-                  borderRadius: activeTab === tab.id ? '8px 8px 0 0' : '8px',
+                  borderRadius: '8px',
                   whiteSpace: 'nowrap', 
-                  flexShrink: 0,
-                  marginTop: '8px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px'
+                  gap: '6px',
+                  flex: '1',
+                  justifyContent: 'center'
                 }}>
                 {tab.icon} {tab.label}
               </button>
@@ -315,7 +315,7 @@ ${invoice.showPaymentDetails ? `
                   </button>
                 </div>
                 {invoice.items.map((item, idx) => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 36px', gap: '8px', alignItems: 'end', padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 100px 40px', gap: '10px', alignItems: 'end', padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
                     <div>{idx === 0 && <label style={labelStyle}>Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
                     <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
                     <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
