@@ -38,39 +38,39 @@ export default function InvoiceGenerator() {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:40px 50px;color:#1f2937;font-size:14px;line-height:1.5}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #e5e7eb}
-.business-info{max-width:300px}
-.business-name{font-size:20px;font-weight:700;color:#111827;margin-bottom:8px}
-.business-details{color:#6b7280;font-size:13px;line-height:1.6}
+body{font-family:'Inter',sans-serif;padding:50px 60px;color:#1f2937;font-size:14px;line-height:1.6}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:35px;padding-bottom:25px;border-bottom:2px solid #d1d5db}
+.business-info{max-width:320px}
+.business-name{font-size:22px;font-weight:700;color:#111827;margin-bottom:10px}
+.business-details{color:#4b5563;font-size:14px;line-height:1.7}
 .logo-img{max-width:150px;max-height:60px;margin-bottom:12px}
-.invoice-title h1{font-size:32px;font-weight:700;color:#111827;text-align:right}
-.invoice-meta{margin-top:12px;text-align:right;font-size:13px}
-.invoice-meta-row{margin-bottom:4px}
-.invoice-meta-label{color:#6b7280}
+.invoice-title h1{font-size:36px;font-weight:700;color:#111827;text-align:right;letter-spacing:-0.5px}
+.invoice-meta{margin-top:15px;text-align:right;font-size:14px}
+.invoice-meta-row{margin-bottom:6px}
+.invoice-meta-label{color:#4b5563}
 .invoice-meta-value{color:#111827;font-weight:500}
-.issued-to{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:30px}
-.issued-to h3{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:12px;font-weight:600}
-.issued-to-row{display:flex;margin-bottom:6px;font-size:13px}
-.issued-to-label{width:80px;color:#6b7280}
+.issued-to{margin-bottom:35px}
+.issued-to h3{font-size:14px;color:#111827;margin-bottom:14px;font-weight:600}
+.issued-to-row{display:flex;margin-bottom:8px;font-size:14px}
+.issued-to-label{width:85px;color:#4b5563}
 .issued-to-value{color:#111827;font-weight:500}
-.items-table{width:100%;border-collapse:collapse;margin-bottom:20px}
-.items-table th{background:#f3f4f6;text-align:left;padding:12px 16px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#374151;font-weight:600;border:1px solid #e5e7eb}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:25px}
+.items-table th{background:#f3f4f6;text-align:left;padding:14px 18px;font-size:13px;color:#374151;font-weight:600;border:1px solid #d1d5db}
 .items-table th:nth-child(2),.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
-.items-table td{padding:14px 16px;border:1px solid #e5e7eb;font-size:13px}
+.items-table td{padding:16px 18px;border:1px solid #d1d5db;font-size:14px}
 .items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
-.totals{display:flex;justify-content:flex-end;margin-bottom:30px}
-.totals-box{width:280px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
-.totals-row{display:flex;justify-content:space-between;padding:12px 16px;font-size:13px;border-bottom:1px solid #e5e7eb}
-.totals-row:last-child{border-bottom:none}
-.totals-row.total{background:#f3f4f6;font-size:15px;font-weight:700}
-.payment-details{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px}
-.payment-details h3{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;margin-bottom:12px;font-weight:600}
-.payment-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px}
-.payment-row{display:flex;font-size:13px}
-.payment-label{width:100px;color:#6b7280}
+.totals{display:flex;justify-content:flex-end;margin-bottom:35px}
+.totals-box{width:300px}
+.totals-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid #e5e7eb}
+.totals-row:last-child{border-bottom:none;padding-top:12px}
+.totals-row.total{font-size:16px;font-weight:700}
+.payment-details{margin-top:30px}
+.payment-details h3{font-size:14px;color:#111827;margin-bottom:14px;font-weight:600}
+.payment-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.payment-row{display:flex;font-size:14px}
+.payment-label{width:110px;color:#4b5563}
 .payment-value{color:#111827}
-@media print{body{padding:0}@page{margin:40px 50px}}
+@media print{body{padding:0}@page{margin:50px 60px}}
 </style></head><body>
 <div class="header">
 <div class="business-info">
@@ -83,15 +83,15 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #: </span><span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date: </span><span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Due Date: </span><span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Terms: </span><span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Terms of Payment: </span><span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
 </div></div></div>
 <div class="issued-to"><h3>Issued To:</h3>
-<div class="issued-to-row"><span class="issued-to-label">Name:</span><span class="issued-to-value">${invoice.customerName || 'Customer Name'}</span></div>
+<div class="issued-to-row"><span class="issued-to-label">Name:</span><span class="issued-to-value">${invoice.customerName || ''}</span></div>
 <div class="issued-to-row"><span class="issued-to-label">Address:</span><span class="issued-to-value">${invoice.customerAddress || ''}</span></div>
 <div class="issued-to-row"><span class="issued-to-label">Zip Code:</span><span class="issued-to-value">${invoice.customerZipCode || ''}</span></div>
 </div>
-<table class="items-table"><thead><tr><th style="width:50%">Product</th><th style="width:15%">Qty</th><th style="width:17.5%">Unit Price</th><th style="width:17.5%">Amount</th></tr></thead>
-<tbody>${invoice.items.map(item => `<tr><td>${item.description || 'Item'}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody></table>
+<table class="items-table"><thead><tr><th style="width:50%">Product</th><th style="width:12%">Qty</th><th style="width:19%">Unit Price</th><th style="width:19%">Amount</th></tr></thead>
+<tbody>${invoice.items.map(item => `<tr><td>${item.description || ''}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody></table>
 <div class="totals"><div class="totals-box">
 <div class="totals-row"><span>Subtotal:</span><span>${formatCurrency(subtotal)}</span></div>
 <div class="totals-row total"><span>Total:</span><span>${formatCurrency(subtotal)}</span></div>
