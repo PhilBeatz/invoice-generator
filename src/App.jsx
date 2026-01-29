@@ -52,7 +52,7 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 
 .invoice-meta{text-align:right;font-size:14px;line-height:2}
 .invoice-meta-row{margin-bottom:2px}
-.invoice-meta-label{color:#3b82f6;font-weight:500}
+.invoice-meta-label{color:#0891b2;font-weight:500}
 .invoice-meta-value{color:#374151}
 
 .issued-to{margin-bottom:40px}
@@ -149,63 +149,132 @@ ${invoice.showPaymentDetails ? `
   };
 
   const tabs = [
-    { id: 'business', label: 'Business', icon: '🏢' },
+    { id: 'business', label: 'Company', icon: '🏢' },
     { id: 'customer', label: 'Customer', icon: '👤' },
-    { id: 'invoice', label: 'Details', icon: '📄' },
-    { id: 'items', label: 'Items', icon: '📋' },
+    { id: 'invoice', label: 'Invoice', icon: '📄' },
+    { id: 'items', label: 'Products', icon: '📦' },
     { id: 'payment', label: 'Payment', icon: '💳' },
   ];
 
-  const inputStyle = { width: '100%', padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif', background: 'white', boxSizing: 'border-box' };
-  const labelStyle = { display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' };
+  // Dark theme colors
+  const colors = {
+    bg: '#1a1a2e',
+    bgLight: '#16213e',
+    bgCard: '#1f2937',
+    bgInput: '#374151',
+    accent: '#06b6d4', // cyan
+    accentHover: '#22d3ee',
+    text: '#f3f4f6',
+    textMuted: '#9ca3af',
+    border: '#4b5563',
+  };
+
+  const inputStyle = { 
+    width: '100%', 
+    padding: '12px 14px', 
+    border: `1px solid ${colors.border}`, 
+    borderRadius: '8px', 
+    fontSize: '14px', 
+    fontFamily: 'Inter, sans-serif', 
+    background: colors.bgInput, 
+    color: colors.text,
+    boxSizing: 'border-box',
+    outline: 'none',
+  };
+  
+  const labelStyle = { 
+    display: 'block', 
+    fontSize: '13px', 
+    fontWeight: '500', 
+    color: colors.textMuted, 
+    marginBottom: '8px' 
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f4f6', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: colors.bg, fontFamily: "'Inter', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         input, select, textarea { box-sizing: border-box; }
-        .toggle-switch { position: relative; width: 44px; height: 24px; background: #d1d5db; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
-        .toggle-switch.active { background: #2563eb; }
-        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .toggle-switch.active::after { transform: translateX(20px); }
+        input::placeholder, textarea::placeholder { color: #6b7280; }
+        input:focus, select:focus, textarea:focus { border-color: #06b6d4 !important; }
+        select option { background: #374151; color: #f3f4f6; }
+        .toggle-switch { position: relative; width: 48px; height: 26px; background: #4b5563; border-radius: 13px; cursor: pointer; transition: background 0.2s; }
+        .toggle-switch.active { background: #06b6d4; }
+        .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .toggle-switch.active::after { transform: translateX(22px); }
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn:hover { background: rgba(6, 182, 212, 0.1); }
       `}</style>
 
-      {/* Header */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>Invoice Generator</h1>
-            <p style={{ color: '#6b7280', fontSize: '13px' }}>Create professional invoices</p>
-          </div>
-          <button onClick={downloadPDF} style={{ padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Download PDF
-          </button>
-        </div>
+      {/* Hero Header */}
+      <div style={{ background: colors.bg, padding: '50px 24px 40px', textAlign: 'center' }}>
+        <h1 style={{ 
+          fontSize: '48px', 
+          fontWeight: '800', 
+          color: colors.text, 
+          marginBottom: '20px',
+          fontStyle: 'italic',
+          letterSpacing: '-1px'
+        }}>
+          Free Invoice Generator
+        </h1>
+        <p style={{ 
+          color: colors.textMuted, 
+          fontSize: '18px', 
+          maxWidth: '700px', 
+          margin: '0 auto',
+          lineHeight: '1.7'
+        }}>
+          Use our free online invoice generator to create professional invoices in seconds — no signup required. Customize, and download a PDF invoice for your business needs.
+        </p>
       </div>
 
       {/* Main */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
         
-        {/* Left Panel */}
-        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', width: '100%', maxWidth: '450px', minWidth: '320px', flex: '1 1 400px' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' }}>
+        {/* Left Panel - Invoice Details */}
+        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', width: '100%', maxWidth: '480px', minWidth: '320px', flex: '1 1 420px' }}>
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '18px' }}>📋</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
+          </div>
+          
+          <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, overflowX: 'auto', padding: '0 12px' }}>
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: '12px 14px', background: 'transparent', border: 'none', fontSize: '12px', fontWeight: '500', color: activeTab === tab.id ? '#2563eb' : '#6b7280', cursor: 'pointer', borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button 
+                key={tab.id} 
+                className="tab-btn"
+                onClick={() => setActiveTab(tab.id)} 
+                style={{ 
+                  padding: '14px 16px', 
+                  background: activeTab === tab.id ? colors.accent : 'transparent', 
+                  border: 'none', 
+                  fontSize: '13px', 
+                  fontWeight: '500', 
+                  color: activeTab === tab.id ? '#0f172a' : colors.textMuted, 
+                  cursor: 'pointer', 
+                  borderRadius: activeTab === tab.id ? '8px 8px 0 0' : '8px',
+                  whiteSpace: 'nowrap', 
+                  flexShrink: 0,
+                  marginTop: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
                 {tab.icon} {tab.label}
               </button>
             ))}
           </div>
 
-          <div style={{ padding: '20px' }}>
+          <div style={{ padding: '24px' }}>
             {activeTab === 'business' && (
-              <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ display: 'grid', gap: '20px' }}>
                 <div>
                   <label style={labelStyle}>Logo</label>
-                  <label style={{ border: '2px dashed #d1d5db', borderRadius: '8px', padding: '20px', textAlign: 'center', cursor: 'pointer', display: 'block', background: '#f9fafb' }}>
+                  <label style={{ border: `2px dashed ${colors.border}`, borderRadius: '10px', padding: '24px', textAlign: 'center', cursor: 'pointer', display: 'block', background: colors.bgInput, transition: 'all 0.2s' }}>
                     <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
-                    {logoPreview ? <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '60px' }} /> : <div style={{ color: '#6b7280', fontSize: '13px' }}>📷 Click to upload</div>}
+                    {logoPreview ? <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} /> : <div style={{ color: colors.textMuted, fontSize: '14px' }}>📷 Click to upload logo</div>}
                   </label>
                 </div>
                 <div><label style={labelStyle}>Business Name</label><input style={inputStyle} placeholder="Your Company Name" value={invoice.businessName} onChange={(e) => updateField('businessName', e.target.value)} /></div>
@@ -216,7 +285,7 @@ ${invoice.showPaymentDetails ? `
             )}
 
             {activeTab === 'customer' && (
-              <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ display: 'grid', gap: '20px' }}>
                 <div><label style={labelStyle}>Customer Name</label><input style={inputStyle} placeholder="Client Name or Company" value={invoice.customerName} onChange={(e) => updateField('customerName', e.target.value)} /></div>
                 <div><label style={labelStyle}>Address</label><input style={inputStyle} placeholder="123 Client St, City, State" value={invoice.customerAddress} onChange={(e) => updateField('customerAddress', e.target.value)} /></div>
                 <div><label style={labelStyle}>Zip Code</label><input style={inputStyle} placeholder="12345" value={invoice.customerZipCode} onChange={(e) => updateField('customerZipCode', e.target.value)} /></div>
@@ -224,12 +293,12 @@ ${invoice.showPaymentDetails ? `
             )}
 
             {activeTab === 'invoice' && (
-              <div style={{ display: 'grid', gap: '16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div><label style={labelStyle}>Invoice #</label><input style={inputStyle} value={invoice.invoiceNumber} onChange={(e) => updateField('invoiceNumber', e.target.value)} /></div>
                   <div><label style={labelStyle}>Currency</label><select style={inputStyle} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>{currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>)}</select></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div><label style={labelStyle}>Issue Date</label><input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} /></div>
                   <div><label style={labelStyle}>Due Date</label><input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} /></div>
                 </div>
@@ -239,26 +308,30 @@ ${invoice.showPaymentDetails ? `
 
             {activeTab === 'items' && (
               <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Products</span>
+                  <button onClick={addItem} style={{ padding: '8px 16px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    + Add Product
+                  </button>
+                </div>
                 {invoice.items.map((item, idx) => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px 70px 32px', gap: '6px', alignItems: 'end', padding: '10px', background: '#f9fafb', borderRadius: '6px', marginBottom: '8px', border: '1px solid #e5e7eb' }}>
-                    <div>{idx === 0 && <label style={labelStyle}>Product</label>}<input style={{...inputStyle, padding: '8px 10px', fontSize: '13px'}} placeholder="Description" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, padding: '8px 6px', fontSize: '13px', textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, padding: '8px 6px', fontSize: '13px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Total</label>}<input style={{ ...inputStyle, padding: '8px 6px', fontSize: '13px', background: '#f3f4f6', fontWeight: '500' }} value={formatCurrency(item.quantity * item.price)} disabled /></div>
-                    <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '8px', background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.4 : 1, fontSize: '12px' }}>✕</button></div>
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 36px', gap: '8px', alignItems: 'end', padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
+                    <div>{idx === 0 && <label style={labelStyle}>Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                    <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
+                    <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
+                    <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
                   </div>
                 ))}
-                <button onClick={addItem} style={{ marginTop: '8px', padding: '10px 20px', background: 'white', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', fontWeight: '500', fontSize: '14px', cursor: 'pointer' }}>+ Add Item</button>
               </div>
             )}
 
             {activeTab === 'payment' && (
-              <div style={{ display: 'grid', gap: '16px' }}>
+              <div style={{ display: 'grid', gap: '20px' }}>
                 {/* Toggle for showing payment details */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Show Payment Details</div>
-                    <div style={{ fontSize: '12px', color: '#6b7280' }}>Include payment info on invoice</div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Show Payment Details</div>
+                    <div style={{ fontSize: '12px', color: colors.textMuted }}>Include payment info on invoice</div>
                   </div>
                   <div 
                     className={`toggle-switch ${invoice.showPaymentDetails ? 'active' : ''}`}
@@ -269,17 +342,17 @@ ${invoice.showPaymentDetails ? `
                 {invoice.showPaymentDetails && (
                   <>
                     <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
                       <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
                     </div>
                     <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
                     <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
                       <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
                       <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
                     </div>
@@ -291,100 +364,104 @@ ${invoice.showPaymentDetails ? `
           </div>
         </div>
 
-        {/* Right Panel - Preview */}
-        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', flex: '2 1 500px', minWidth: '320px' }}>
-          <div style={{ background: '#f9fafb', padding: '12px 20px', borderBottom: '1px solid #e5e7eb' }}>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280' }}>Live Preview</span>
+        {/* Right Panel - Invoice Preview */}
+        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', flex: '2 1 500px', minWidth: '320px' }}>
+          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '18px' }}>📄</span>
+              <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Preview</span>
+            </div>
+            <button onClick={downloadPDF} style={{ padding: '10px 20px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              📥 Download PDF
+            </button>
           </div>
           
-          <div style={{ padding: '40px', minHeight: '600px', overflowX: 'auto' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '45px', flexWrap: 'wrap', gap: '20px' }}>
-              <div style={{ maxWidth: '350px', minWidth: '200px' }}>
-                {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '150px', maxHeight: '60px', marginBottom: '12px' }} />}
-                <div style={{ fontSize: '22px', fontWeight: '700', color: '#1e40af', marginBottom: '8px' }}>{invoice.businessName || 'Your Business Name'}</div>
+          {/* White preview area */}
+          <div style={{ padding: '24px', background: colors.bgInput }}>
+            <div style={{ background: 'white', borderRadius: '8px', padding: '40px', minHeight: '600px', color: '#1f2937' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
+                <div style={{ maxWidth: '300px', minWidth: '180px' }}>
+                  {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '60px', marginBottom: '12px' }} />}
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#1e40af', marginBottom: '6px' }}>{invoice.businessName || 'Your Company'}</div>
+                  <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.7' }}>
+                    {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
+                    {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
+                    {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', minWidth: '180px' }}>
+                  <div style={{ fontSize: '26px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>INVOICE</div>
+                  <div style={{ fontSize: '13px', lineHeight: '1.9' }}>
+                    <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
+                    <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
+                    <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate) || 'On Receipt'}</div>
+                    <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Terms:</span> {invoice.paymentTerms}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Issued To */}
+              <div style={{ marginBottom: '30px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>Issued To:</div>
                 <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.8' }}>
-                  {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
-                  {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
-                  {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
+                  <div><span style={{ fontWeight: '600', color: '#374151' }}>Customer:</span> {invoice.customerName || 'Company Name'}</div>
+                  {invoice.customerAddress && <div>{invoice.customerAddress}</div>}
+                  {invoice.customerZipCode && <div>{invoice.customerZipCode}</div>}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', minWidth: '200px' }}>
-                <div style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>INVOICE</div>
-                <div style={{ fontSize: '13px', lineHeight: '2', textAlign: 'right' }}>
-                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> <span style={{ color: '#374151' }}>{invoice.invoiceNumber}</span></div>
-                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.issueDate)}</span></div>
-                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
-                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Terms of Payment:</span> <span style={{ color: '#374151' }}>{invoice.paymentTerms}</span></div>
-                </div>
-              </div>
-            </div>
 
-            {/* Issued To */}
-            <div style={{ marginBottom: '35px' }}>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Issued To:</div>
-              <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '2' }}>
-                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Name:</span> {invoice.customerName}</div>
-                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Address:</span> {invoice.customerAddress}</div>
-                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Zip Code:</span> {invoice.customerZipCode}</div>
-              </div>
-            </div>
-
-            {/* Items Table */}
-            <div style={{ overflowX: 'auto', marginBottom: '25px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
-                <thead>
-                  <tr>
-                    <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
-                    <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '60px' }}>Qty</th>
-                    <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Unit Price</th>
-                    <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoice.items.map(item => (
-                    <tr key={item.id}>
-                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
-                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
-                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
-                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
+              {/* Items Table */}
+              <div style={{ overflowX: 'auto', marginBottom: '24px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc' }}>
+                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>Product</th>
+                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '60px' }}>Qty</th>
+                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>Unit Price</th>
+                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
-              <div style={{ width: '220px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '16px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
+                  </thead>
+                  <tbody>
+                    {invoice.items.map(item => (
+                      <tr key={item.id}>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>{item.description || 'Product'}</td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>{item.quantity}</td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>{formatCurrency(item.price)}</td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>{formatCurrency(item.quantity * item.price)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
 
-            {/* Payment Details - Only show if enabled */}
-            {invoice.showPaymentDetails && (
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
-                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '2' }}>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Bank:</span> {invoice.bankName}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Branch:</span> {invoice.branchName}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Address:</span> {invoice.bankAddress}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account Name:</span> {invoice.accountName}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account #:</span> {invoice.accountNumber}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Routing #:</span> {invoice.routingNumber}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Sort Code #:</span> {invoice.sortCode}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>SWIFT:</span> {invoice.swift}</div>
-                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>IBAN:</span> {invoice.iban}</div>
+              {/* Totals */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '30px' }}>
+                <div style={{ width: '200px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}><span style={{ color: '#64748b' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontSize: '16px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
                 </div>
               </div>
-            )}
+
+              {/* Payment Details */}
+              {invoice.showPaymentDetails && (
+                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Payment Details</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Method: {invoice.paymentMethod}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', lineHeight: '1.8' }}>
+                    {invoice.bankName && <div>Bank: {invoice.bankName}</div>}
+                    {invoice.accountName && <div>Account Name: {invoice.accountName}</div>}
+                    {invoice.accountNumber && <div>Account #: {invoice.accountNumber}</div>}
+                    {invoice.routingNumber && <div>Routing #: {invoice.routingNumber}</div>}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', padding: '24px', color: '#6b7280', fontSize: '13px' }}>Free to use • No signup required • Your data stays in your browser</div>
+      <div style={{ textAlign: 'center', padding: '24px', color: colors.textMuted, fontSize: '13px' }}>Free to use • No signup required • Your data stays in your browser</div>
     </div>
   );
 }
