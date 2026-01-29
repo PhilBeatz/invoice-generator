@@ -4,10 +4,17 @@ const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
   customerName: '', customerAddress: '', customerZipCode: '',
   invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', paymentTerms: 'Within 30 Days',
-  items: [{ id: 1, description: '', quantity: 1, price: 0 }],
+  items: [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
   showPaymentDetails: true,
   paymentMethod: 'Bank', bankName: '', branchName: '', bankAddress: '', accountName: '', accountNumber: '', routingNumber: '', sortCode: '', swift: '', iban: '',
-  currency: 'USD'
+  currency: 'USD',
+  // New fields
+  invoiceMode: 'products', // 'products' or 'hours'
+  shippingCost: 0,
+  discount: 0,
+  taxRate: 0,
+  taxType: 'percent', // 'percent' or 'fixed'
+  taxIncluded: false,
 };
 
 const currencies = [
@@ -21,15 +28,73 @@ export default function InvoiceGenerator() {
   const [invoice, setInvoice] = useState(defaultInvoice);
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
+  const [isDragging, setIsDragging] = useState(false);
 
   const currencySymbol = currencies.find(c => c.code === invoice.currency)?.symbol || '$';
   const updateField = (field, value) => setInvoice(prev => ({ ...prev, [field]: value }));
   const updateItem = (id, field, value) => setInvoice(prev => ({ ...prev, items: prev.items.map(item => item.id === id ? { ...item, [field]: value } : item) }));
-  const addItem = () => { const newId = Math.max(...invoice.items.map(i => i.id)) + 1; setInvoice(prev => ({ ...prev, items: [...prev.items, { id: newId, description: '', quantity: 1, price: 0 }] })); };
+  const addItem = () => { 
+    const newId = Math.max(...invoice.items.map(i => i.id)) + 1; 
+    setInvoice(prev => ({ ...prev, items: [...prev.items, { id: newId, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }] })); 
+  };
   const removeItem = (id) => { if (invoice.items.length > 1) setInvoice(prev => ({ ...prev, items: prev.items.filter(item => item.id !== id) })); };
-  const handleLogoUpload = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => { setLogoPreview(reader.result); updateField('businessLogo', reader.result); }; reader.readAsDataURL(file); } };
+  
+  const processFile = (file) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+        updateField('businessLogo', reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const subtotal = invoice.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    processFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    processFile(file);
+  };
+
+  // Calculate totals
+  const getItemTotal = (item) => {
+    if (invoice.invoiceMode === 'hours') {
+      return item.hours * item.rate;
+    }
+    return item.quantity * item.price;
+  };
+
+  const subtotal = invoice.items.reduce((sum, item) => sum + getItemTotal(item), 0);
+  
+  const discountAmount = invoice.discount || 0;
+  const afterDiscount = subtotal - discountAmount;
+  
+  const taxAmount = invoice.taxType === 'percent' 
+    ? (afterDiscount * (invoice.taxRate || 0) / 100)
+    : (invoice.taxRate || 0);
+  
+  const shippingAmount = invoice.shippingCost || 0;
+  
+  const total = invoice.taxIncluded 
+    ? afterDiscount + shippingAmount
+    : afterDiscount + taxAmount + shippingAmount;
+
   const formatCurrency = (amount) => `${currencySymbol}${amount.toFixed(2)}`;
   const formatDate = (dateStr) => { if (!dateStr) return ''; return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); };
 
@@ -62,19 +127,19 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 
 .items-table{width:100%;border-collapse:collapse;margin-bottom:30px}
 .items-table th{background:#f1f5f9;text-align:left;padding:14px 16px;font-size:14px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
-.items-table th:nth-child(2){text-align:center}
-.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
+.items-table th:nth-child(2),.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:center}
+.items-table th:last-child{text-align:right}
 .items-table td{padding:16px;font-size:14px;border-bottom:1px solid #e2e8f0;color:#374151}
 .items-table td:first-child{font-weight:600}
-.items-table td:nth-child(2){text-align:center}
-.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
+.items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:center}
+.items-table td:last-child{text-align:right}
 
 .totals{display:flex;justify-content:flex-end;margin-bottom:50px}
-.totals-box{width:280px;text-align:right}
-.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:15px}
+.totals-box{width:300px;text-align:right}
+.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9}
 .totals-row span:first-child{color:#6b7280}
 .totals-row span:last-child{color:#374151}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none}
 .totals-row.total span:first-child{color:#1f2937}
 .totals-row.total span:last-child{color:#1f2937}
 
@@ -114,14 +179,30 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 </div>
 
 <table class="items-table">
-<thead><tr><th style="width:50%">Product</th><th style="width:12%">Qty</th><th style="width:19%">Unit Price</th><th style="width:19%">Amount</th></tr></thead>
-<tbody>${invoice.items.map(item => `<tr><td>${item.description || ''}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody>
+<thead><tr>
+<th style="width:${invoice.invoiceMode === 'hours' ? '40%' : '35%'}">${invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}</th>
+${invoice.invoiceMode === 'products' ? '<th style="width:15%">SKU</th>' : ''}
+<th style="width:12%">${invoice.invoiceMode === 'hours' ? 'Hours' : 'Qty'}</th>
+<th style="width:18%">${invoice.invoiceMode === 'hours' ? 'Rate (/Hour)' : 'Unit Price'}</th>
+<th style="width:18%">Amount</th>
+</tr></thead>
+<tbody>${invoice.items.map(item => `<tr>
+<td>${item.description || ''}</td>
+${invoice.invoiceMode === 'products' ? `<td>${item.sku || ''}</td>` : ''}
+<td>${invoice.invoiceMode === 'hours' ? item.hours : item.quantity}</td>
+<td>${formatCurrency(invoice.invoiceMode === 'hours' ? item.rate : item.price)}</td>
+<td>${formatCurrency(getItemTotal(item))}</td>
+</tr>`).join('')}</tbody>
 </table>
 
 <div class="totals">
 <div class="totals-box">
 <div class="totals-row"><span>Subtotal:</span><span>${formatCurrency(subtotal)}</span></div>
-<div class="totals-row total"><span>Total:</span><span>${formatCurrency(subtotal)}</span></div>
+${discountAmount > 0 ? `<div class="totals-row"><span>Discount:</span><span>-${formatCurrency(discountAmount)}</span></div>` : ''}
+${!invoice.taxIncluded && taxAmount > 0 ? `<div class="totals-row"><span>Tax ${invoice.taxType === 'percent' ? `(${invoice.taxRate}%)` : ''}:</span><span>${formatCurrency(taxAmount)}</span></div>` : ''}
+${invoice.taxIncluded && invoice.taxRate > 0 ? `<div class="totals-row"><span>Tax (included):</span><span>${invoice.taxType === 'percent' ? `${invoice.taxRate}%` : formatCurrency(invoice.taxRate)}</span></div>` : ''}
+${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${formatCurrency(shippingAmount)}</span></div>` : ''}
+<div class="totals-row total"><span>Total:</span><span>${formatCurrency(total)}</span></div>
 </div>
 </div>
 
@@ -205,6 +286,8 @@ ${invoice.showPaymentDetails ? `
         .toggle-switch.active::after { transform: translateX(22px); }
         .tab-btn { transition: all 0.2s; }
         .tab-btn:hover { background: rgba(6, 182, 212, 0.1); }
+        .mode-btn { transition: all 0.2s; cursor: pointer; }
+        .mode-btn:hover { opacity: 0.9; }
       `}</style>
 
       {/* Hero Header */}
@@ -272,9 +355,30 @@ ${invoice.showPaymentDetails ? `
               <div style={{ display: 'grid', gap: '20px' }}>
                 <div>
                   <label style={labelStyle}>Logo</label>
-                  <label style={{ border: `2px dashed ${colors.border}`, borderRadius: '10px', padding: '24px', textAlign: 'center', cursor: 'pointer', display: 'block', background: colors.bgInput, transition: 'all 0.2s' }}>
+                  <label 
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    style={{ 
+                      border: `2px dashed ${isDragging ? colors.accent : colors.border}`, 
+                      borderRadius: '10px', 
+                      padding: '24px', 
+                      textAlign: 'center', 
+                      cursor: 'pointer', 
+                      display: 'block', 
+                      background: isDragging ? 'rgba(6, 182, 212, 0.1)' : colors.bgInput, 
+                      transition: 'all 0.2s' 
+                    }}>
                     <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
-                    {logoPreview ? <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} /> : <div style={{ color: colors.textMuted, fontSize: '14px' }}>📷 Click to upload logo</div>}
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} />
+                    ) : (
+                      <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '14px' }}>
+                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>📷</div>
+                        <div>Drag & drop your logo here</div>
+                        <div style={{ fontSize: '12px', marginTop: '4px' }}>or click to browse</div>
+                      </div>
+                    )}
                   </label>
                 </div>
                 <div><label style={labelStyle}>Business Name</label><input style={inputStyle} placeholder="Your Company Name" value={invoice.businessName} onChange={(e) => updateField('businessName', e.target.value)} /></div>
@@ -308,20 +412,179 @@ ${invoice.showPaymentDetails ? `
 
             {activeTab === 'items' && (
               <div>
+                {/* Invoice Mode Toggle */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={labelStyle}>Invoice Mode:</label>
+                  <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}`, width: 'fit-content' }}>
+                    <button 
+                      className="mode-btn"
+                      onClick={() => updateField('invoiceMode', 'products')}
+                      style={{ 
+                        padding: '10px 20px', 
+                        background: invoice.invoiceMode === 'products' ? colors.accent : colors.bgInput,
+                        color: invoice.invoiceMode === 'products' ? '#0f172a' : colors.textMuted,
+                        border: 'none',
+                        fontWeight: '500',
+                        fontSize: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                      📦 Products
+                    </button>
+                    <button 
+                      className="mode-btn"
+                      onClick={() => updateField('invoiceMode', 'hours')}
+                      style={{ 
+                        padding: '10px 20px', 
+                        background: invoice.invoiceMode === 'hours' ? colors.accent : colors.bgInput,
+                        color: invoice.invoiceMode === 'hours' ? '#0f172a' : colors.textMuted,
+                        border: 'none',
+                        fontWeight: '500',
+                        fontSize: '13px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                      ⏱ Hours
+                    </button>
+                  </div>
+                </div>
+
+                {/* Products/Services Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Products</span>
+                  <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>
+                    {invoice.invoiceMode === 'hours' ? 'Services' : 'Products'}
+                  </span>
                   <button onClick={addItem} style={{ padding: '8px 16px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    + Add Product
+                    + Add {invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}
                   </button>
                 </div>
+
+                {/* Items List */}
                 {invoice.items.map((item, idx) => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 100px 40px', gap: '10px', alignItems: 'end', padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
-                    <div>{idx === 0 && <label style={labelStyle}>Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
-                    <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
+                  <div key={item.id} style={{ padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
+                    {invoice.invoiceMode === 'products' ? (
+                      // Products Mode
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 60px 80px 36px', gap: '8px', alignItems: 'end' }}>
+                        <div>{idx === 0 && <label style={labelStyle}>Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                        <div>{idx === 0 && <label style={labelStyle}>Model/SKU</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="SKU" value={item.sku} onChange={(e) => updateItem(item.id, 'sku', e.target.value)} /></div>
+                        <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
+                        <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
+                        <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
+                      </div>
+                    ) : (
+                      // Hours Mode
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 36px', gap: '8px', alignItems: 'end' }}>
+                        <div>{idx === 0 && <label style={labelStyle}>Service Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Service name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                        <div>{idx === 0 && <label style={labelStyle}>Hours</label>}<input type="number" min="0.5" step="0.5" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.hours} onChange={(e) => updateItem(item.id, 'hours', parseFloat(e.target.value) || 1)} /></div>
+                        <div>{idx === 0 && <label style={labelStyle}>Rate (/Hour)</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} /></div>
+                        <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
+                      </div>
+                    )}
                   </div>
                 ))}
+
+                {/* Shipping & Discount */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
+                  <div>
+                    <label style={labelStyle}>Shipping Cost (Optional):</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📦</span>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        step="0.01"
+                        style={{...inputStyle, paddingLeft: '40px'}} 
+                        placeholder="Shipping Cost" 
+                        value={invoice.shippingCost || ''} 
+                        onChange={(e) => updateField('shippingCost', parseFloat(e.target.value) || 0)} 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Discount (Optional):</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷</span>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        step="0.01"
+                        style={{...inputStyle, paddingLeft: '40px'}} 
+                        placeholder="Discount amount" 
+                        value={invoice.discount || ''} 
+                        onChange={(e) => updateField('discount', parseFloat(e.target.value) || 0)} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tax Rate & Type */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                  <div>
+                    <label style={labelStyle}>Tax Rate</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷</span>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        step="0.01"
+                        style={{...inputStyle, paddingLeft: '40px'}} 
+                        placeholder="0" 
+                        value={invoice.taxRate || ''} 
+                        onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)} 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Tax Type</label>
+                    <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                      <button 
+                        className="mode-btn"
+                        onClick={() => updateField('taxType', 'percent')}
+                        style={{ 
+                          flex: 1,
+                          padding: '12px', 
+                          background: invoice.taxType === 'percent' ? colors.accent : colors.bgInput,
+                          color: invoice.taxType === 'percent' ? '#0f172a' : colors.textMuted,
+                          border: 'none',
+                          fontWeight: '600',
+                          fontSize: '14px'
+                        }}>
+                        %
+                      </button>
+                      <button 
+                        className="mode-btn"
+                        onClick={() => updateField('taxType', 'fixed')}
+                        style={{ 
+                          flex: 1,
+                          padding: '12px', 
+                          background: invoice.taxType === 'fixed' ? colors.accent : colors.bgInput,
+                          color: invoice.taxType === 'fixed' ? '#0f172a' : colors.textMuted,
+                          border: 'none',
+                          fontWeight: '600',
+                          fontSize: '14px'
+                        }}>
+                        Number
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tax Included Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                  <div 
+                    className={`toggle-switch ${invoice.taxIncluded ? 'active' : ''}`}
+                    onClick={() => updateField('taxIncluded', !invoice.taxIncluded)}
+                    style={{ flexShrink: 0 }}
+                  />
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>Tax included in prices</div>
+                    <div style={{ fontSize: '12px', color: colors.textMuted }}>
+                      {invoice.taxIncluded ? 'Tax is already included in item prices' : 'Tax will be added to the subtotal'}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -416,19 +679,39 @@ ${invoice.showPaymentDetails ? `
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>Product</th>
-                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '60px' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>Unit Price</th>
+                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>
+                        {invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}
+                      </th>
+                      {invoice.invoiceMode === 'products' && (
+                        <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '80px' }}>SKU</th>
+                      )}
+                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '60px' }}>
+                        {invoice.invoiceMode === 'hours' ? 'Hours' : 'Qty'}
+                      </th>
+                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>
+                        {invoice.invoiceMode === 'hours' ? 'Rate' : 'Price'}
+                      </th>
                       <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoice.items.map(item => (
                       <tr key={item.id}>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>{item.description || 'Product'}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>{item.quantity}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>{formatCurrency(item.price)}</td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>{formatCurrency(item.quantity * item.price)}</td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>
+                          {item.description || (invoice.invoiceMode === 'hours' ? 'Service' : 'Product')}
+                        </td>
+                        {invoice.invoiceMode === 'products' && (
+                          <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>{item.sku || '-'}</td>
+                        )}
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>
+                          {invoice.invoiceMode === 'hours' ? item.hours : item.quantity}
+                        </td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>
+                          {formatCurrency(invoice.invoiceMode === 'hours' ? item.rate : item.price)}
+                        </td>
+                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>
+                          {formatCurrency(getItemTotal(item))}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -437,9 +720,39 @@ ${invoice.showPaymentDetails ? `
 
               {/* Totals */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '30px' }}>
-                <div style={{ width: '200px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}><span style={{ color: '#64748b' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontSize: '16px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
+                <div style={{ width: '220px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                    <span style={{ color: '#64748b' }}>Subtotal:</span>
+                    <span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                      <span style={{ color: '#64748b' }}>Discount:</span>
+                      <span style={{ color: '#dc2626' }}>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  )}
+                  {!invoice.taxIncluded && taxAmount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                      <span style={{ color: '#64748b' }}>Tax {invoice.taxType === 'percent' ? `(${invoice.taxRate}%)` : ''}:</span>
+                      <span style={{ color: '#374151' }}>{formatCurrency(taxAmount)}</span>
+                    </div>
+                  )}
+                  {invoice.taxIncluded && invoice.taxRate > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                      <span style={{ color: '#64748b' }}>Tax (incl.):</span>
+                      <span style={{ color: '#64748b', fontStyle: 'italic' }}>{invoice.taxType === 'percent' ? `${invoice.taxRate}%` : formatCurrency(invoice.taxRate)}</span>
+                    </div>
+                  )}
+                  {shippingAmount > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                      <span style={{ color: '#64748b' }}>Shipping:</span>
+                      <span style={{ color: '#374151' }}>{formatCurrency(shippingAmount)}</span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontSize: '16px', fontWeight: '700' }}>
+                    <span style={{ color: '#1f2937' }}>Total:</span>
+                    <span style={{ color: '#1f2937' }}>{formatCurrency(total)}</span>
+                  </div>
                 </div>
               </div>
 
