@@ -153,16 +153,20 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
     { id: 'payment', label: 'Payment', icon: '💳' },
   ];
 
-  const inputStyle = { width: '100%', padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif', background: 'white' };
+  const inputStyle = { width: '100%', padding: '10px 14px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', fontFamily: 'Inter, sans-serif', background: 'white', boxSizing: 'border-box' };
   const labelStyle = { display: 'block', fontSize: '13px', fontWeight: '500', color: '#374151', marginBottom: '6px' };
 
   return (
     <div style={{ minHeight: '100vh', background: '#f3f4f6', fontFamily: "'Inter', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; }
+        input, select, textarea { box-sizing: border-box; }
+      `}</style>
 
       {/* Header */}
-      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 32px' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#111827' }}>Invoice Generator</h1>
             <p style={{ color: '#6b7280', fontSize: '13px' }}>Create professional invoices</p>
@@ -175,13 +179,13 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
       </div>
 
       {/* Main */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px 32px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: '24px', alignItems: 'start' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
         
         {/* Left Panel */}
-        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', width: '100%', maxWidth: '450px', minWidth: '320px', flex: '1 1 400px' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' }}>
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: '12px 14px', background: 'transparent', border: 'none', fontSize: '12px', fontWeight: '500', color: activeTab === tab.id ? '#2563eb' : '#6b7280', cursor: 'pointer', borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent' }}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: '12px 14px', background: 'transparent', border: 'none', fontSize: '12px', fontWeight: '500', color: activeTab === tab.id ? '#2563eb' : '#6b7280', cursor: 'pointer', borderBottom: activeTab === tab.id ? '2px solid #2563eb' : '2px solid transparent', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {tab.icon} {tab.label}
               </button>
             ))}
@@ -214,11 +218,11 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 
             {activeTab === 'invoice' && (
               <div style={{ display: 'grid', gap: '16px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Invoice #</label><input style={inputStyle} value={invoice.invoiceNumber} onChange={(e) => updateField('invoiceNumber', e.target.value)} /></div>
                   <div><label style={labelStyle}>Currency</label><select style={inputStyle} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>{currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>)}</select></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Issue Date</label><input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} /></div>
                   <div><label style={labelStyle}>Due Date</label><input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} /></div>
                 </div>
@@ -229,12 +233,12 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             {activeTab === 'items' && (
               <div>
                 {invoice.items.map((item, idx) => (
-                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 80px 36px', gap: '8px', alignItems: 'end', padding: '12px', background: '#f9fafb', borderRadius: '6px', marginBottom: '8px', border: '1px solid #e5e7eb' }}>
-                    <div>{idx === 0 && <label style={labelStyle}>Product</label>}<input style={inputStyle} placeholder="Description" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={inputStyle} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={inputStyle} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
-                    <div>{idx === 0 && <label style={labelStyle}>Amount</label>}<input style={{ ...inputStyle, background: '#f3f4f6', fontWeight: '500' }} value={formatCurrency(item.quantity * item.price)} disabled /></div>
-                    <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.4 : 1 }}>✕</button></div>
+                  <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 50px 70px 70px 32px', gap: '6px', alignItems: 'end', padding: '10px', background: '#f9fafb', borderRadius: '6px', marginBottom: '8px', border: '1px solid #e5e7eb' }}>
+                    <div>{idx === 0 && <label style={labelStyle}>Product</label>}<input style={{...inputStyle, padding: '8px 10px', fontSize: '13px'}} placeholder="Description" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                    <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, padding: '8px 6px', fontSize: '13px', textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
+                    <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, padding: '8px 6px', fontSize: '13px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
+                    <div>{idx === 0 && <label style={labelStyle}>Total</label>}<input style={{ ...inputStyle, padding: '8px 6px', fontSize: '13px', background: '#f3f4f6', fontWeight: '500' }} value={formatCurrency(item.quantity * item.price)} disabled /></div>
+                    <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '8px', background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: '6px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.4 : 1, fontSize: '12px' }}>✕</button></div>
                   </div>
                 ))}
                 <button onClick={addItem} style={{ marginTop: '8px', padding: '10px 20px', background: 'white', color: '#374151', border: '1px solid #d1d5db', borderRadius: '6px', fontWeight: '500', fontSize: '14px', cursor: 'pointer' }}>+ Add Item</button>
@@ -244,17 +248,17 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             {activeTab === 'payment' && (
               <div style={{ display: 'grid', gap: '16px' }}>
                 <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
                   <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
                 </div>
                 <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
                 <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
                   <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
                   <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
                 </div>
@@ -265,26 +269,26 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
         </div>
 
         {/* Right Panel - Preview */}
-        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+        <div style={{ background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', flex: '2 1 500px', minWidth: '320px' }}>
           <div style={{ background: '#f9fafb', padding: '12px 20px', borderBottom: '1px solid #e5e7eb' }}>
             <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280' }}>Live Preview</span>
           </div>
           
-          <div style={{ padding: '50px', minHeight: '700px' }}>
+          <div style={{ padding: '40px', minHeight: '600px', overflowX: 'auto' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '45px' }}>
-              <div style={{ maxWidth: '350px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '45px', flexWrap: 'wrap', gap: '20px' }}>
+              <div style={{ maxWidth: '350px', minWidth: '200px' }}>
                 {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '150px', maxHeight: '60px', marginBottom: '12px' }} />}
-                <div style={{ fontSize: '26px', fontWeight: '700', color: '#1e40af', marginBottom: '8px' }}>{invoice.businessName || 'Your Business Name'}</div>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.8' }}>
+                <div style={{ fontSize: '22px', fontWeight: '700', color: '#1e40af', marginBottom: '8px' }}>{invoice.businessName || 'Your Business Name'}</div>
+                <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.8' }}>
                   {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                   {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                   {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '30px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>INVOICE</div>
-                <div style={{ fontSize: '14px', lineHeight: '2', textAlign: 'right' }}>
+              <div style={{ textAlign: 'right', minWidth: '200px' }}>
+                <div style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>INVOICE</div>
+                <div style={{ fontSize: '13px', lineHeight: '2', textAlign: 'right' }}>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> <span style={{ color: '#374151' }}>{invoice.invoiceNumber}</span></div>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.issueDate)}</span></div>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
@@ -294,9 +298,9 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             </div>
 
             {/* Issued To */}
-            <div style={{ marginBottom: '40px' }}>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>Issued To:</div>
-              <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '2' }}>
+            <div style={{ marginBottom: '35px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Issued To:</div>
+              <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '2' }}>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Name:</span> {invoice.customerName}</div>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Address:</span> {invoice.customerAddress}</div>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Zip Code:</span> {invoice.customerZipCode}</div>
@@ -304,49 +308,51 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             </div>
 
             {/* Items Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
-              <thead>
-                <tr>
-                  <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '70px' }}>Qty</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '110px' }}>Unit Price</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '110px' }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoice.items.map(item => (
-                  <tr key={item.id}>
-                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
-                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
-                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
-                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
+            <div style={{ overflowX: 'auto', marginBottom: '25px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+                <thead>
+                  <tr>
+                    <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
+                    <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '60px' }}>Qty</th>
+                    <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Unit Price</th>
+                    <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '13px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {invoice.items.map(item => (
+                    <tr key={item.id}>
+                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
+                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
+                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
+                      <td style={{ padding: '14px', fontSize: '13px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             {/* Totals */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '45px' }}>
-              <div style={{ width: '240px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '15px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '18px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
+              <div style={{ width: '220px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '16px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
               </div>
             </div>
 
             {/* Payment Details */}
             <div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', marginBottom: '16px' }}>Payment Details</div>
-              <div style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>Method: {invoice.paymentMethod}</div>
-              <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '2' }}>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Bank:</span> {invoice.bankName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Branch:</span> {invoice.branchName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Address:</span> {invoice.bankAddress}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Account Name:</span> {invoice.accountName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Account #:</span> {invoice.accountNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Routing #:</span> {invoice.routingNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Sort Code #:</span> {invoice.sortCode}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>SWIFT:</span> {invoice.swift}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>IBAN:</span> {invoice.iban}</div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '2' }}>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Bank:</span> {invoice.bankName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Branch:</span> {invoice.branchName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Address:</span> {invoice.bankAddress}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account Name:</span> {invoice.accountName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account #:</span> {invoice.accountNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Routing #:</span> {invoice.routingNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Sort Code #:</span> {invoice.sortCode}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>SWIFT:</span> {invoice.swift}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>IBAN:</span> {invoice.iban}</div>
               </div>
             </div>
           </div>
