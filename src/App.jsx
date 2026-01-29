@@ -5,6 +5,7 @@ const defaultInvoice = {
   customerName: '', customerAddress: '', customerZipCode: '',
   invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', paymentTerms: 'Within 30 Days',
   items: [{ id: 1, description: '', quantity: 1, price: 0 }],
+  showPaymentDetails: true,
   paymentMethod: 'Bank', bankName: '', branchName: '', bankAddress: '', accountName: '', accountNumber: '', routingNumber: '', sortCode: '', swift: '', iban: '',
   currency: 'USD'
 };
@@ -32,205 +33,120 @@ export default function InvoiceGenerator() {
   const formatCurrency = (amount) => `${currencySymbol}${amount.toFixed(2)}`;
   const formatDate = (dateStr) => { if (!dateStr) return ''; return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); };
 
-const downloadPDF = () => {
-  const printWindow = window.open('', '_blank');
+  const downloadPDF = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15px;line-height:1.6}
 
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Invoice ${invoice.invoiceNumber}</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { height: 100%; }
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      color:#111827;
-      font-size: 12px;
-      line-height: 1.35;
-    }
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px}
+.business-info{max-width:400px}
+.business-name{font-size:28px;font-weight:700;color:#1e40af;margin-bottom:8px}
+.business-details{color:#6b7280;font-size:14px;line-height:1.8}
+.logo-img{max-width:180px;max-height:70px;margin-bottom:12px}
 
-    /* A4 + margins like the sample */
-    @page { size: A4; margin: 56px 56px; }
-    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.invoice-title{text-align:right}
+.invoice-title h1{font-size:32px;font-weight:700;color:#1f2937;letter-spacing:-0.5px;margin-bottom:12px}
 
-    .row { display:flex; justify-content:space-between; align-items:flex-start; gap: 24px; }
-    .muted { color:#6b7280; }
-    .rule { height:1px; background:#e5e7eb; width:100%; }
+.invoice-meta{text-align:right;font-size:14px;line-height:2}
+.invoice-meta-row{margin-bottom:2px}
+.invoice-meta-label{color:#3b82f6;font-weight:500}
+.invoice-meta-value{color:#374151}
 
-    /* Header */
-    .header { padding-top: 6px; }
-    .biz-name { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-    .biz-lines div { margin: 2px 0; font-size: 12px; color:#6b7280; }
+.issued-to{margin-bottom:40px}
+.issued-to h3{font-size:15px;font-weight:700;color:#1f2937;margin-bottom:12px}
+.issued-to-row{margin-bottom:5px;font-size:14px;color:#6b7280}
+.issued-to-row strong{color:#1f2937;font-weight:600}
 
-    .inv-title { font-size: 18px; font-weight: 700; letter-spacing: .4px; text-align:right; margin-bottom: 4px; }
-    .meta { text-align:right; font-size: 12px; line-height: 1.5; }
-    .meta .label { font-weight: 700; color:#6b7280; }
-    .meta .value { font-weight: 700; color:#374151; }
-    .meta .rowline { margin: 1px 0; }
+.items-table{width:100%;border-collapse:collapse;margin-bottom:30px}
+.items-table th{background:#f1f5f9;text-align:left;padding:14px 16px;font-size:14px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+.items-table th:nth-child(2){text-align:center}
+.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
+.items-table td{padding:16px;font-size:14px;border-bottom:1px solid #e2e8f0;color:#374151}
+.items-table td:first-child{font-weight:600}
+.items-table td:nth-child(2){text-align:center}
+.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
 
-    /* Issued to */
-    .section { margin-top: 18px; }
-    .section-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
-    .issued { padding: 10px 0 12px 0; }
-    .issued .line { margin: 3px 0; font-size: 12px; }
-    .issued .line strong { color:#111827; }
+.totals{display:flex;justify-content:flex-end;margin-bottom:50px}
+.totals-box{width:280px;text-align:right}
+.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:15px}
+.totals-row span:first-child{color:#6b7280}
+.totals-row span:last-child{color:#374151}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px}
+.totals-row.total span:first-child{color:#1f2937}
+.totals-row.total span:last-child{color:#1f2937}
 
-    /* Table */
-    table { width:100%; border-collapse:collapse; margin-top: 16px; }
-    thead th {
-      background:#f3f4f6;
-      border-top: 1px solid #e5e7eb;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 10px 12px;
-      font-size: 12px;
-      text-align:left;
-      font-weight: 700;
-      color:#111827;
-    }
-    tbody td {
-      padding: 12px 12px;
-      border-bottom: 1px solid #eef2f7;
-      font-size: 12px;
-      color:#111827;
-    }
-    td.center, th.center { text-align:center; }
-    td.right, th.right { text-align:right; }
-    tbody td.product { font-weight: 700; }
+.payment-details{margin-top:30px}
+.payment-details h3{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:16px}
+.payment-method{font-size:15px;font-weight:600;color:#1f2937;margin-bottom:12px}
+.payment-grid{font-size:13px;color:#6b7280;line-height:2}
+.payment-row{display:flex}
+.payment-label{width:110px;font-weight:500;color:#4b5563}
+.payment-value{color:#6b7280}
 
-    /* Totals */
-    .totals-wrap {
-      display:flex;
-      justify-content:flex-end;
-      margin-top: 64px;   /* creates the same whitespace gap as the sample */
-    }
-    .totals {
-      min-width: 260px;
-    }
-    .totals .trow {
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      padding: 6px 0;
-      font-size: 13px;
-    }
-    .totals .trow .tlabel { font-weight: 700; color:#111827; }
-    .totals .trow .tval { font-weight: 400; color:#111827; }
-    .totals .trow.total {
-      padding-top: 10px;
-      font-size: 16px;
-    }
-    .totals .trow.total .tlabel { font-weight: 700; }
-    .totals .trow.total .tval { font-weight: 700; }
+@media print{body{padding:0}@page{margin:70px 80px}}
+</style></head><body>
 
-    /* Payment */
-    .payment { margin-top: 18px; padding-top: 16px; }
-    .payment h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
-    .payment .method { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-    .pay-grid { font-size: 12px; }
-    .pay-row { display:flex; gap: 12px; margin: 2px 0; }
-    .pay-label { width: 95px; color:#111827; }
-    .pay-value { color:#111827; }
-  </style>
-</head>
+<div class="header">
+<div class="business-info">
+${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
+<div class="business-name">${invoice.businessName || 'Your Business Name'}</div>
+<div class="business-details">${invoice.businessAddress ? invoice.businessAddress + '<br>' : ''}${invoice.businessEmail ? invoice.businessEmail + '<br>' : ''}${invoice.businessPhone || ''}</div>
+</div>
+<div class="invoice-title">
+<h1>INVOICE</h1>
+<div class="invoice-meta">
+<div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Terms of Payment:</span> <span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
+</div>
+</div>
+</div>
 
-<body>
-  <!-- HEADER -->
-  <div class="header row">
-    <div style="max-width: 60%;">
-      ${logoPreview ? `<img src="${logoPreview}" style="max-width:160px; max-height:60px; margin-bottom:10px;" />` : ``}
-      <div class="biz-name">${invoice.businessName || "Your Business Name"}</div>
-      <div class="biz-lines">
-        ${invoice.businessAddress ? `<div>${invoice.businessAddress}</div>` : ``}
-        ${invoice.businessEmail ? `<div>${invoice.businessEmail}</div>` : ``}
-        ${invoice.businessPhone ? `<div>${invoice.businessPhone}</div>` : ``}
-      </div>
-    </div>
+<div class="issued-to">
+<h3>Issued To:</h3>
+<div class="issued-to-row"><strong>Name:</strong> ${invoice.customerName || ''}</div>
+<div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}</div>
+<div class="issued-to-row"><strong>Zip Code:</strong> ${invoice.customerZipCode || ''}</div>
+</div>
 
-    <div style="min-width: 260px;">
-      <div class="inv-title">INVOICE</div>
-      <div class="meta">
-        <div class="rowline"><span class="label">Invoice #:</span> <span class="value">${invoice.invoiceNumber}</span></div>
-        <div class="rowline"><span class="label">Issue Date:</span> <span class="value">${formatDate(invoice.issueDate)}</span></div>
-        <div class="rowline"><span class="label">Due Date:</span> <span class="value">${formatDate(invoice.dueDate) || "On Receipt"}</span></div>
-        <div class="rowline"><span class="label">Terms of Payment:</span> <span class="value">${invoice.paymentTerms}</span></div>
-      </div>
-    </div>
-  </div>
+<table class="items-table">
+<thead><tr><th style="width:50%">Product</th><th style="width:12%">Qty</th><th style="width:19%">Unit Price</th><th style="width:19%">Amount</th></tr></thead>
+<tbody>${invoice.items.map(item => `<tr><td>${item.description || ''}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody>
+</table>
 
-  <div style="margin-top: 18px;" class="rule"></div>
+<div class="totals">
+<div class="totals-box">
+<div class="totals-row"><span>Subtotal:</span><span>${formatCurrency(subtotal)}</span></div>
+<div class="totals-row total"><span>Total:</span><span>${formatCurrency(subtotal)}</span></div>
+</div>
+</div>
 
-  <!-- ISSUED TO -->
-  <div class="section issued">
-    <div class="section-title">Issued To:</div>
-    <div class="line"><strong>Name:</strong> ${invoice.customerName || ""}</div>
-    <div class="line"><span class="muted">Address:</span> <span class="muted">${invoice.customerAddress || ""}</span></div>
-    <div class="line"><span class="muted">Zip Code:</span> <span class="muted">${invoice.customerZipCode || ""}</span></div>
-  </div>
+${invoice.showPaymentDetails ? `
+<div class="payment-details">
+<h3>Payment Details</h3>
+<div class="payment-method">Method: ${invoice.paymentMethod}</div>
+<div class="payment-grid">
+<div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${invoice.bankName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Branch:</span><span class="payment-value">${invoice.branchName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Address:</span><span class="payment-value">${invoice.bankAddress || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Account Name:</span><span class="payment-value">${invoice.accountName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Account #:</span><span class="payment-value">${invoice.accountNumber || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Routing #:</span><span class="payment-value">${invoice.routingNumber || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Sort Code #:</span><span class="payment-value">${invoice.sortCode || ''}</span></div>
+<div class="payment-row"><span class="payment-label">SWIFT:</span><span class="payment-value">${invoice.swift || ''}</span></div>
+<div class="payment-row"><span class="payment-label">IBAN:</span><span class="payment-value">${invoice.iban || ''}</span></div>
+</div>
+</div>
+` : ''}
 
-  <div class="rule"></div>
-
-  <!-- ITEMS TABLE -->
-  <table>
-    <thead>
-      <tr>
-        <th style="width:50%;">Product</th>
-        <th class="center" style="width:12%;">Qty</th>
-        <th class="right" style="width:19%;">Unit Price</th>
-        <th class="right" style="width:19%;">Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${
-        invoice.items.map(item => `
-          <tr>
-            <td class="product">${item.description || ""}</td>
-            <td class="center">${item.quantity}</td>
-            <td class="right">${formatCurrency(item.price)}</td>
-            <td class="right">${formatCurrency(item.quantity * item.price)}</td>
-          </tr>
-        `).join("")
-      }
-    </tbody>
-  </table>
-
-  <!-- TOTALS -->
-  <div class="totals-wrap">
-    <div class="totals">
-      <div class="trow"><div class="tlabel">Subtotal:</div><div class="tval">${formatCurrency(subtotal)}</div></div>
-      <div class="trow total"><div class="tlabel">Total:</div><div class="tval">${formatCurrency(subtotal)}</div></div>
-    </div>
-  </div>
-
-  <div style="margin-top: 18px;" class="rule"></div>
-
-  <!-- PAYMENT DETAILS -->
-  <div class="payment">
-    <h3>Payment Details</h3>
-    <div class="method">Method: ${invoice.paymentMethod}</div>
-
-    <div class="pay-grid">
-      <div class="pay-row"><div class="pay-label">Bank:</div><div class="pay-value">${invoice.bankName || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Branch:</div><div class="pay-value">${invoice.branchName || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Address:</div><div class="pay-value">${invoice.bankAddress || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Account Name:</div><div class="pay-value">${invoice.accountName || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Account #:</div><div class="pay-value">${invoice.accountNumber || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Routing #:</div><div class="pay-value">${invoice.routingNumber || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">Sort Code #:</div><div class="pay-value">${invoice.sortCode || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">SWIFT:</div><div class="pay-value">${invoice.swift || ""}</div></div>
-      <div class="pay-row"><div class="pay-label">IBAN:</div><div class="pay-value">${invoice.iban || ""}</div></div>
-    </div>
-  </div>
-
-</body>
-</html>`;
-
-  printWindow.document.open();
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.onload = () => printWindow.print();
-};
-
+</body></html>`);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+  };
 
   const tabs = [
     { id: 'business', label: 'Business', icon: '🏢' },
@@ -249,6 +165,10 @@ const downloadPDF = () => {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; }
         input, select, textarea { box-sizing: border-box; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; background: #d1d5db; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+        .toggle-switch.active { background: #2563eb; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .toggle-switch.active::after { transform: translateX(20px); }
       `}</style>
 
       {/* Header */}
@@ -334,22 +254,38 @@ const downloadPDF = () => {
 
             {activeTab === 'payment' && (
               <div style={{ display: 'grid', gap: '16px' }}>
-                <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
+                {/* Toggle for showing payment details */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Show Payment Details</div>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>Include payment info on invoice</div>
+                  </div>
+                  <div 
+                    className={`toggle-switch ${invoice.showPaymentDetails ? 'active' : ''}`}
+                    onClick={() => updateField('showPaymentDetails', !invoice.showPaymentDetails)}
+                  />
                 </div>
-                <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
-                <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
-                  <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
-                </div>
-                <div><label style={labelStyle}>IBAN</label><input style={inputStyle} placeholder="IBAN" value={invoice.iban} onChange={(e) => updateField('iban', e.target.value)} /></div>
+
+                {invoice.showPaymentDetails && (
+                  <>
+                    <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
+                      <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
+                    </div>
+                    <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
+                    <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
+                      <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
+                      <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
+                    </div>
+                    <div><label style={labelStyle}>IBAN</label><input style={inputStyle} placeholder="IBAN" value={invoice.iban} onChange={(e) => updateField('iban', e.target.value)} /></div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -426,22 +362,24 @@ const downloadPDF = () => {
               </div>
             </div>
 
-            {/* Payment Details */}
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
-              <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '2' }}>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Bank:</span> {invoice.bankName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Branch:</span> {invoice.branchName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Address:</span> {invoice.bankAddress}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account Name:</span> {invoice.accountName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account #:</span> {invoice.accountNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Routing #:</span> {invoice.routingNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Sort Code #:</span> {invoice.sortCode}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>SWIFT:</span> {invoice.swift}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>IBAN:</span> {invoice.iban}</div>
+            {/* Payment Details - Only show if enabled */}
+            {invoice.showPaymentDetails && (
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '2' }}>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Bank:</span> {invoice.bankName}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Branch:</span> {invoice.branchName}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Address:</span> {invoice.bankAddress}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account Name:</span> {invoice.accountName}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Account #:</span> {invoice.accountNumber}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Routing #:</span> {invoice.routingNumber}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>Sort Code #:</span> {invoice.sortCode}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>SWIFT:</span> {invoice.swift}</div>
+                  <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '95px' }}>IBAN:</span> {invoice.iban}</div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
