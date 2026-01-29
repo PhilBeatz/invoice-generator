@@ -38,57 +38,54 @@ export default function InvoiceGenerator() {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:50px 55px;color:#1f2937;font-size:13px;line-height:1.5}
+body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15px;line-height:1.6}
 
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px}
-.business-info{max-width:350px}
-.business-name{font-size:26px;font-weight:700;color:#1e40af;margin-bottom:6px}
-.business-details{color:#6b7280;font-size:12px;line-height:1.7}
-.logo-img{max-width:150px;max-height:60px;margin-bottom:10px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px}
+.business-info{max-width:400px}
+.business-name{font-size:28px;font-weight:700;color:#1e40af;margin-bottom:8px}
+.business-details{color:#6b7280;font-size:14px;line-height:1.8}
+.logo-img{max-width:180px;max-height:70px;margin-bottom:12px}
 
 .invoice-title{text-align:right}
-.invoice-title-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px}
-.invoice-title h1{font-size:28px;font-weight:700;color:#1f2937;letter-spacing:-0.5px}
-.invoice-icon{width:32px;height:32px;background:#3b82f6;border-radius:6px;display:flex;align-items:center;justify-content:center}
-.invoice-icon svg{width:18px;height:18px;color:white}
+.invoice-title h1{font-size:32px;font-weight:700;color:#1f2937;letter-spacing:-0.5px;margin-bottom:12px}
 
-.invoice-meta{text-align:right;font-size:12px;line-height:1.8}
+.invoice-meta{text-align:right;font-size:14px;line-height:2}
 .invoice-meta-row{margin-bottom:2px}
 .invoice-meta-label{color:#3b82f6;font-weight:500}
 .invoice-meta-value{color:#374151}
 
-.issued-to{margin-bottom:30px}
-.issued-to h3{font-size:13px;font-weight:700;color:#1f2937;margin-bottom:10px}
-.issued-to-row{margin-bottom:3px;font-size:12px;color:#6b7280}
+.issued-to{margin-bottom:40px}
+.issued-to h3{font-size:15px;font-weight:700;color:#1f2937;margin-bottom:12px}
+.issued-to-row{margin-bottom:5px;font-size:14px;color:#6b7280}
 .issued-to-row strong{color:#1f2937;font-weight:600}
 
-.items-table{width:100%;border-collapse:collapse;margin-bottom:25px}
-.items-table th{background:#f1f5f9;text-align:left;padding:12px 14px;font-size:12px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:30px}
+.items-table th{background:#f1f5f9;text-align:left;padding:14px 16px;font-size:14px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
 .items-table th:nth-child(2){text-align:center}
 .items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
-.items-table td{padding:14px;font-size:12px;border-bottom:1px solid #e2e8f0;color:#374151}
+.items-table td{padding:16px;font-size:14px;border-bottom:1px solid #e2e8f0;color:#374151}
 .items-table td:first-child{font-weight:600}
 .items-table td:nth-child(2){text-align:center}
 .items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
 
-.totals{display:flex;justify-content:flex-end;margin-bottom:40px}
-.totals-box{width:250px;text-align:right}
-.totals-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.totals{display:flex;justify-content:flex-end;margin-bottom:50px}
+.totals-box{width:280px;text-align:right}
+.totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:15px}
 .totals-row span:first-child{color:#6b7280}
 .totals-row span:last-child{color:#374151}
-.totals-row.total{font-weight:700;font-size:15px;margin-top:4px}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px}
 .totals-row.total span:first-child{color:#1f2937}
 .totals-row.total span:last-child{color:#1f2937}
 
-.payment-details{margin-top:20px}
-.payment-details h3{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:14px}
-.payment-method{font-size:13px;font-weight:600;color:#1f2937;margin-bottom:10px}
-.payment-grid{font-size:11px;color:#6b7280;line-height:1.9}
+.payment-details{margin-top:30px}
+.payment-details h3{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:16px}
+.payment-method{font-size:15px;font-weight:600;color:#1f2937;margin-bottom:12px}
+.payment-grid{font-size:13px;color:#6b7280;line-height:2}
 .payment-row{display:flex}
-.payment-label{width:85px;font-weight:500;color:#4b5563}
+.payment-label{width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
 
-@media print{body{padding:0}@page{margin:50px 55px}}
+@media print{body{padding:0}@page{margin:70px 80px}}
 </style></head><body>
 
 <div class="header">
@@ -98,10 +95,7 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="business-details">${invoice.businessAddress ? invoice.businessAddress + '<br>' : ''}${invoice.businessEmail ? invoice.businessEmail + '<br>' : ''}${invoice.businessPhone || ''}</div>
 </div>
 <div class="invoice-title">
-<div class="invoice-title-row">
 <h1>INVOICE</h1>
-<div class="invoice-icon"><svg fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
-</div>
 <div class="invoice-meta">
 <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
@@ -276,26 +270,21 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280' }}>Live Preview</span>
           </div>
           
-          <div style={{ padding: '40px', minHeight: '700px' }}>
+          <div style={{ padding: '50px', minHeight: '700px' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '35px' }}>
-              <div style={{ maxWidth: '300px' }}>
-                {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '50px', marginBottom: '10px' }} />}
-                <div style={{ fontSize: '22px', fontWeight: '700', color: '#1e40af', marginBottom: '6px' }}>{invoice.businessName || 'Your Business Name'}</div>
-                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.7' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '45px' }}>
+              <div style={{ maxWidth: '350px' }}>
+                {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '150px', maxHeight: '60px', marginBottom: '12px' }} />}
+                <div style={{ fontSize: '26px', fontWeight: '700', color: '#1e40af', marginBottom: '8px' }}>{invoice.businessName || 'Your Business Name'}</div>
+                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.8' }}>
                   {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                   {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                   {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '26px', fontWeight: '700', color: '#1f2937' }}>INVOICE</span>
-                  <div style={{ width: '30px', height: '30px', background: '#3b82f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  </div>
-                </div>
-                <div style={{ fontSize: '12px', lineHeight: '1.9', textAlign: 'right' }}>
+                <div style={{ fontSize: '30px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>INVOICE</div>
+                <div style={{ fontSize: '14px', lineHeight: '2', textAlign: 'right' }}>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> <span style={{ color: '#374151' }}>{invoice.invoiceNumber}</span></div>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.issueDate)}</span></div>
                   <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
@@ -305,9 +294,9 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             </div>
 
             {/* Issued To */}
-            <div style={{ marginBottom: '30px' }}>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Issued To:</div>
-              <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.8' }}>
+            <div style={{ marginBottom: '40px' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>Issued To:</div>
+              <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '2' }}>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Name:</span> {invoice.customerName}</div>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Address:</span> {invoice.customerAddress}</div>
                 <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Zip Code:</span> {invoice.customerZipCode}</div>
@@ -315,49 +304,49 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             </div>
 
             {/* Items Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '30px' }}>
               <thead>
                 <tr>
-                  <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '60px' }}>Qty</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Unit Price</th>
-                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Amount</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '70px' }}>Qty</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '110px' }}>Unit Price</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '14px 16px', fontSize: '14px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '110px' }}>Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {invoice.items.map(item => (
                   <tr key={item.id}>
-                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
-                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
-                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
-                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
+                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
+                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
+                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
+                    <td style={{ padding: '16px', fontSize: '14px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {/* Totals */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '35px' }}>
-              <div style={{ width: '200px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '15px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '45px' }}>
+              <div style={{ width: '240px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '15px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '18px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
               </div>
             </div>
 
             {/* Payment Details */}
             <div>
-              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
-              <div style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
-              <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.9' }}>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Bank:</span> {invoice.bankName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Branch:</span> {invoice.branchName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Address:</span> {invoice.bankAddress}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Account Name:</span> {invoice.accountName}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Account #:</span> {invoice.accountNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Routing #:</span> {invoice.routingNumber}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Sort Code #:</span> {invoice.sortCode}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>SWIFT:</span> {invoice.swift}</div>
-                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>IBAN:</span> {invoice.iban}</div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', marginBottom: '16px' }}>Payment Details</div>
+              <div style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', marginBottom: '12px' }}>Method: {invoice.paymentMethod}</div>
+              <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '2' }}>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Bank:</span> {invoice.bankName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Branch:</span> {invoice.branchName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Address:</span> {invoice.bankAddress}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Account Name:</span> {invoice.accountName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Account #:</span> {invoice.accountNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Routing #:</span> {invoice.routingNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>Sort Code #:</span> {invoice.sortCode}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>SWIFT:</span> {invoice.swift}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '100px' }}>IBAN:</span> {invoice.iban}</div>
               </div>
             </div>
           </div>
@@ -368,4 +357,3 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
     </div>
   );
 }
-
