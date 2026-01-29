@@ -38,77 +38,115 @@ export default function InvoiceGenerator() {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:50px 60px;color:#1f2937;font-size:14px;line-height:1.6}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:35px;padding-bottom:25px;border-bottom:2px solid #d1d5db}
-.business-info{max-width:320px}
-.business-name{font-size:22px;font-weight:700;color:#111827;margin-bottom:10px}
-.business-details{color:#4b5563;font-size:14px;line-height:1.7}
-.logo-img{max-width:150px;max-height:60px;margin-bottom:12px}
-.invoice-title h1{font-size:36px;font-weight:700;color:#111827;text-align:right;letter-spacing:-0.5px}
-.invoice-meta{margin-top:15px;text-align:right;font-size:14px}
-.invoice-meta-row{margin-bottom:6px}
-.invoice-meta-label{color:#4b5563}
-.invoice-meta-value{color:#111827;font-weight:500}
-.issued-to{margin-bottom:35px}
-.issued-to h3{font-size:14px;color:#111827;margin-bottom:14px;font-weight:600}
-.issued-to-row{display:flex;margin-bottom:8px;font-size:14px}
-.issued-to-label{width:85px;color:#4b5563}
-.issued-to-value{color:#111827;font-weight:500}
+body{font-family:'Inter',sans-serif;padding:50px 55px;color:#1f2937;font-size:13px;line-height:1.5}
+
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px}
+.business-info{max-width:350px}
+.business-name{font-size:26px;font-weight:700;color:#1e40af;margin-bottom:6px}
+.business-details{color:#6b7280;font-size:12px;line-height:1.7}
+.logo-img{max-width:150px;max-height:60px;margin-bottom:10px}
+
+.invoice-title{text-align:right}
+.invoice-title-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:8px}
+.invoice-title h1{font-size:28px;font-weight:700;color:#1f2937;letter-spacing:-0.5px}
+.invoice-icon{width:32px;height:32px;background:#3b82f6;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.invoice-icon svg{width:18px;height:18px;color:white}
+
+.invoice-meta{text-align:right;font-size:12px;line-height:1.8}
+.invoice-meta-row{margin-bottom:2px}
+.invoice-meta-label{color:#3b82f6;font-weight:500}
+.invoice-meta-value{color:#374151}
+
+.issued-to{margin-bottom:30px}
+.issued-to h3{font-size:13px;font-weight:700;color:#1f2937;margin-bottom:10px}
+.issued-to-row{margin-bottom:3px;font-size:12px;color:#6b7280}
+.issued-to-row strong{color:#1f2937;font-weight:600}
+
 .items-table{width:100%;border-collapse:collapse;margin-bottom:25px}
-.items-table th{background:#f3f4f6;text-align:left;padding:14px 18px;font-size:13px;color:#374151;font-weight:600;border:1px solid #d1d5db}
-.items-table th:nth-child(2),.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
-.items-table td{padding:16px 18px;border:1px solid #d1d5db;font-size:14px}
-.items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
-.totals{display:flex;justify-content:flex-end;margin-bottom:35px}
-.totals-box{width:300px}
-.totals-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid #e5e7eb}
-.totals-row:last-child{border-bottom:none;padding-top:12px}
-.totals-row.total{font-size:16px;font-weight:700}
-.payment-details{margin-top:30px}
-.payment-details h3{font-size:14px;color:#111827;margin-bottom:14px;font-weight:600}
-.payment-grid{display:grid;grid-template-columns:1fr;gap:8px}
-.payment-row{display:flex;font-size:14px}
-.payment-label{width:110px;color:#4b5563}
-.payment-value{color:#111827}
-@media print{body{padding:0}@page{margin:50px 60px}}
+.items-table th{background:#f1f5f9;text-align:left;padding:12px 14px;font-size:12px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+.items-table th:nth-child(2){text-align:center}
+.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:right}
+.items-table td{padding:14px;font-size:12px;border-bottom:1px solid #e2e8f0;color:#374151}
+.items-table td:first-child{font-weight:600}
+.items-table td:nth-child(2){text-align:center}
+.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:right}
+
+.totals{display:flex;justify-content:flex-end;margin-bottom:40px}
+.totals-box{width:250px;text-align:right}
+.totals-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.totals-row span:first-child{color:#6b7280}
+.totals-row span:last-child{color:#374151}
+.totals-row.total{font-weight:700;font-size:15px;margin-top:4px}
+.totals-row.total span:first-child{color:#1f2937}
+.totals-row.total span:last-child{color:#1f2937}
+
+.payment-details{margin-top:20px}
+.payment-details h3{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:14px}
+.payment-method{font-size:13px;font-weight:600;color:#1f2937;margin-bottom:10px}
+.payment-grid{font-size:11px;color:#6b7280;line-height:1.9}
+.payment-row{display:flex}
+.payment-label{width:85px;font-weight:500;color:#4b5563}
+.payment-value{color:#6b7280}
+
+@media print{body{padding:0}@page{margin:50px 55px}}
 </style></head><body>
+
 <div class="header">
 <div class="business-info">
 ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="business-name">${invoice.businessName || 'Your Business Name'}</div>
 <div class="business-details">${invoice.businessAddress ? invoice.businessAddress + '<br>' : ''}${invoice.businessEmail ? invoice.businessEmail + '<br>' : ''}${invoice.businessPhone || ''}</div>
 </div>
-<div class="invoice-title"><h1>INVOICE</h1>
-<div class="invoice-meta">
-<div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #: </span><span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date: </span><span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date: </span><span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Terms of Payment: </span><span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
-</div></div></div>
-<div class="issued-to"><h3>Issued To:</h3>
-<div class="issued-to-row"><span class="issued-to-label">Name:</span><span class="issued-to-value">${invoice.customerName || ''}</span></div>
-<div class="issued-to-row"><span class="issued-to-label">Address:</span><span class="issued-to-value">${invoice.customerAddress || ''}</span></div>
-<div class="issued-to-row"><span class="issued-to-label">Zip Code:</span><span class="issued-to-value">${invoice.customerZipCode || ''}</span></div>
+<div class="invoice-title">
+<div class="invoice-title-row">
+<h1>INVOICE</h1>
+<div class="invoice-icon"><svg fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
 </div>
-<table class="items-table"><thead><tr><th style="width:50%">Product</th><th style="width:12%">Qty</th><th style="width:19%">Unit Price</th><th style="width:19%">Amount</th></tr></thead>
-<tbody>${invoice.items.map(item => `<tr><td>${item.description || ''}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody></table>
-<div class="totals"><div class="totals-box">
+<div class="invoice-meta">
+<div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">Terms of Payment:</span> <span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
+</div>
+</div>
+</div>
+
+<div class="issued-to">
+<h3>Issued To:</h3>
+<div class="issued-to-row"><strong>Name:</strong> ${invoice.customerName || ''}</div>
+<div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}</div>
+<div class="issued-to-row"><strong>Zip Code:</strong> ${invoice.customerZipCode || ''}</div>
+</div>
+
+<table class="items-table">
+<thead><tr><th style="width:50%">Product</th><th style="width:12%">Qty</th><th style="width:19%">Unit Price</th><th style="width:19%">Amount</th></tr></thead>
+<tbody>${invoice.items.map(item => `<tr><td>${item.description || ''}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.quantity * item.price)}</td></tr>`).join('')}</tbody>
+</table>
+
+<div class="totals">
+<div class="totals-box">
 <div class="totals-row"><span>Subtotal:</span><span>${formatCurrency(subtotal)}</span></div>
 <div class="totals-row total"><span>Total:</span><span>${formatCurrency(subtotal)}</span></div>
-</div></div>
-<div class="payment-details"><h3>Payment Details</h3>
+</div>
+</div>
+
+<div class="payment-details">
+<h3>Payment Details</h3>
+<div class="payment-method">Method: ${invoice.paymentMethod}</div>
 <div class="payment-grid">
-<div class="payment-row"><span class="payment-label">Method:</span><span class="payment-value">${invoice.paymentMethod}</span></div>
-<div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${invoice.bankName}</span></div>
-<div class="payment-row"><span class="payment-label">Branch:</span><span class="payment-value">${invoice.branchName}</span></div>
-<div class="payment-row"><span class="payment-label">Address:</span><span class="payment-value">${invoice.bankAddress}</span></div>
-<div class="payment-row"><span class="payment-label">Account Name:</span><span class="payment-value">${invoice.accountName}</span></div>
-<div class="payment-row"><span class="payment-label">Account #:</span><span class="payment-value">${invoice.accountNumber}</span></div>
-<div class="payment-row"><span class="payment-label">Routing #:</span><span class="payment-value">${invoice.routingNumber}</span></div>
-<div class="payment-row"><span class="payment-label">Sort Code #:</span><span class="payment-value">${invoice.sortCode}</span></div>
-<div class="payment-row"><span class="payment-label">SWIFT:</span><span class="payment-value">${invoice.swift}</span></div>
-<div class="payment-row"><span class="payment-label">IBAN:</span><span class="payment-value">${invoice.iban}</span></div>
-</div></div></body></html>`);
+<div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${invoice.bankName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Branch:</span><span class="payment-value">${invoice.branchName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Address:</span><span class="payment-value">${invoice.bankAddress || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Account Name:</span><span class="payment-value">${invoice.accountName || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Account #:</span><span class="payment-value">${invoice.accountNumber || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Routing #:</span><span class="payment-value">${invoice.routingNumber || ''}</span></div>
+<div class="payment-row"><span class="payment-label">Sort Code #:</span><span class="payment-value">${invoice.sortCode || ''}</span></div>
+<div class="payment-row"><span class="payment-label">SWIFT:</span><span class="payment-value">${invoice.swift || ''}</span></div>
+<div class="payment-row"><span class="payment-label">IBAN:</span><span class="payment-value">${invoice.iban || ''}</span></div>
+</div>
+</div>
+
+</body></html>`);
     printWindow.document.close();
     printWindow.onload = () => printWindow.print();
   };
@@ -238,36 +276,41 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280' }}>Live Preview</span>
           </div>
           
-          <div style={{ padding: '32px', minHeight: '700px' }}>
+          <div style={{ padding: '40px', minHeight: '700px' }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', paddingBottom: '20px', borderBottom: '2px solid #e5e7eb' }}>
-              <div style={{ maxWidth: '280px' }}>
-                {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '50px', marginBottom: '12px' }} />}
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '6px' }}>{invoice.businessName || 'Your Business Name'}</div>
-                <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '35px' }}>
+              <div style={{ maxWidth: '300px' }}>
+                {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '50px', marginBottom: '10px' }} />}
+                <div style={{ fontSize: '22px', fontWeight: '700', color: '#1e40af', marginBottom: '6px' }}>{invoice.businessName || 'Your Business Name'}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.7' }}>
                   {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                   {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                   {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827' }}>INVOICE</div>
-                <div style={{ marginTop: '10px', fontSize: '13px' }}>
-                  <div style={{ marginBottom: '3px' }}><span style={{ color: '#6b7280' }}>Invoice #: </span><span style={{ color: '#111827', fontWeight: '500' }}>{invoice.invoiceNumber}</span></div>
-                  <div style={{ marginBottom: '3px' }}><span style={{ color: '#6b7280' }}>Issue Date: </span><span style={{ color: '#111827', fontWeight: '500' }}>{formatDate(invoice.issueDate)}</span></div>
-                  <div style={{ marginBottom: '3px' }}><span style={{ color: '#6b7280' }}>Due Date: </span><span style={{ color: '#111827', fontWeight: '500' }}>{formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
-                  <div><span style={{ color: '#6b7280' }}>Terms: </span><span style={{ color: '#111827', fontWeight: '500' }}>{invoice.paymentTerms}</span></div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '26px', fontWeight: '700', color: '#1f2937' }}>INVOICE</span>
+                  <div style={{ width: '30px', height: '30px', background: '#3b82f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                </div>
+                <div style={{ fontSize: '12px', lineHeight: '1.9', textAlign: 'right' }}>
+                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> <span style={{ color: '#374151' }}>{invoice.invoiceNumber}</span></div>
+                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.issueDate)}</span></div>
+                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> <span style={{ color: '#374151' }}>{formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
+                  <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Terms of Payment:</span> <span style={{ color: '#374151' }}>{invoice.paymentTerms}</span></div>
                 </div>
               </div>
             </div>
 
             {/* Issued To */}
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '16px', marginBottom: '24px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#6b7280', marginBottom: '10px', fontWeight: '600' }}>Issued To:</div>
-              <div style={{ fontSize: '13px' }}>
-                <div style={{ display: 'flex', marginBottom: '4px' }}><span style={{ width: '70px', color: '#6b7280' }}>Name:</span><span style={{ color: '#111827', fontWeight: '500' }}>{invoice.customerName || 'Customer Name'}</span></div>
-                <div style={{ display: 'flex', marginBottom: '4px' }}><span style={{ width: '70px', color: '#6b7280' }}>Address:</span><span style={{ color: '#111827', fontWeight: '500' }}>{invoice.customerAddress}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '70px', color: '#6b7280' }}>Zip Code:</span><span style={{ color: '#111827', fontWeight: '500' }}>{invoice.customerZipCode}</span></div>
+            <div style={{ marginBottom: '30px' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Issued To:</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.8' }}>
+                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Name:</span> {invoice.customerName}</div>
+                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Address:</span> {invoice.customerAddress}</div>
+                <div><span style={{ fontWeight: '600', color: '#1f2937' }}>Zip Code:</span> {invoice.customerZipCode}</div>
               </div>
             </div>
 
@@ -275,46 +318,46 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
               <thead>
                 <tr>
-                  <th style={{ background: '#f3f4f6', textAlign: 'left', padding: '10px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#374151', fontWeight: '600', border: '1px solid #e5e7eb' }}>Product</th>
-                  <th style={{ background: '#f3f4f6', textAlign: 'right', padding: '10px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#374151', fontWeight: '600', border: '1px solid #e5e7eb', width: '60px' }}>Qty</th>
-                  <th style={{ background: '#f3f4f6', textAlign: 'right', padding: '10px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#374151', fontWeight: '600', border: '1px solid #e5e7eb', width: '90px' }}>Unit Price</th>
-                  <th style={{ background: '#f3f4f6', textAlign: 'right', padding: '10px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#374151', fontWeight: '600', border: '1px solid #e5e7eb', width: '90px' }}>Amount</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'left', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>Product</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'center', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '60px' }}>Qty</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Unit Price</th>
+                  <th style={{ background: '#f1f5f9', textAlign: 'right', padding: '12px 14px', fontSize: '12px', color: '#475569', fontWeight: '600', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', width: '100px' }}>Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {invoice.items.map(item => (
                   <tr key={item.id}>
-                    <td style={{ padding: '12px', border: '1px solid #e5e7eb', fontSize: '13px' }}>{item.description || 'Item'}</td>
-                    <td style={{ padding: '12px', border: '1px solid #e5e7eb', fontSize: '13px', textAlign: 'right' }}>{item.quantity}</td>
-                    <td style={{ padding: '12px', border: '1px solid #e5e7eb', fontSize: '13px', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
-                    <td style={{ padding: '12px', border: '1px solid #e5e7eb', fontSize: '13px', textAlign: 'right', fontWeight: '500' }}>{formatCurrency(item.quantity * item.price)}</td>
+                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', fontWeight: '600', color: '#374151' }}>{item.description || ''}</td>
+                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'center', color: '#374151' }}>{item.quantity}</td>
+                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.price)}</td>
+                    <td style={{ padding: '14px', fontSize: '12px', borderBottom: '1px solid #e2e8f0', textAlign: 'right', color: '#374151' }}>{formatCurrency(item.quantity * item.price)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {/* Totals */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-              <div style={{ width: '220px', border: '1px solid #e5e7eb', borderRadius: '6px', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', fontSize: '13px', borderBottom: '1px solid #e5e7eb' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span>{formatCurrency(subtotal)}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', fontSize: '14px', fontWeight: '700', background: '#f3f4f6' }}><span>Total:</span><span>{formatCurrency(subtotal)}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '35px' }}>
+              <div style={{ width: '200px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px' }}><span style={{ color: '#6b7280' }}>Subtotal:</span><span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '15px', fontWeight: '700' }}><span style={{ color: '#1f2937' }}>Total:</span><span style={{ color: '#1f2937' }}>{formatCurrency(subtotal)}</span></div>
               </div>
             </div>
 
             {/* Payment Details */}
-            <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '16px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#6b7280', marginBottom: '10px', fontWeight: '600' }}>Payment Details</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px', fontSize: '13px' }}>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Method:</span><span style={{ color: '#111827' }}>{invoice.paymentMethod}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Bank:</span><span style={{ color: '#111827' }}>{invoice.bankName}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Branch:</span><span style={{ color: '#111827' }}>{invoice.branchName}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Address:</span><span style={{ color: '#111827' }}>{invoice.bankAddress}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Account Name:</span><span style={{ color: '#111827' }}>{invoice.accountName}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Account #:</span><span style={{ color: '#111827' }}>{invoice.accountNumber}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Routing #:</span><span style={{ color: '#111827' }}>{invoice.routingNumber}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>Sort Code #:</span><span style={{ color: '#111827' }}>{invoice.sortCode}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>SWIFT:</span><span style={{ color: '#111827' }}>{invoice.swift}</span></div>
-                <div style={{ display: 'flex' }}><span style={{ width: '90px', color: '#6b7280' }}>IBAN:</span><span style={{ color: '#111827' }}>{invoice.iban}</span></div>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#1f2937', marginBottom: '14px' }}>Payment Details</div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937', marginBottom: '10px' }}>Method: {invoice.paymentMethod}</div>
+              <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.9' }}>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Bank:</span> {invoice.bankName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Branch:</span> {invoice.branchName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Address:</span> {invoice.bankAddress}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Account Name:</span> {invoice.accountName}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Account #:</span> {invoice.accountNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Routing #:</span> {invoice.routingNumber}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>Sort Code #:</span> {invoice.sortCode}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>SWIFT:</span> {invoice.swift}</div>
+                <div><span style={{ fontWeight: '500', color: '#4b5563', display: 'inline-block', width: '80px' }}>IBAN:</span> {invoice.iban}</div>
               </div>
             </div>
           </div>
@@ -325,3 +368,4 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
     </div>
   );
 }
+
