@@ -5,8 +5,6 @@ const defaultInvoice = {
   customerName: '', customerEmail: '', customerPhone: '', customerAddress: '', customerZipCode: '', customerIdentifier: '',
   invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', paymentTerms: 'Within 30 Days',
   items: [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
-  showPaymentDetails: true,
-  paymentMethod: 'Bank', bankName: '', branchName: '', bankAddress: '', accountName: '', accountNumber: '', routingNumber: '', sortCode: '', swift: '', iban: '',
   currency: 'USD',
   invoiceMode: 'products',
   shippingCost: 0,
@@ -14,6 +12,8 @@ const defaultInvoice = {
   taxRate: 0,
   taxType: 'percent',
   taxIncluded: false,
+  // Payment methods array
+  paymentMethods: [],
 };
 
 const currencies = [
@@ -71,6 +71,37 @@ export default function InvoiceGenerator() {
   };
   const removeItem = (id) => { if (invoice.items.length > 1) setInvoice(prev => ({ ...prev, items: prev.items.filter(item => item.id !== id) })); };
   
+  // Payment Methods functions
+  const addPaymentMethod = (type) => {
+    const newMethod = {
+      id: Date.now(),
+      type: type,
+      // Bank fields
+      bankName: '', branch: '', bankAddress: '', accountName: '', accountNumber: '', routingNumber: '', sortCode: '', swift: '', iban: '',
+      // PayPal fields
+      paypalEmail: '',
+      // Crypto fields
+      cryptoType: 'Bitcoin', walletAddress: '',
+      // Custom fields
+      customName: '', customDetails: '',
+    };
+    setInvoice(prev => ({ ...prev, paymentMethods: [...prev.paymentMethods, newMethod] }));
+  };
+
+  const updatePaymentMethod = (id, field, value) => {
+    setInvoice(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.map(pm => pm.id === id ? { ...pm, [field]: value } : pm)
+    }));
+  };
+
+  const removePaymentMethod = (id) => {
+    setInvoice(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.filter(pm => pm.id !== id)
+    }));
+  };
+
   const processFile = (file) => {
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -158,6 +189,64 @@ export default function InvoiceGenerator() {
   const formatCurrency = (amount) => `${currencySymbol}${amount.toFixed(2)}`;
   const formatDate = (dateStr) => { if (!dateStr) return ''; return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); };
 
+  // Generate payment details HTML for PDF
+  const generatePaymentDetailsHTML = () => {
+    if (invoice.paymentMethods.length === 0) return '';
+    
+    let html = '<div class="payment-details"><h3>Payment Details</h3>';
+    
+    invoice.paymentMethods.forEach(pm => {
+      if (pm.type === 'bank') {
+        html += `
+          <div class="payment-section">
+            <div class="payment-method">Method: Bank Transfer</div>
+            <div class="payment-grid">
+              ${pm.bankName ? `<div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${pm.bankName}</span></div>` : ''}
+              ${pm.branch ? `<div class="payment-row"><span class="payment-label">Branch:</span><span class="payment-value">${pm.branch}</span></div>` : ''}
+              ${pm.bankAddress ? `<div class="payment-row"><span class="payment-label">Address:</span><span class="payment-value">${pm.bankAddress}</span></div>` : ''}
+              ${pm.accountName ? `<div class="payment-row"><span class="payment-label">Account Name:</span><span class="payment-value">${pm.accountName}</span></div>` : ''}
+              ${pm.accountNumber ? `<div class="payment-row"><span class="payment-label">Account #:</span><span class="payment-value">${pm.accountNumber}</span></div>` : ''}
+              ${pm.routingNumber ? `<div class="payment-row"><span class="payment-label">Routing #:</span><span class="payment-value">${pm.routingNumber}</span></div>` : ''}
+              ${pm.sortCode ? `<div class="payment-row"><span class="payment-label">Sort Code:</span><span class="payment-value">${pm.sortCode}</span></div>` : ''}
+              ${pm.swift ? `<div class="payment-row"><span class="payment-label">SWIFT:</span><span class="payment-value">${pm.swift}</span></div>` : ''}
+              ${pm.iban ? `<div class="payment-row"><span class="payment-label">IBAN:</span><span class="payment-value">${pm.iban}</span></div>` : ''}
+            </div>
+          </div>
+        `;
+      } else if (pm.type === 'paypal') {
+        html += `
+          <div class="payment-section">
+            <div class="payment-method">Method: PayPal</div>
+            <div class="payment-grid">
+              ${pm.paypalEmail ? `<div class="payment-row"><span class="payment-label">PayPal Email:</span><span class="payment-value">${pm.paypalEmail}</span></div>` : ''}
+            </div>
+          </div>
+        `;
+      } else if (pm.type === 'crypto') {
+        html += `
+          <div class="payment-section">
+            <div class="payment-method">Method: Cryptocurrency (${pm.cryptoType})</div>
+            <div class="payment-grid">
+              ${pm.walletAddress ? `<div class="payment-row"><span class="payment-label">Wallet Address:</span><span class="payment-value" style="word-break:break-all">${pm.walletAddress}</span></div>` : ''}
+            </div>
+          </div>
+        `;
+      } else if (pm.type === 'custom') {
+        html += `
+          <div class="payment-section">
+            <div class="payment-method">Method: ${pm.customName || 'Custom'}</div>
+            <div class="payment-grid">
+              ${pm.customDetails ? `<div class="payment-row"><span class="payment-value">${pm.customDetails}</span></div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+    });
+    
+    html += '</div>';
+    return html;
+  };
+
   const downloadPDF = () => {
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
@@ -206,10 +295,12 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 
 .payment-details{margin-top:30px}
 .payment-details h3{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:16px}
+.payment-section{margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #e2e8f0}
+.payment-section:last-child{border-bottom:none}
 .payment-method{font-size:15px;font-weight:600;color:#1f2937;margin-bottom:12px}
 .payment-grid{font-size:13px;color:#6b7280;line-height:2}
-.payment-row{display:flex}
-.payment-label{width:110px;font-weight:500;color:#4b5563}
+.payment-row{display:flex;gap:10px}
+.payment-label{min-width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
 </style></head><body>
 
@@ -268,23 +359,7 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fo
 </div>
 </div>
 
-${invoice.showPaymentDetails ? `
-<div class="payment-details">
-<h3>Payment Details</h3>
-<div class="payment-method">Method: ${invoice.paymentMethod}</div>
-<div class="payment-grid">
-<div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${invoice.bankName || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Branch:</span><span class="payment-value">${invoice.branchName || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Address:</span><span class="payment-value">${invoice.bankAddress || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Account Name:</span><span class="payment-value">${invoice.accountName || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Account #:</span><span class="payment-value">${invoice.accountNumber || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Routing #:</span><span class="payment-value">${invoice.routingNumber || ''}</span></div>
-<div class="payment-row"><span class="payment-label">Sort Code #:</span><span class="payment-value">${invoice.sortCode || ''}</span></div>
-<div class="payment-row"><span class="payment-label">SWIFT:</span><span class="payment-value">${invoice.swift || ''}</span></div>
-<div class="payment-row"><span class="payment-label">IBAN:</span><span class="payment-value">${invoice.iban || ''}</span></div>
-</div>
-</div>
-` : ''}
+${generatePaymentDetailsHTML()}
 
 </body></html>`);
     printWindow.document.close();
@@ -310,6 +385,7 @@ ${invoice.showPaymentDetails ? `
     textMuted: '#9ca3af',
     border: '#4b5563',
     green: '#10b981',
+    red: '#dc2626',
   };
 
   const inputStyle = { 
@@ -354,6 +430,8 @@ ${invoice.showPaymentDetails ? `
         .mode-btn { transition: all 0.2s; cursor: pointer; }
         .mode-btn:hover { opacity: 0.9; }
         .customer-item:hover { background: #374151 !important; }
+        .payment-type-btn { transition: all 0.2s; }
+        .payment-type-btn:hover { background: #4b5563 !important; }
       `}</style>
 
       {/* Customer Manager Modal */}
@@ -808,7 +886,7 @@ ${invoice.showPaymentDetails ? `
                             <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} />
                           </div>
                           <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
+                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
                           </div>
                         </div>
                       ) : (
@@ -826,7 +904,7 @@ ${invoice.showPaymentDetails ? `
                             <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} />
                           </div>
                           <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
+                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
                           </div>
                         </div>
                       )}
@@ -872,34 +950,114 @@ ${invoice.showPaymentDetails ? `
               )}
 
               {activeTab === 'payment' && (
-                <div style={{ display: 'grid', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px', background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Show Payment Details</div>
-                      <div style={{ fontSize: '12px', color: colors.textMuted }}>Include on invoice</div>
-                    </div>
-                    <div className={`toggle-switch ${invoice.showPaymentDetails ? 'active' : ''}`} onClick={() => updateField('showPaymentDetails', !invoice.showPaymentDetails)} />
+                <div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Payment Methods</span>
                   </div>
 
-                  {invoice.showPaymentDetails && (
-                    <>
-                      <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
-                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                        <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
-                        <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
-                      </div>
-                      <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
-                      <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
-                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                        <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
-                        <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                        <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
-                        <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
-                      </div>
-                      <div><label style={labelStyle}>IBAN</label><input style={inputStyle} placeholder="IBAN" value={invoice.iban} onChange={(e) => updateField('iban', e.target.value)} /></div>
-                    </>
+                  {/* Add Payment Method Buttons */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px', marginBottom: '20px' }}>
+                    <button 
+                      className="payment-type-btn"
+                      onClick={() => addPaymentMethod('bank')}
+                      style={{ padding: '10px 16px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontWeight: '500', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      🏦 Add Bank
+                    </button>
+                    <button 
+                      className="payment-type-btn"
+                      onClick={() => addPaymentMethod('paypal')}
+                      style={{ padding: '10px 16px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontWeight: '500', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      🅿️ Add PayPal
+                    </button>
+                    <button 
+                      className="payment-type-btn"
+                      onClick={() => addPaymentMethod('crypto')}
+                      style={{ padding: '10px 16px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontWeight: '500', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      ₿ Add Crypto
+                    </button>
+                    <button 
+                      className="payment-type-btn"
+                      onClick={() => addPaymentMethod('custom')}
+                      style={{ padding: '10px 16px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontWeight: '500', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      ✏️ Add Custom Payment
+                    </button>
+                  </div>
+
+                  {/* Payment Methods List */}
+                  {invoice.paymentMethods.length === 0 ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: colors.textMuted, background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
+                      No payment methods added yet. Click a button above to add one.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gap: '16px' }}>
+                      {invoice.paymentMethods.map(pm => (
+                        <div key={pm.id} style={{ padding: '16px', background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
+                          {/* Bank */}
+                          {pm.type === 'bank' && (
+                            <>
+                              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '14px' }}>Bank</div>
+                              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                                <div><input style={inputStyle} placeholder="Bank Name" value={pm.bankName} onChange={(e) => updatePaymentMethod(pm.id, 'bankName', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Branch" value={pm.branch} onChange={(e) => updatePaymentMethod(pm.id, 'branch', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Address" value={pm.bankAddress} onChange={(e) => updatePaymentMethod(pm.id, 'bankAddress', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Account Name" value={pm.accountName} onChange={(e) => updatePaymentMethod(pm.id, 'accountName', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Account Number" value={pm.accountNumber} onChange={(e) => updatePaymentMethod(pm.id, 'accountNumber', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Routing Number" value={pm.routingNumber} onChange={(e) => updatePaymentMethod(pm.id, 'routingNumber', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="Sort Code" value={pm.sortCode} onChange={(e) => updatePaymentMethod(pm.id, 'sortCode', e.target.value)} /></div>
+                                <div><input style={inputStyle} placeholder="SWIFT Code" value={pm.swift} onChange={(e) => updatePaymentMethod(pm.id, 'swift', e.target.value)} /></div>
+                              </div>
+                              <div style={{ marginTop: '12px' }}>
+                                <input style={inputStyle} placeholder="IBAN" value={pm.iban} onChange={(e) => updatePaymentMethod(pm.id, 'iban', e.target.value)} />
+                              </div>
+                            </>
+                          )}
+
+                          {/* PayPal */}
+                          {pm.type === 'paypal' && (
+                            <>
+                              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '14px' }}>PayPal</div>
+                              <input style={inputStyle} placeholder="PayPal Email" value={pm.paypalEmail} onChange={(e) => updatePaymentMethod(pm.id, 'paypalEmail', e.target.value)} />
+                            </>
+                          )}
+
+                          {/* Crypto */}
+                          {pm.type === 'crypto' && (
+                            <>
+                              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '14px' }}>Cryptocurrency</div>
+                              <div style={{ display: 'grid', gap: '12px' }}>
+                                <select style={inputStyle} value={pm.cryptoType} onChange={(e) => updatePaymentMethod(pm.id, 'cryptoType', e.target.value)}>
+                                  <option value="Bitcoin">Bitcoin (BTC)</option>
+                                  <option value="Ethereum">Ethereum (ETH)</option>
+                                  <option value="USDT">USDT (Tether)</option>
+                                  <option value="USDC">USDC</option>
+                                  <option value="Litecoin">Litecoin (LTC)</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                                <input style={inputStyle} placeholder="Wallet Address" value={pm.walletAddress} onChange={(e) => updatePaymentMethod(pm.id, 'walletAddress', e.target.value)} />
+                              </div>
+                            </>
+                          )}
+
+                          {/* Custom */}
+                          {pm.type === 'custom' && (
+                            <>
+                              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '14px' }}>Custom Payment</div>
+                              <div style={{ display: 'grid', gap: '12px' }}>
+                                <input style={inputStyle} placeholder="Payment Method Name" value={pm.customName} onChange={(e) => updatePaymentMethod(pm.id, 'customName', e.target.value)} />
+                                <textarea style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} placeholder="Payment Details" value={pm.customDetails} onChange={(e) => updatePaymentMethod(pm.id, 'customDetails', e.target.value)} />
+                              </div>
+                            </>
+                          )}
+
+                          {/* Remove Button */}
+                          <button 
+                            onClick={() => removePaymentMethod(pm.id)}
+                            style={{ marginTop: '14px', padding: '10px 16px', background: colors.red, color: 'white', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
@@ -1033,15 +1191,45 @@ ${invoice.showPaymentDetails ? `
                   </div>
                 </div>
 
-                {/* Payment Details */}
-                {invoice.showPaymentDetails && invoice.bankName && (
-                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', fontSize: '11px' }}>
-                    <div style={{ fontWeight: '700', color: '#1f2937', marginBottom: '6px' }}>Payment Details</div>
-                    <div style={{ color: '#64748b', lineHeight: '1.5' }}>
-                      <div>Method: {invoice.paymentMethod}</div>
-                      {invoice.bankName && <div>Bank: {invoice.bankName}</div>}
-                      {invoice.accountNumber && <div>Account #: {invoice.accountNumber}</div>}
-                    </div>
+                {/* Payment Details Preview */}
+                {invoice.paymentMethods.length > 0 && (
+                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>Payment Details</div>
+                    {invoice.paymentMethods.map(pm => (
+                      <div key={pm.id} style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
+                        {pm.type === 'bank' && (
+                          <>
+                            <div style={{ fontSize: '11px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Method: Bank Transfer</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.6' }}>
+                              {pm.bankName && <div>Bank: {pm.bankName}</div>}
+                              {pm.accountName && <div>Account Name: {pm.accountName}</div>}
+                              {pm.accountNumber && <div>Account #: {pm.accountNumber}</div>}
+                              {pm.routingNumber && <div>Routing #: {pm.routingNumber}</div>}
+                              {pm.swift && <div>SWIFT: {pm.swift}</div>}
+                              {pm.iban && <div>IBAN: {pm.iban}</div>}
+                            </div>
+                          </>
+                        )}
+                        {pm.type === 'paypal' && (
+                          <>
+                            <div style={{ fontSize: '11px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Method: PayPal</div>
+                            <div style={{ fontSize: '10px', color: '#64748b' }}>{pm.paypalEmail}</div>
+                          </>
+                        )}
+                        {pm.type === 'crypto' && (
+                          <>
+                            <div style={{ fontSize: '11px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Method: {pm.cryptoType}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', wordBreak: 'break-all' }}>{pm.walletAddress}</div>
+                          </>
+                        )}
+                        {pm.type === 'custom' && (
+                          <>
+                            <div style={{ fontSize: '11px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Method: {pm.customName || 'Custom'}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', whiteSpace: 'pre-wrap' }}>{pm.customDetails}</div>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
