@@ -325,7 +325,7 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="invoice-meta">
 <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
+${invoice.dueDate ? `<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate)}</span></div>` : ''}
 ${invoice.paymentTermsText ? `<div class="invoice-meta-row"><span class="invoice-meta-label">Terms:</span> <span class="invoice-meta-value">${invoice.paymentTermsText}</span></div>` : ''}
 ${invoice.customFields.map(f => f.label && f.value ? `<div class="invoice-meta-row"><span class="invoice-meta-label">${f.label}:</span> <span class="invoice-meta-value">${f.value}</span></div>` : '').join('')}
 </div>
@@ -1216,7 +1216,7 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
                     <div style={{ fontSize: '11px', lineHeight: '1.7' }}>
                       <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
                       <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
-                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate) || 'On Receipt'}</div>
+                      {invoice.dueDate && <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate)}</div>}
                       {invoice.paymentTermsText && <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Terms:</span> {invoice.paymentTermsText}</div>}
                       {invoice.customFields.map(f => f.label && f.value ? <div key={f.id}><span style={{ color: '#3b82f6', fontWeight: '500' }}>{f.label}:</span> {f.value}</div> : null)}
                     </div>
