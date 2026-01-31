@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
-  customerName: '', customerAddress: '', customerZipCode: '',
+  customerName: '', customerEmail: '', customerPhone: '', customerAddress: '', customerZipCode: '', customerIdentifier: '',
   invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', paymentTerms: 'Within 30 Days',
   items: [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
   showPaymentDetails: true,
@@ -30,6 +30,29 @@ export default function InvoiceGenerator() {
   const [isDragging, setIsDragging] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Customer Manager state
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [newCustomer, setNewCustomer] = useState({
+    name: '', identifier: '', address: '', zipCode: '', phone: '', email: ''
+  });
+
+  // Load customers from localStorage on mount
+  useEffect(() => {
+    const savedCustomers = localStorage.getItem('dayonetools_customers');
+    if (savedCustomers) {
+      setCustomers(JSON.parse(savedCustomers));
+    }
+  }, []);
+
+  // Save customers to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
+  }, [customers]);
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -67,6 +90,62 @@ export default function InvoiceGenerator() {
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
   const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); };
+
+  // Customer Manager functions
+  const handleAddCustomer = () => {
+    if (!newCustomer.name.trim()) return;
+    
+    const customer = {
+      id: Date.now(),
+      ...newCustomer
+    };
+    
+    if (editingCustomer) {
+      setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? { ...customer, id: editingCustomer.id } : c));
+      setEditingCustomer(null);
+    } else {
+      setCustomers(prev => [...prev, customer]);
+    }
+    
+    setNewCustomer({ name: '', identifier: '', address: '', zipCode: '', phone: '', email: '' });
+    setShowAddCustomer(false);
+  };
+
+  const handleSelectCustomer = (customer) => {
+    setInvoice(prev => ({
+      ...prev,
+      customerName: customer.name,
+      customerIdentifier: customer.identifier,
+      customerAddress: customer.address,
+      customerZipCode: customer.zipCode,
+      customerPhone: customer.phone,
+      customerEmail: customer.email,
+    }));
+    setShowCustomerModal(false);
+  };
+
+  const handleEditCustomer = (customer) => {
+    setEditingCustomer(customer);
+    setNewCustomer({
+      name: customer.name,
+      identifier: customer.identifier,
+      address: customer.address,
+      zipCode: customer.zipCode,
+      phone: customer.phone,
+      email: customer.email,
+    });
+    setShowAddCustomer(true);
+  };
+
+  const handleDeleteCustomer = (id) => {
+    setCustomers(prev => prev.filter(c => c.id !== id));
+  };
+
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.identifier.toLowerCase().includes(customerSearch.toLowerCase())
+  );
 
   const getItemTotal = (item) => invoice.invoiceMode === 'hours' ? item.hours * item.rate : item.quantity * item.price;
   const subtotal = invoice.items.reduce((sum, item) => sum + getItemTotal(item), 0);
@@ -154,8 +233,11 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="issued-to">
 <h3>Issued To:</h3>
 <div class="issued-to-row"><strong>Name:</strong> ${invoice.customerName || ''}</div>
+${invoice.customerIdentifier ? `<div class="issued-to-row"><strong>ID:</strong> ${invoice.customerIdentifier}</div>` : ''}
 <div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}</div>
 <div class="issued-to-row"><strong>Zip Code:</strong> ${invoice.customerZipCode || ''}</div>
+${invoice.customerPhone ? `<div class="issued-to-row"><strong>Phone:</strong> ${invoice.customerPhone}</div>` : ''}
+${invoice.customerEmail ? `<div class="issued-to-row"><strong>Email:</strong> ${invoice.customerEmail}</div>` : ''}
 </div>
 
 <table class="items-table">
@@ -227,6 +309,7 @@ ${invoice.showPaymentDetails ? `
     text: '#f3f4f6',
     textMuted: '#9ca3af',
     border: '#4b5563',
+    green: '#10b981',
   };
 
   const inputStyle = { 
@@ -250,7 +333,6 @@ ${invoice.showPaymentDetails ? `
     marginBottom: '8px' 
   };
 
-  // Determine what to show based on mobile state and preview toggle
   const showEditPanel = !isMobile || !showPreview;
   const showPreviewPanel = !isMobile || showPreview;
 
@@ -271,7 +353,146 @@ ${invoice.showPaymentDetails ? `
         .tab-btn:hover { background: rgba(6, 182, 212, 0.1); }
         .mode-btn { transition: all 0.2s; cursor: pointer; }
         .mode-btn:hover { opacity: 0.9; }
+        .customer-item:hover { background: #374151 !important; }
       `}</style>
+
+      {/* Customer Manager Modal */}
+      {showCustomerModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div style={{ background: colors.bg, borderRadius: '12px', width: '100%', maxWidth: '500px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', border: `1px solid ${colors.border}` }}>
+            {/* Modal Header */}
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '18px' }}>👥</span>
+                <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Customer Manager</span>
+              </div>
+              <button 
+                onClick={() => { setShowAddCustomer(true); setEditingCustomer(null); setNewCustomer({ name: '', identifier: '', address: '', zipCode: '', phone: '', email: '' }); }}
+                style={{ padding: '8px 14px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                👤 Add Customer
+              </button>
+            </div>
+
+            {/* Search */}
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}` }}>
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🔍</span>
+                <input 
+                  type="text"
+                  placeholder="Search customers..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: '40px' }}
+                />
+              </div>
+            </div>
+
+            {/* Customer List or Add Form */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '0' }}>
+              {showAddCustomer ? (
+                <div style={{ padding: '20px' }}>
+                  <div style={{ display: 'grid', gap: '14px' }}>
+                    <div>
+                      <label style={labelStyle}>Customer | Company Name *</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>👤</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Customer | Company Name" value={newCustomer.name} onChange={(e) => setNewCustomer(prev => ({ ...prev, name: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Identifier Number</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>#</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Identifier Number" value={newCustomer.identifier} onChange={(e) => setNewCustomer(prev => ({ ...prev, identifier: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label style={labelStyle}>Address</label>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏠</span>
+                          <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Address" value={newCustomer.address} onChange={(e) => setNewCustomer(prev => ({ ...prev, address: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Zip Code</label>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>#</span>
+                          <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Zip Code" value={newCustomer.zipCode} onChange={(e) => setNewCustomer(prev => ({ ...prev, zipCode: e.target.value }))} />
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label style={labelStyle}>Phone</label>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📞</span>
+                          <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Phone" value={newCustomer.phone} onChange={(e) => setNewCustomer(prev => ({ ...prev, phone: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Email</label>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>✉️</span>
+                          <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Email" value={newCustomer.email} onChange={(e) => setNewCustomer(prev => ({ ...prev, email: e.target.value }))} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                    <button onClick={() => { setShowAddCustomer(false); setEditingCustomer(null); }} style={{ flex: 1, padding: '12px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>
+                      Cancel
+                    </button>
+                    <button onClick={handleAddCustomer} style={{ flex: 1, padding: '12px', background: colors.green, color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>
+                      {editingCustomer ? 'Update Customer' : 'Save Customer'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {filteredCustomers.length === 0 ? (
+                    <div style={{ padding: '40px 20px', textAlign: 'center', color: colors.textMuted }}>
+                      No customers saved yet
+                    </div>
+                  ) : (
+                    <div>
+                      {filteredCustomers.map(customer => (
+                        <div 
+                          key={customer.id} 
+                          className="customer-item"
+                          style={{ padding: '14px 20px', borderBottom: `1px solid ${colors.border}`, cursor: 'pointer', transition: 'background 0.2s' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div onClick={() => handleSelectCustomer(customer)} style={{ flex: 1 }}>
+                              <div style={{ fontWeight: '600', color: colors.text, marginBottom: '4px' }}>{customer.name}</div>
+                              <div style={{ fontSize: '13px', color: colors.textMuted }}>
+                                {customer.email && <span>{customer.email}</span>}
+                                {customer.email && customer.phone && <span> • </span>}
+                                {customer.phone && <span>{customer.phone}</span>}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button onClick={() => handleEditCustomer(customer)} style={{ padding: '6px 10px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>✏️</button>
+                              <button onClick={() => handleDeleteCustomer(customer.id)} style={{ padding: '6px 10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>🗑</button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: '16px 20px', borderTop: `1px solid ${colors.border}` }}>
+              <button onClick={() => { setShowCustomerModal(false); setShowAddCustomer(false); }} style={{ width: '100%', padding: '14px', background: colors.green, color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Header */}
       <div style={{ background: colors.bg, padding: isMobile ? '30px 16px 20px' : '40px 20px 30px', textAlign: 'center' }}>
@@ -297,7 +518,7 @@ ${invoice.showPaymentDetails ? `
         </p>
       </div>
 
-      {/* Mobile Preview Toggle - Only show on mobile */}
+      {/* Mobile Preview Toggle */}
       {isMobile && (
         <div style={{ display: 'flex', padding: '0 16px 16px', gap: '8px' }}>
           <button 
@@ -419,9 +640,80 @@ ${invoice.showPaymentDetails ? `
 
               {activeTab === 'customer' && (
                 <div style={{ display: 'grid', gap: '16px' }}>
-                  <div><label style={labelStyle}>Customer Name</label><input style={inputStyle} placeholder="Client Name or Company" value={invoice.customerName} onChange={(e) => updateField('customerName', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Address</label><input style={inputStyle} placeholder="123 Client St, City, State" value={invoice.customerAddress} onChange={(e) => updateField('customerAddress', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Zip Code</label><input style={inputStyle} placeholder="12345" value={invoice.customerZipCode} onChange={(e) => updateField('customerZipCode', e.target.value)} /></div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Customer</span>
+                  </div>
+                  
+                  {/* Select Customer Button */}
+                  <button 
+                    onClick={() => setShowCustomerModal(true)}
+                    style={{ 
+                      width: '100%', 
+                      padding: '14px', 
+                      background: colors.bgInput, 
+                      color: colors.textMuted, 
+                      border: `1px solid ${colors.border}`, 
+                      borderRadius: '8px', 
+                      fontWeight: '500', 
+                      fontSize: '14px', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}>
+                    👥 Select Customer
+                  </button>
+
+                  <div>
+                    <label style={labelStyle}>Customer | Company Name</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>👤</span>
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Customer | Company Name" value={invoice.customerName} onChange={(e) => updateField('customerName', e.target.value)} />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label style={labelStyle}>Identifier Number</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>#</span>
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Identifier Number" value={invoice.customerIdentifier} onChange={(e) => updateField('customerIdentifier', e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Address</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏠</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Address" value={invoice.customerAddress} onChange={(e) => updateField('customerAddress', e.target.value)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Zip Code</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>#</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Zip Code" value={invoice.customerZipCode} onChange={(e) => updateField('customerZipCode', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Phone</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📞</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Phone" value={invoice.customerPhone} onChange={(e) => updateField('customerPhone', e.target.value)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Email</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>✉️</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="Email" value={invoice.customerEmail} onChange={(e) => updateField('customerEmail', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -498,7 +790,6 @@ ${invoice.showPaymentDetails ? `
                   {invoice.items.map((item, idx) => (
                     <div key={item.id} style={{ padding: '12px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
                       {invoice.invoiceMode === 'products' ? (
-                        // Products Mode
                         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 80px 50px 70px 36px', gap: isMobile ? '12px' : '8px', alignItems: 'end' }}>
                           <div>
                             <label style={labelStyle}>Name</label>
@@ -521,7 +812,6 @@ ${invoice.showPaymentDetails ? `
                           </div>
                         </div>
                       ) : (
-                        // Hours Mode
                         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 60px 80px 36px', gap: isMobile ? '12px' : '8px', alignItems: 'end' }}>
                           <div>
                             <label style={labelStyle}>Service</label>
@@ -669,6 +959,7 @@ ${invoice.showPaymentDetails ? `
                     <div>{invoice.customerName || 'Customer Name'}</div>
                     {invoice.customerAddress && <div>{invoice.customerAddress}</div>}
                     {invoice.customerZipCode && <div>{invoice.customerZipCode}</div>}
+                    {invoice.customerEmail && <div>{invoice.customerEmail}</div>}
                   </div>
                 </div>
 
@@ -759,7 +1050,15 @@ ${invoice.showPaymentDetails ? `
         )}
       </div>
 
-      <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted, fontSize: '12px' }}>Free to use • No signup required • Your data stays in your browser</div>
+      {/* Privacy Disclaimer */}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px 16px' }}>
+        <div style={{ background: colors.bgCard, borderRadius: '10px', padding: '16px 20px', border: `1px solid ${colors.border}` }}>
+          <div style={{ fontSize: '13px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>Privacy Disclaimer:</div>
+          <p style={{ fontSize: '12px', color: colors.textMuted, lineHeight: '1.7', margin: 0 }}>
+            Day One offers a free invoice generator tool that allows users to create and download invoices without creating an account. When you use this tool, we do not collect any personal information, customer, product or invoice data, or file uploads. The invoices you generate are processed locally in your browser, ensuring that your data remains private and secure.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
