@@ -3,7 +3,10 @@ import React, { useState, useEffect } from 'react';
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
   customerName: '', customerEmail: '', customerPhone: '', customerAddress: '', customerZipCode: '', customerIdentifier: '',
-  invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', paymentTerms: 'Within 30 Days',
+  invoiceNumber: 'INV-001', issueDate: new Date().toISOString().split('T')[0], dueDate: '', 
+  paymentTermsText: '',
+  customFields: [],
+  endMessage: '',
   items: [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
   currency: 'USD',
   invoiceMode: 'products',
@@ -21,7 +24,13 @@ const currencies = [
   { code: 'CAD', symbol: 'C$' }, { code: 'AUD', symbol: 'A$' }, { code: 'JPY', symbol: '¥' }, { code: 'INR', symbol: '₹' },
 ];
 
-const paymentTermsOptions = ['Due on Receipt', 'Within 7 Days', 'Within 14 Days', 'Within 30 Days', 'Within 45 Days', 'Within 60 Days', 'Within 90 Days'];
+// Generate random invoice number
+const generateInvoiceNumber = () => {
+  const prefix = 'INV';
+  const random = Math.floor(Math.random() * 900000) + 100000;
+  const suffix = Math.floor(Math.random() * 900) + 100;
+  return `${prefix}-${random}-${suffix}`;
+};
 
 export default function InvoiceGenerator() {
   const [invoice, setInvoice] = useState(defaultInvoice);
@@ -317,7 +326,8 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
 <div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate) || 'On Receipt'}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Terms of Payment:</span> <span class="invoice-meta-value">${invoice.paymentTerms}</span></div>
+${invoice.paymentTermsText ? `<div class="invoice-meta-row"><span class="invoice-meta-label">Terms:</span> <span class="invoice-meta-value">${invoice.paymentTermsText}</span></div>` : ''}
+${invoice.customFields.map(f => f.label && f.value ? `<div class="invoice-meta-row"><span class="invoice-meta-label">${f.label}:</span> <span class="invoice-meta-value">${f.value}</span></div>` : '').join('')}
 </div>
 </div>
 </div>
@@ -361,6 +371,8 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fo
 </div>
 
 ${generatePaymentDetailsHTML()}
+
+${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6">${invoice.endMessage}</div>` : ''}
 
 </body></html>`);
     printWindow.document.close();
@@ -798,15 +810,113 @@ ${generatePaymentDetailsHTML()}
 
               {activeTab === 'invoice' && (
                 <div style={{ display: 'grid', gap: '16px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div><label style={labelStyle}>Invoice #</label><input style={inputStyle} value={invoice.invoiceNumber} onChange={(e) => updateField('invoiceNumber', e.target.value)} /></div>
-                    <div><label style={labelStyle}>Currency</label><select style={inputStyle} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>{currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>)}</select></div>
+                  {/* Invoice Number with Generate Button */}
+                  <div>
+                    <label style={labelStyle}>Invoice Number</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📄</span>
+                        <input style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.invoiceNumber} onChange={(e) => updateField('invoiceNumber', e.target.value)} />
+                      </div>
+                      <button 
+                        onClick={() => updateField('invoiceNumber', generateInvoiceNumber())}
+                        style={{ padding: '12px 16px', background: colors.green, color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        + Generate
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div><label style={labelStyle}>Issue Date</label><input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} /></div>
-                    <div><label style={labelStyle}>Due Date</label><input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} /></div>
+
+                  {/* Terms of Payment */}
+                  <div>
+                    <label style={labelStyle}>Terms of Payment</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📋</span>
+                      <input style={{ ...inputStyle, paddingLeft: '40px' }} placeholder="e.g. 30% advance, 70% before shipment" value={invoice.paymentTermsText} onChange={(e) => updateField('paymentTermsText', e.target.value)} />
+                    </div>
                   </div>
-                  <div><label style={labelStyle}>Payment Terms</label><select style={inputStyle} value={invoice.paymentTerms} onChange={(e) => updateField('paymentTerms', e.target.value)}>{paymentTermsOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+
+                  {/* Custom Fields */}
+                  <div>
+                    <label style={labelStyle}>Custom Fields</label>
+                    <button 
+                      onClick={() => {
+                        const newField = { id: Date.now(), label: '', value: '' };
+                        updateField('customFields', [...invoice.customFields, newField]);
+                      }}
+                      style={{ padding: '10px 16px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontWeight: '500', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      + Add Custom Field
+                    </button>
+                    
+                    {/* Custom Fields List */}
+                    {invoice.customFields.length > 0 && (
+                      <div style={{ marginTop: '12px', display: 'grid', gap: '10px' }}>
+                        {invoice.customFields.map((field) => (
+                          <div key={field.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <input 
+                              style={{ ...inputStyle, flex: 1 }} 
+                              placeholder="Field Label" 
+                              value={field.label} 
+                              onChange={(e) => {
+                                const updated = invoice.customFields.map(f => f.id === field.id ? { ...f, label: e.target.value } : f);
+                                updateField('customFields', updated);
+                              }} 
+                            />
+                            <input 
+                              style={{ ...inputStyle, flex: 1 }} 
+                              placeholder="Field Value" 
+                              value={field.value} 
+                              onChange={(e) => {
+                                const updated = invoice.customFields.map(f => f.id === field.id ? { ...f, value: e.target.value } : f);
+                                updateField('customFields', updated);
+                              }} 
+                            />
+                            <button 
+                              onClick={() => updateField('customFields', invoice.customFields.filter(f => f.id !== field.id))}
+                              style={{ padding: '10px 12px', background: colors.red, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                              🗑
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Issue Date / Due Date */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Issue Date</label>
+                      <input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Due Date (Optional)</label>
+                      <input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Currency */}
+                  <div>
+                    <label style={labelStyle}>Currency</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>{currencySymbol}</span>
+                      <select style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>
+                        {currencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.code === 'USD' ? 'US Dollar' : c.code === 'EUR' ? 'Euro' : c.code === 'GBP' ? 'British Pound' : c.code === 'CAD' ? 'Canadian Dollar' : c.code === 'AUD' ? 'Australian Dollar' : c.code === 'JPY' ? 'Japanese Yen' : 'Indian Rupee'}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* End Message */}
+                  <div>
+                    <label style={labelStyle}>End Message (Optional)</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '14px', color: colors.textMuted }}>📝</span>
+                      <textarea 
+                        style={{ ...inputStyle, paddingLeft: '40px', minHeight: '80px', resize: 'vertical' }} 
+                        placeholder="Optional" 
+                        value={invoice.endMessage} 
+                        onChange={(e) => updateField('endMessage', e.target.value)} 
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1104,9 +1214,11 @@ ${generatePaymentDetailsHTML()}
                   <div style={{ textAlign: 'right', minWidth: '130px' }}>
                     <div style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '700', color: '#1f2937', marginBottom: '6px' }}>INVOICE</div>
                     <div style={{ fontSize: '11px', lineHeight: '1.7' }}>
-                      <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
-                      <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
-                      <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate) || 'On Receipt'}</div>
+                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
+                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
+                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate) || 'On Receipt'}</div>
+                      {invoice.paymentTermsText && <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Terms:</span> {invoice.paymentTermsText}</div>}
+                      {invoice.customFields.map(f => f.label && f.value ? <div key={f.id}><span style={{ color: '#3b82f6', fontWeight: '500' }}>{f.label}:</span> {f.value}</div> : null)}
                     </div>
                   </div>
                 </div>
@@ -1234,6 +1346,13 @@ ${generatePaymentDetailsHTML()}
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* End Message Preview */}
+                {invoice.endMessage && (
+                  <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #e2e8f0', fontSize: '10px', color: '#64748b', lineHeight: '1.6' }}>
+                    {invoice.endMessage}
                   </div>
                 )}
               </div>
