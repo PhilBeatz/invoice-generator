@@ -380,8 +380,8 @@ ${generatePaymentDetailsHTML()}
     bgLight: '#16213e',
     bgCard: '#1f2937',
     bgInput: '#374151',
-    accent: '#06b6d4',
-    accentHover: '#22d3ee',
+    accent: '#3b82f6',
+    accentHover: '#60a5fa',
     text: '#f3f4f6',
     textMuted: '#9ca3af',
     border: '#4b5563',
@@ -420,10 +420,10 @@ ${generatePaymentDetailsHTML()}
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         input, select, textarea { box-sizing: border-box; font-size: 16px !important; }
         input::placeholder, textarea::placeholder { color: #6b7280; }
-        input:focus, select:focus, textarea:focus { border-color: #06b6d4 !important; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6 !important; outline: none; }
         select option { background: #374151; color: #f3f4f6; }
         .toggle-switch { position: relative; width: 48px; height: 26px; background: #4b5563; border-radius: 13px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
-        .toggle-switch.active { background: #06b6d4; }
+        .toggle-switch.active { background: #3b82f6; }
         .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .toggle-switch.active::after { transform: translateX(22px); }
         .tab-btn { transition: all 0.2s; }
@@ -580,7 +580,7 @@ ${generatePaymentDetailsHTML()}
           fontWeight: '800', 
           color: colors.text, 
           marginBottom: '12px',
-          fontStyle: 'Bold',
+          fontStyle: 'italic',
           letterSpacing: '-1px'
         }}>
           Free Invoice Generator
