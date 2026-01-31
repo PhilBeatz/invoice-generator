@@ -580,7 +580,7 @@ ${generatePaymentDetailsHTML()}
           fontWeight: '800', 
           color: colors.text, 
           marginBottom: '12px',
-          fontStyle: 'italic',
+          fontStyle: 'Bold',
           letterSpacing: '-1px'
         }}>
           Free Invoice Generator
