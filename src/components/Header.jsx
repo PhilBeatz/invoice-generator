@@ -20,7 +20,7 @@ export default function Header() {
     bg: '#111111',
     text: '#ffffff',
     textMuted: '#9ca3af',
-    accent: '#10b981',
+    accent: '#3b82f6',
     border: '#2d2d2d',
     dropdownBg: '#1a1a1a',
   };
