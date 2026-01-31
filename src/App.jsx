@@ -8,12 +8,11 @@ const defaultInvoice = {
   showPaymentDetails: true,
   paymentMethod: 'Bank', bankName: '', branchName: '', bankAddress: '', accountName: '', accountNumber: '', routingNumber: '', sortCode: '', swift: '', iban: '',
   currency: 'USD',
-  // New fields
-  invoiceMode: 'products', // 'products' or 'hours'
+  invoiceMode: 'products',
   shippingCost: 0,
   discount: 0,
   taxRate: 0,
-  taxType: 'percent', // 'percent' or 'fixed'
+  taxType: 'percent',
   taxIncluded: false,
 };
 
@@ -29,6 +28,7 @@ export default function InvoiceGenerator() {
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
   const [isDragging, setIsDragging] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const currencySymbol = currencies.find(c => c.code === invoice.currency)?.symbol || '$';
   const updateField = (field, value) => setInvoice(prev => ({ ...prev, [field]: value }));
@@ -55,45 +55,17 @@ export default function InvoiceGenerator() {
     processFile(file);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); };
 
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    processFile(file);
-  };
-
-  // Calculate totals
-  const getItemTotal = (item) => {
-    if (invoice.invoiceMode === 'hours') {
-      return item.hours * item.rate;
-    }
-    return item.quantity * item.price;
-  };
-
+  const getItemTotal = (item) => invoice.invoiceMode === 'hours' ? item.hours * item.rate : item.quantity * item.price;
   const subtotal = invoice.items.reduce((sum, item) => sum + getItemTotal(item), 0);
-  
   const discountAmount = invoice.discount || 0;
   const afterDiscount = subtotal - discountAmount;
-  
-  const taxAmount = invoice.taxType === 'percent' 
-    ? (afterDiscount * (invoice.taxRate || 0) / 100)
-    : (invoice.taxRate || 0);
-  
+  const taxAmount = invoice.taxType === 'percent' ? (afterDiscount * (invoice.taxRate || 0) / 100) : (invoice.taxRate || 0);
   const shippingAmount = invoice.shippingCost || 0;
-  
-  const total = invoice.taxIncluded 
-    ? afterDiscount + shippingAmount
-    : afterDiscount + taxAmount + shippingAmount;
+  const total = invoice.taxIncluded ? afterDiscount + shippingAmount : afterDiscount + taxAmount + shippingAmount;
 
   const formatCurrency = (amount) => `${currencySymbol}${amount.toFixed(2)}`;
   const formatDate = (dateStr) => { if (!dateStr) return ''; return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); };
@@ -105,8 +77,9 @@ export default function InvoiceGenerator() {
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15px;line-height:1.6}
+@media print{body{padding:40px}@page{margin:40px}}
 
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px;flex-wrap:wrap;gap:20px}
 .business-info{max-width:400px}
 .business-name{font-size:28px;font-weight:700;color:#1e40af;margin-bottom:8px}
 .business-details{color:#6b7280;font-size:14px;line-height:1.8}
@@ -150,8 +123,6 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 .payment-row{display:flex}
 .payment-label{width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
-
-@media print{body{padding:0}@page{margin:70px 80px}}
 </style></head><body>
 
 <div class="header">
@@ -237,13 +208,12 @@ ${invoice.showPaymentDetails ? `
     { id: 'payment', label: 'Payment', icon: '💳' },
   ];
 
-  // Dark theme colors
   const colors = {
     bg: '#1a1a2e',
     bgLight: '#16213e',
     bgCard: '#1f2937',
     bgInput: '#374151',
-    accent: '#06b6d4', // cyan
+    accent: '#06b6d4',
     accentHover: '#22d3ee',
     text: '#f3f4f6',
     textMuted: '#9ca3af',
@@ -255,7 +225,7 @@ ${invoice.showPaymentDetails ? `
     padding: '12px 14px', 
     border: `1px solid ${colors.border}`, 
     borderRadius: '8px', 
-    fontSize: '14px', 
+    fontSize: '16px', 
     fontFamily: 'Inter, sans-serif', 
     background: colors.bgInput, 
     color: colors.text,
@@ -275,12 +245,12 @@ ${invoice.showPaymentDetails ? `
     <div style={{ minHeight: '100vh', background: colors.bg, fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; }
-        input, select, textarea { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        input, select, textarea { box-sizing: border-box; font-size: 16px !important; }
         input::placeholder, textarea::placeholder { color: #6b7280; }
-        input:focus, select:focus, textarea:focus { border-color: #06b6d4 !important; }
+        input:focus, select:focus, textarea:focus { border-color: #06b6d4 !important; outline: none; }
         select option { background: #374151; color: #f3f4f6; }
-        .toggle-switch { position: relative; width: 48px; height: 26px; background: #4b5563; border-radius: 13px; cursor: pointer; transition: background 0.2s; }
+        .toggle-switch { position: relative; width: 48px; height: 26px; background: #4b5563; border-radius: 13px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
         .toggle-switch.active { background: #06b6d4; }
         .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .toggle-switch.active::after { transform: translateX(22px); }
@@ -288,49 +258,117 @@ ${invoice.showPaymentDetails ? `
         .tab-btn:hover { background: rgba(6, 182, 212, 0.1); }
         .mode-btn { transition: all 0.2s; cursor: pointer; }
         .mode-btn:hover { opacity: 0.9; }
+        
+        /* Mobile styles */
+        @media (max-width: 900px) {
+          .main-container { flex-direction: column !important; }
+          .left-panel, .right-panel { max-width: 100% !important; min-width: 100% !important; flex: 1 1 100% !important; }
+          .tab-container { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .tab-btn { padding: 10px 12px !important; font-size: 12px !important; }
+          .hero-title { font-size: 32px !important; }
+          .hero-subtitle { font-size: 16px !important; }
+        }
+        
+        @media (max-width: 500px) {
+          .item-row-products { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .item-row-hours { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .item-field { display: flex; align-items: center; gap: 10px; }
+          .item-field label { min-width: 60px; margin-bottom: 0 !important; }
+          .item-field input { flex: 1; }
+          .delete-btn-mobile { width: 100% !important; margin-top: 8px; }
+          .two-col { grid-template-columns: 1fr !important; }
+          .preview-toggle { display: flex !important; }
+          .desktop-preview { display: none !important; }
+          .mobile-preview { display: block !important; }
+        }
       `}</style>
 
       {/* Hero Header */}
-      <div style={{ background: colors.bg, padding: '50px 24px 40px', textAlign: 'center' }}>
-        <h1 style={{ 
+      <div style={{ background: colors.bg, padding: '40px 20px 30px', textAlign: 'center' }}>
+        <h1 className="hero-title" style={{ 
           fontSize: '48px', 
           fontWeight: '800', 
           color: colors.text, 
-          marginBottom: '20px',
+          marginBottom: '16px',
           fontStyle: 'italic',
           letterSpacing: '-1px'
         }}>
           Free Invoice Generator
         </h1>
-        <p style={{ 
+        <p className="hero-subtitle" style={{ 
           color: colors.textMuted, 
           fontSize: '18px', 
           maxWidth: '700px', 
           margin: '0 auto',
-          lineHeight: '1.7'
+          lineHeight: '1.6',
+          padding: '0 16px'
         }}>
           Use our free online invoice generator to create professional invoices in seconds — no signup required. Customize, and download a PDF invoice for your business needs.
         </p>
       </div>
 
+      {/* Mobile Preview Toggle */}
+      <div className="preview-toggle" style={{ display: 'none', padding: '0 16px 16px', gap: '8px' }}>
+        <button 
+          onClick={() => setShowPreview(false)}
+          style={{ 
+            flex: 1, 
+            padding: '12px', 
+            background: !showPreview ? colors.accent : colors.bgCard, 
+            color: !showPreview ? '#0f172a' : colors.textMuted,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '8px',
+            fontWeight: '600',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}>
+          ✏️ Edit Invoice
+        </button>
+        <button 
+          onClick={() => setShowPreview(true)}
+          style={{ 
+            flex: 1, 
+            padding: '12px', 
+            background: showPreview ? colors.accent : colors.bgCard, 
+            color: showPreview ? '#0f172a' : colors.textMuted,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '8px',
+            fontWeight: '600',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}>
+          👁 Preview Invoice
+        </button>
+      </div>
+
       {/* Main */}
-      <div style={{ maxWidth: '1500px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+      <div className="main-container" style={{ maxWidth: '1500px', margin: '0 auto', padding: '0 16px 24px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
         
         {/* Left Panel - Invoice Details */}
-        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', width: '100%', maxWidth: '600px', minWidth: '520px', flex: '1 1 550px' }}>
+        <div className="left-panel mobile-preview" style={{ 
+          background: colors.bgCard, 
+          borderRadius: '12px', 
+          border: `1px solid ${colors.border}`, 
+          overflow: 'hidden', 
+          width: '100%', 
+          maxWidth: '600px', 
+          minWidth: '320px', 
+          flex: '1 1 550px',
+          display: showPreview ? 'none' : 'block'
+        }}>
           <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '18px' }}>📋</span>
             <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
           </div>
           
-          <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '8px 16px', justifyContent: 'space-between' }}>
+          <div className="tab-container" style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '8px 12px', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {tabs.map(tab => (
               <button 
                 key={tab.id} 
                 className="tab-btn"
                 onClick={() => setActiveTab(tab.id)} 
                 style={{ 
-                  padding: '12px 16px', 
+                  padding: '12px 14px', 
                   background: activeTab === tab.id ? colors.accent : 'transparent', 
                   border: 'none', 
                   fontSize: '13px', 
@@ -342,17 +380,16 @@ ${invoice.showPaymentDetails ? `
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  flex: '1',
-                  justifyContent: 'center'
+                  flexShrink: 0
                 }}>
                 {tab.icon} {tab.label}
               </button>
             ))}
           </div>
 
-          <div style={{ padding: '24px' }}>
+          <div style={{ padding: '20px' }}>
             {activeTab === 'business' && (
-              <div style={{ display: 'grid', gap: '20px' }}>
+              <div style={{ display: 'grid', gap: '16px' }}>
                 <div>
                   <label style={labelStyle}>Logo</label>
                   <label 
@@ -362,7 +399,7 @@ ${invoice.showPaymentDetails ? `
                     style={{ 
                       border: `2px dashed ${isDragging ? colors.accent : colors.border}`, 
                       borderRadius: '10px', 
-                      padding: '24px', 
+                      padding: '20px', 
                       textAlign: 'center', 
                       cursor: 'pointer', 
                       display: 'block', 
@@ -374,22 +411,22 @@ ${invoice.showPaymentDetails ? `
                       <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} />
                     ) : (
                       <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '14px' }}>
-                        <div style={{ fontSize: '28px', marginBottom: '8px' }}>📷</div>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>📷</div>
                         <div>Drag & drop your logo here</div>
-                        <div style={{ fontSize: '12px', marginTop: '4px' }}>or click to browse</div>
+                        <div style={{ fontSize: '12px', marginTop: '4px' }}>or tap to browse</div>
                       </div>
                     )}
                   </label>
                 </div>
                 <div><label style={labelStyle}>Business Name</label><input style={inputStyle} placeholder="Your Company Name" value={invoice.businessName} onChange={(e) => updateField('businessName', e.target.value)} /></div>
                 <div><label style={labelStyle}>Address</label><input style={inputStyle} placeholder="123 Business St, City, State" value={invoice.businessAddress} onChange={(e) => updateField('businessAddress', e.target.value)} /></div>
-                <div><label style={labelStyle}>Email</label><input style={inputStyle} placeholder="billing@company.com" value={invoice.businessEmail} onChange={(e) => updateField('businessEmail', e.target.value)} /></div>
-                <div><label style={labelStyle}>Phone</label><input style={inputStyle} placeholder="(555) 123-4567" value={invoice.businessPhone} onChange={(e) => updateField('businessPhone', e.target.value)} /></div>
+                <div><label style={labelStyle}>Email</label><input type="email" style={inputStyle} placeholder="billing@company.com" value={invoice.businessEmail} onChange={(e) => updateField('businessEmail', e.target.value)} /></div>
+                <div><label style={labelStyle}>Phone</label><input type="tel" style={inputStyle} placeholder="(555) 123-4567" value={invoice.businessPhone} onChange={(e) => updateField('businessPhone', e.target.value)} /></div>
               </div>
             )}
 
             {activeTab === 'customer' && (
-              <div style={{ display: 'grid', gap: '20px' }}>
+              <div style={{ display: 'grid', gap: '16px' }}>
                 <div><label style={labelStyle}>Customer Name</label><input style={inputStyle} placeholder="Client Name or Company" value={invoice.customerName} onChange={(e) => updateField('customerName', e.target.value)} /></div>
                 <div><label style={labelStyle}>Address</label><input style={inputStyle} placeholder="123 Client St, City, State" value={invoice.customerAddress} onChange={(e) => updateField('customerAddress', e.target.value)} /></div>
                 <div><label style={labelStyle}>Zip Code</label><input style={inputStyle} placeholder="12345" value={invoice.customerZipCode} onChange={(e) => updateField('customerZipCode', e.target.value)} /></div>
@@ -397,12 +434,12 @@ ${invoice.showPaymentDetails ? `
             )}
 
             {activeTab === 'invoice' && (
-              <div style={{ display: 'grid', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Invoice #</label><input style={inputStyle} value={invoice.invoiceNumber} onChange={(e) => updateField('invoiceNumber', e.target.value)} /></div>
                   <div><label style={labelStyle}>Currency</label><select style={inputStyle} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>{currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>)}</select></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div><label style={labelStyle}>Issue Date</label><input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} /></div>
                   <div><label style={labelStyle}>Due Date</label><input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} /></div>
                 </div>
@@ -413,14 +450,15 @@ ${invoice.showPaymentDetails ? `
             {activeTab === 'items' && (
               <div>
                 {/* Invoice Mode Toggle */}
-                <div style={{ marginBottom: '20px' }}>
+                <div style={{ marginBottom: '16px' }}>
                   <label style={labelStyle}>Invoice Mode:</label>
-                  <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}`, width: 'fit-content' }}>
+                  <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
                     <button 
                       className="mode-btn"
                       onClick={() => updateField('invoiceMode', 'products')}
                       style={{ 
-                        padding: '10px 20px', 
+                        flex: 1,
+                        padding: '10px 16px', 
                         background: invoice.invoiceMode === 'products' ? colors.accent : colors.bgInput,
                         color: invoice.invoiceMode === 'products' ? '#0f172a' : colors.textMuted,
                         border: 'none',
@@ -428,6 +466,7 @@ ${invoice.showPaymentDetails ? `
                         fontSize: '13px',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '6px'
                       }}>
                       📦 Products
@@ -436,7 +475,8 @@ ${invoice.showPaymentDetails ? `
                       className="mode-btn"
                       onClick={() => updateField('invoiceMode', 'hours')}
                       style={{ 
-                        padding: '10px 20px', 
+                        flex: 1,
+                        padding: '10px 16px', 
                         background: invoice.invoiceMode === 'hours' ? colors.accent : colors.bgInput,
                         color: invoice.invoiceMode === 'hours' ? '#0f172a' : colors.textMuted,
                         border: 'none',
@@ -444,6 +484,7 @@ ${invoice.showPaymentDetails ? `
                         fontSize: '13px',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '6px'
                       }}>
                       ⏱ Hours
@@ -452,170 +493,99 @@ ${invoice.showPaymentDetails ? `
                 </div>
 
                 {/* Products/Services Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>
                     {invoice.invoiceMode === 'hours' ? 'Services' : 'Products'}
                   </span>
-                  <button onClick={addItem} style={{ padding: '8px 16px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button onClick={addItem} style={{ padding: '8px 14px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
                     + Add {invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}
                   </button>
                 </div>
 
                 {/* Items List */}
                 {invoice.items.map((item, idx) => (
-                  <div key={item.id} style={{ padding: '14px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
+                  <div key={item.id} style={{ padding: '12px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
                     {invoice.invoiceMode === 'products' ? (
-                      // Products Mode
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 60px 80px 36px', gap: '8px', alignItems: 'end' }}>
-                        <div>{idx === 0 && <label style={labelStyle}>Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
-                        <div>{idx === 0 && <label style={labelStyle}>Model/SKU</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="SKU" value={item.sku} onChange={(e) => updateItem(item.id, 'sku', e.target.value)} /></div>
-                        <div>{idx === 0 && <label style={labelStyle}>Qty</label>}<input type="number" min="1" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
-                        <div>{idx === 0 && <label style={labelStyle}>Price</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
-                        <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
+                      <div className="item-row-products" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 50px 70px 36px', gap: '8px', alignItems: 'end' }}>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Name</label><input style={{...inputStyle, background: colors.bgCard, padding: '10px 12px'}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>SKU</label><input style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="SKU" value={item.sku} onChange={(e) => updateItem(item.id, 'sku', e.target.value)} /></div>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Qty</label><input type="number" min="1" style={{...inputStyle, background: colors.bgCard, padding: '10px 6px', textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} /></div>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Price</label><input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} /></div>
+                        <div><label style={{ ...labelStyle, opacity: 0, display: idx === 0 ? 'block' : 'none' }}>X</label><button className="delete-btn-mobile" onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '36px', height: '42px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
                       </div>
                     ) : (
-                      // Hours Mode
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px 36px', gap: '8px', alignItems: 'end' }}>
-                        <div>{idx === 0 && <label style={labelStyle}>Service Name</label>}<input style={{...inputStyle, background: colors.bgCard}} placeholder="Service name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
-                        <div>{idx === 0 && <label style={labelStyle}>Hours</label>}<input type="number" min="0.5" step="0.5" style={{...inputStyle, background: colors.bgCard, textAlign: 'center'}} value={item.hours} onChange={(e) => updateItem(item.id, 'hours', parseFloat(e.target.value) || 1)} /></div>
-                        <div>{idx === 0 && <label style={labelStyle}>Rate (/Hour)</label>}<input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} /></div>
-                        <div>{idx === 0 && <label style={{ ...labelStyle, opacity: 0 }}>X</label>}<button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
+                      <div className="item-row-hours" style={{ display: 'grid', gridTemplateColumns: '1fr 60px 80px 36px', gap: '8px', alignItems: 'end' }}>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Service</label><input style={{...inputStyle, background: colors.bgCard, padding: '10px 12px'}} placeholder="Service name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} /></div>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Hours</label><input type="number" min="0.5" step="0.5" style={{...inputStyle, background: colors.bgCard, padding: '10px 6px', textAlign: 'center'}} value={item.hours} onChange={(e) => updateItem(item.id, 'hours', parseFloat(e.target.value) || 1)} /></div>
+                        <div className="item-field"><label style={{...labelStyle, display: idx === 0 ? 'block' : 'none'}}>Rate</label><input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} /></div>
+                        <div><label style={{ ...labelStyle, opacity: 0, display: idx === 0 ? 'block' : 'none' }}>X</label><button className="delete-btn-mobile" onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '36px', height: '42px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px' }}>🗑</button></div>
                       </div>
                     )}
                   </div>
                 ))}
 
                 {/* Shipping & Discount */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
+                <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Shipping Cost (Optional):</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📦</span>
-                      <input 
-                        type="number" 
-                        min="0" 
-                        step="0.01"
-                        style={{...inputStyle, paddingLeft: '40px'}} 
-                        placeholder="Shipping Cost" 
-                        value={invoice.shippingCost || ''} 
-                        onChange={(e) => updateField('shippingCost', parseFloat(e.target.value) || 0)} 
-                      />
-                    </div>
+                    <label style={labelStyle}>Shipping (Optional)</label>
+                    <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0.00" value={invoice.shippingCost || ''} onChange={(e) => updateField('shippingCost', parseFloat(e.target.value) || 0)} />
                   </div>
                   <div>
-                    <label style={labelStyle}>Discount (Optional):</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷</span>
-                      <input 
-                        type="number" 
-                        min="0" 
-                        step="0.01"
-                        style={{...inputStyle, paddingLeft: '40px'}} 
-                        placeholder="Discount amount" 
-                        value={invoice.discount || ''} 
-                        onChange={(e) => updateField('discount', parseFloat(e.target.value) || 0)} 
-                      />
-                    </div>
+                    <label style={labelStyle}>Discount (Optional)</label>
+                    <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0.00" value={invoice.discount || ''} onChange={(e) => updateField('discount', parseFloat(e.target.value) || 0)} />
                   </div>
                 </div>
 
                 {/* Tax Rate & Type */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
                   <div>
                     <label style={labelStyle}>Tax Rate</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷</span>
-                      <input 
-                        type="number" 
-                        min="0" 
-                        step="0.01"
-                        style={{...inputStyle, paddingLeft: '40px'}} 
-                        placeholder="0" 
-                        value={invoice.taxRate || ''} 
-                        onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)} 
-                      />
-                    </div>
+                    <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0" value={invoice.taxRate || ''} onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)} />
                   </div>
                   <div>
                     <label style={labelStyle}>Tax Type</label>
                     <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
-                      <button 
-                        className="mode-btn"
-                        onClick={() => updateField('taxType', 'percent')}
-                        style={{ 
-                          flex: 1,
-                          padding: '12px', 
-                          background: invoice.taxType === 'percent' ? colors.accent : colors.bgInput,
-                          color: invoice.taxType === 'percent' ? '#0f172a' : colors.textMuted,
-                          border: 'none',
-                          fontWeight: '600',
-                          fontSize: '14px'
-                        }}>
-                        %
-                      </button>
-                      <button 
-                        className="mode-btn"
-                        onClick={() => updateField('taxType', 'fixed')}
-                        style={{ 
-                          flex: 1,
-                          padding: '12px', 
-                          background: invoice.taxType === 'fixed' ? colors.accent : colors.bgInput,
-                          color: invoice.taxType === 'fixed' ? '#0f172a' : colors.textMuted,
-                          border: 'none',
-                          fontWeight: '600',
-                          fontSize: '14px'
-                        }}>
-                        Number
-                      </button>
+                      <button className="mode-btn" onClick={() => updateField('taxType', 'percent')} style={{ flex: 1, padding: '12px', background: invoice.taxType === 'percent' ? colors.accent : colors.bgInput, color: invoice.taxType === 'percent' ? '#0f172a' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px' }}>%</button>
+                      <button className="mode-btn" onClick={() => updateField('taxType', 'fixed')} style={{ flex: 1, padding: '12px', background: invoice.taxType === 'fixed' ? colors.accent : colors.bgInput, color: invoice.taxType === 'fixed' ? '#0f172a' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px' }}>#</button>
                     </div>
                   </div>
                 </div>
 
                 {/* Tax Included Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-                  <div 
-                    className={`toggle-switch ${invoice.taxIncluded ? 'active' : ''}`}
-                    onClick={() => updateField('taxIncluded', !invoice.taxIncluded)}
-                    style={{ flexShrink: 0 }}
-                  />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', padding: '12px', background: colors.bgInput, borderRadius: '8px' }}>
+                  <div className={`toggle-switch ${invoice.taxIncluded ? 'active' : ''}`} onClick={() => updateField('taxIncluded', !invoice.taxIncluded)} />
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>Tax included in prices</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted }}>
-                      {invoice.taxIncluded ? 'Tax is already included in item prices' : 'Tax will be added to the subtotal'}
-                    </div>
+                    <div style={{ fontSize: '12px', color: colors.textMuted }}>{invoice.taxIncluded ? 'Tax is already included' : 'Tax will be added'}</div>
                   </div>
                 </div>
               </div>
             )}
 
             {activeTab === 'payment' && (
-              <div style={{ display: 'grid', gap: '20px' }}>
-                {/* Toggle for showing payment details */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
+              <div style={{ display: 'grid', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px', background: colors.bgInput, borderRadius: '10px', border: `1px solid ${colors.border}` }}>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Show Payment Details</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted }}>Include payment info on invoice</div>
+                    <div style={{ fontSize: '12px', color: colors.textMuted }}>Include on invoice</div>
                   </div>
-                  <div 
-                    className={`toggle-switch ${invoice.showPaymentDetails ? 'active' : ''}`}
-                    onClick={() => updateField('showPaymentDetails', !invoice.showPaymentDetails)}
-                  />
+                  <div className={`toggle-switch ${invoice.showPaymentDetails ? 'active' : ''}`} onClick={() => updateField('showPaymentDetails', !invoice.showPaymentDetails)} />
                 </div>
 
                 {invoice.showPaymentDetails && (
                   <>
                     <div><label style={labelStyle}>Payment Method</label><select style={inputStyle} value={invoice.paymentMethod} onChange={(e) => updateField('paymentMethod', e.target.value)}><option value="Bank">Bank Transfer</option><option value="Check">Check</option><option value="Cash">Cash</option><option value="PayPal">PayPal</option></select></div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div><label style={labelStyle}>Bank Name</label><input style={inputStyle} placeholder="Bank name" value={invoice.bankName} onChange={(e) => updateField('bankName', e.target.value)} /></div>
                       <div><label style={labelStyle}>Branch</label><input style={inputStyle} placeholder="Branch" value={invoice.branchName} onChange={(e) => updateField('branchName', e.target.value)} /></div>
                     </div>
                     <div><label style={labelStyle}>Bank Address</label><input style={inputStyle} placeholder="Bank address" value={invoice.bankAddress} onChange={(e) => updateField('bankAddress', e.target.value)} /></div>
                     <div><label style={labelStyle}>Account Name</label><input style={inputStyle} placeholder="Account holder" value={invoice.accountName} onChange={(e) => updateField('accountName', e.target.value)} /></div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div><label style={labelStyle}>Account #</label><input style={inputStyle} placeholder="Account number" value={invoice.accountNumber} onChange={(e) => updateField('accountNumber', e.target.value)} /></div>
                       <div><label style={labelStyle}>Routing #</label><input style={inputStyle} placeholder="Routing number" value={invoice.routingNumber} onChange={(e) => updateField('routingNumber', e.target.value)} /></div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                       <div><label style={labelStyle}>Sort Code</label><input style={inputStyle} placeholder="Sort code" value={invoice.sortCode} onChange={(e) => updateField('sortCode', e.target.value)} /></div>
                       <div><label style={labelStyle}>SWIFT</label><input style={inputStyle} placeholder="SWIFT" value={invoice.swift} onChange={(e) => updateField('swift', e.target.value)} /></div>
                     </div>
@@ -628,88 +598,89 @@ ${invoice.showPaymentDetails ? `
         </div>
 
         {/* Right Panel - Invoice Preview */}
-        <div style={{ background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`, overflow: 'hidden', flex: '2 1 500px', minWidth: '320px' }}>
-          <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div className="right-panel desktop-preview" style={{ 
+          background: colors.bgCard, 
+          borderRadius: '12px', 
+          border: `1px solid ${colors.border}`, 
+          overflow: 'hidden', 
+          flex: '2 1 500px', 
+          minWidth: '320px',
+          display: showPreview ? 'block' : undefined
+        }}>
+          <div style={{ padding: '14px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '18px' }}>📄</span>
               <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Preview</span>
             </div>
-            <button onClick={downloadPDF} style={{ padding: '10px 20px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button onClick={downloadPDF} style={{ padding: '10px 18px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               📥 Download PDF
             </button>
           </div>
           
           {/* White preview area */}
-          <div style={{ padding: '24px', background: colors.bgInput }}>
-            <div style={{ background: 'white', borderRadius: '8px', padding: '40px', minHeight: '600px', color: '#1f2937' }}>
+          <div style={{ padding: '16px', background: colors.bgInput }}>
+            <div style={{ background: 'white', borderRadius: '8px', padding: '30px', minHeight: '500px', color: '#1f2937', overflowX: 'auto' }}>
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
-                <div style={{ maxWidth: '300px', minWidth: '180px' }}>
-                  {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '60px', marginBottom: '12px' }} />}
-                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#1e40af', marginBottom: '6px' }}>{invoice.businessName || 'Your Company'}</div>
-                  <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.7' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ minWidth: '150px', flex: '1' }}>
+                  {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '50px', marginBottom: '10px' }} />}
+                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#1e40af', marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.6' }}>
                     {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                     {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                     {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', minWidth: '180px' }}>
-                  <div style={{ fontSize: '26px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>INVOICE</div>
-                  <div style={{ fontSize: '13px', lineHeight: '1.9' }}>
+                <div style={{ textAlign: 'right', minWidth: '150px' }}>
+                  <div style={{ fontSize: '22px', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>INVOICE</div>
+                  <div style={{ fontSize: '12px', lineHeight: '1.8' }}>
                     <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
                     <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
                     <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate) || 'On Receipt'}</div>
-                    <div><span style={{ color: '#0891b2', fontWeight: '500' }}>Terms:</span> {invoice.paymentTerms}</div>
                   </div>
                 </div>
               </div>
 
               {/* Issued To */}
-              <div style={{ marginBottom: '30px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>Issued To:</div>
-                <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.8' }}>
-                  <div><span style={{ fontWeight: '600', color: '#374151' }}>Customer:</span> {invoice.customerName || 'Company Name'}</div>
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#1f2937', marginBottom: '6px' }}>Issued To:</div>
+                <div style={{ fontSize: '12px', color: '#6b7280', lineHeight: '1.6' }}>
+                  <div>{invoice.customerName || 'Customer Name'}</div>
                   {invoice.customerAddress && <div>{invoice.customerAddress}</div>}
                   {invoice.customerZipCode && <div>{invoice.customerZipCode}</div>}
                 </div>
               </div>
 
               {/* Items Table */}
-              <div style={{ overflowX: 'auto', marginBottom: '24px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '350px' }}>
+              <div style={{ overflowX: 'auto', marginBottom: '20px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '300px', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ background: '#f8fafc' }}>
-                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>
+                      <th style={{ textAlign: 'left', padding: '10px 8px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>
                         {invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}
                       </th>
-                      {invoice.invoiceMode === 'products' && (
-                        <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '80px' }}>SKU</th>
-                      )}
-                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '60px' }}>
-                        {invoice.invoiceMode === 'hours' ? 'Hours' : 'Qty'}
+                      <th style={{ textAlign: 'center', padding: '10px 8px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '50px' }}>
+                        {invoice.invoiceMode === 'hours' ? 'Hrs' : 'Qty'}
                       </th>
-                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>
+                      <th style={{ textAlign: 'right', padding: '10px 8px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '70px' }}>
                         {invoice.invoiceMode === 'hours' ? 'Rate' : 'Price'}
                       </th>
-                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '12px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '90px' }}>Amount</th>
+                      <th style={{ textAlign: 'right', padding: '10px 8px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '70px' }}>Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoice.items.map(item => (
                       <tr key={item.id}>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>
+                        <td style={{ padding: '10px 8px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>
                           {item.description || (invoice.invoiceMode === 'hours' ? 'Service' : 'Product')}
                         </td>
-                        {invoice.invoiceMode === 'products' && (
-                          <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>{item.sku || '-'}</td>
-                        )}
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>
+                        <td style={{ padding: '10px 8px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>
                           {invoice.invoiceMode === 'hours' ? item.hours : item.quantity}
                         </td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>
+                        <td style={{ padding: '10px 8px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>
                           {formatCurrency(invoice.invoiceMode === 'hours' ? item.rate : item.price)}
                         </td>
-                        <td style={{ padding: '14px 12px', fontSize: '13px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>
+                        <td style={{ padding: '10px 8px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>
                           {formatCurrency(getItemTotal(item))}
                         </td>
                       </tr>
@@ -719,37 +690,31 @@ ${invoice.showPaymentDetails ? `
               </div>
 
               {/* Totals */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '30px' }}>
-                <div style={{ width: '220px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+                <div style={{ width: '180px', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
                     <span style={{ color: '#64748b' }}>Subtotal:</span>
                     <span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span>
                   </div>
                   {discountAmount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
                       <span style={{ color: '#64748b' }}>Discount:</span>
                       <span style={{ color: '#dc2626' }}>-{formatCurrency(discountAmount)}</span>
                     </div>
                   )}
                   {!invoice.taxIncluded && taxAmount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
-                      <span style={{ color: '#64748b' }}>Tax {invoice.taxType === 'percent' ? `(${invoice.taxRate}%)` : ''}:</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
+                      <span style={{ color: '#64748b' }}>Tax:</span>
                       <span style={{ color: '#374151' }}>{formatCurrency(taxAmount)}</span>
                     </div>
                   )}
-                  {invoice.taxIncluded && invoice.taxRate > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
-                      <span style={{ color: '#64748b' }}>Tax (incl.):</span>
-                      <span style={{ color: '#64748b', fontStyle: 'italic' }}>{invoice.taxType === 'percent' ? `${invoice.taxRate}%` : formatCurrency(invoice.taxRate)}</span>
-                    </div>
-                  )}
                   {shippingAmount > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px', borderBottom: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
                       <span style={{ color: '#64748b' }}>Shipping:</span>
                       <span style={{ color: '#374151' }}>{formatCurrency(shippingAmount)}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontSize: '16px', fontWeight: '700' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontWeight: '700', fontSize: '15px' }}>
                     <span style={{ color: '#1f2937' }}>Total:</span>
                     <span style={{ color: '#1f2937' }}>{formatCurrency(total)}</span>
                   </div>
@@ -757,15 +722,13 @@ ${invoice.showPaymentDetails ? `
               </div>
 
               {/* Payment Details */}
-              {invoice.showPaymentDetails && (
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '10px' }}>Payment Details</div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>Method: {invoice.paymentMethod}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', lineHeight: '1.8' }}>
+              {invoice.showPaymentDetails && invoice.bankName && (
+                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', fontSize: '12px' }}>
+                  <div style={{ fontWeight: '700', color: '#1f2937', marginBottom: '8px' }}>Payment Details</div>
+                  <div style={{ color: '#64748b', lineHeight: '1.6' }}>
+                    <div>Method: {invoice.paymentMethod}</div>
                     {invoice.bankName && <div>Bank: {invoice.bankName}</div>}
-                    {invoice.accountName && <div>Account Name: {invoice.accountName}</div>}
                     {invoice.accountNumber && <div>Account #: {invoice.accountNumber}</div>}
-                    {invoice.routingNumber && <div>Routing #: {invoice.routingNumber}</div>}
                   </div>
                 </div>
               )}
@@ -774,7 +737,7 @@ ${invoice.showPaymentDetails ? `
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', padding: '24px', color: colors.textMuted, fontSize: '13px' }}>Free to use • No signup required • Your data stays in your browser</div>
+      <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted, fontSize: '12px' }}>Free to use • No signup required • Your data stays in your browser</div>
     </div>
   );
 }
