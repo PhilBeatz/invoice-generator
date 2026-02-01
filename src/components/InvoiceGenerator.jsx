@@ -257,13 +257,14 @@ export default function InvoiceGenerator() {
   };
 
   const downloadPDF = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
+    const htmlContent = `<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15px;line-height:1.6}
+body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;line-height:1.6}
 @media print{body{padding:40px}@page{margin:40px}}
+@media screen and (max-width:600px){body{padding:20px}}
 
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px;flex-wrap:wrap;gap:20px}
 .business-info{max-width:400px}
@@ -276,7 +277,7 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 
 .invoice-meta{text-align:right;font-size:14px;line-height:2}
 .invoice-meta-row{margin-bottom:2px}
-.invoice-meta-label{color:#0891b2;font-weight:500}
+.invoice-meta-label{color:#3b82f6;font-weight:500}
 .invoice-meta-value{color:#374151}
 
 .issued-to{margin-bottom:40px}
@@ -312,6 +313,10 @@ body{font-family:'Inter',sans-serif;padding:70px 80px;color:#1f2937;font-size:15
 .payment-row{display:flex;gap:10px}
 .payment-label{min-width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
+
+.print-btn{position:fixed;bottom:20px;right:20px;padding:16px 32px;background:#3b82f6;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1000}
+.print-btn:hover{background:#2563eb}
+@media print{.print-btn{display:none}}
 </style></head><body>
 
 <div class="header">
@@ -374,9 +379,29 @@ ${generatePaymentDetailsHTML()}
 
 ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6">${invoice.endMessage}</div>` : ''}
 
-</body></html>`);
-    printWindow.document.close();
-    printWindow.onload = () => printWindow.print();
+<button class="print-btn" onclick="window.print()">📥 Save as PDF</button>
+
+</body></html>`;
+
+    // Try opening in new window/tab
+    const printWindow = window.open('', '_blank');
+    
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // On desktop, auto-trigger print after load
+      if (!isMobile) {
+        printWindow.onload = () => {
+          setTimeout(() => printWindow.print(), 500);
+        };
+      }
+    } else {
+      // If popup blocked, open in same window
+      const newWindow = window.open('', '_self');
+      newWindow.document.write(htmlContent);
+      newWindow.document.close();
+    }
   };
 
   const tabs = [
