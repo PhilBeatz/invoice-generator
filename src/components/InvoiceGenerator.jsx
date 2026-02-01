@@ -295,8 +295,13 @@ export default function InvoiceGenerator() {
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;line-height:1.6;background:white}
-@media print{body{padding:40px}@page{margin:40px}.no-print{display:none!important}}
-@media screen and (max-width:600px){body{padding:20px}}
+@media print{
+  body{padding:20px}
+  @page{margin:15mm}
+  .no-print{display:none!important}
+  html,body{height:auto;overflow:visible}
+}
+@media screen and (max-width:600px){body{padding:20px;padding-bottom:80px}}
 
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px;flex-wrap:wrap;gap:20px}
 .business-info{max-width:400px}
@@ -326,7 +331,7 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:center}
 .items-table td:last-child{text-align:right}
 
-.totals{display:flex;justify-content:flex-end;margin-bottom:50px}
+.totals{display:flex;justify-content:flex-end;margin-bottom:30px}
 .totals-box{width:300px;text-align:right}
 .totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9}
 .totals-row span:first-child{color:#6b7280}
@@ -410,7 +415,7 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fo
 
 ${generatePaymentDetailsHTML()}
 
-${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6;margin-bottom:80px">${invoice.endMessage}</div>` : '<div style="margin-bottom:80px"></div>'}
+${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6">${invoice.endMessage}</div>` : ''}
 
 <div class="action-bar no-print">
 <button class="action-btn back-btn" onclick="window.location.reload()">← Back</button>
