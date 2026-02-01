@@ -262,8 +262,8 @@ export default function InvoiceGenerator() {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;line-height:1.6}
-@media print{body{padding:40px}@page{margin:40px}}
+body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;line-height:1.6;background:white}
+@media print{body{padding:40px}@page{margin:40px}.no-print{display:none!important}}
 @media screen and (max-width:600px){body{padding:20px}}
 
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px;flex-wrap:wrap;gap:20px}
@@ -314,9 +314,10 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .payment-label{min-width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
 
-.print-btn{position:fixed;bottom:20px;right:20px;padding:16px 32px;background:#3b82f6;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1000}
-.print-btn:hover{background:#2563eb}
-@media print{.print-btn{display:none}}
+.action-bar{position:fixed;bottom:0;left:0;right:0;padding:16px;background:#1f2937;display:flex;gap:12px;justify-content:center;box-shadow:0 -4px 20px rgba(0,0,0,0.3)}
+.action-btn{padding:14px 28px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.print-btn{background:#3b82f6;color:white}
+.back-btn{background:#4b5563;color:white}
 </style></head><body>
 
 <div class="header">
@@ -377,30 +378,37 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fo
 
 ${generatePaymentDetailsHTML()}
 
-${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6">${invoice.endMessage}</div>` : ''}
+${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6;margin-bottom:80px">${invoice.endMessage}</div>` : '<div style="margin-bottom:80px"></div>'}
 
-<button class="print-btn" onclick="window.print()">📥 Save as PDF</button>
+<div class="action-bar no-print">
+<button class="action-btn back-btn" onclick="window.history.back()">← Back</button>
+<button class="action-btn print-btn" onclick="window.print()">📥 Save PDF</button>
+</div>
 
 </body></html>`;
 
-    // Try opening in new window/tab
-    const printWindow = window.open('', '_blank');
-    
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      
-      // On desktop, auto-trigger print after load
-      if (!isMobile) {
+    // For mobile: navigate in same window
+    if (isMobile) {
+      document.body.innerHTML = '';
+      document.open();
+      document.write(htmlContent);
+      document.close();
+    } else {
+      // For desktop: open in new tab
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
         printWindow.onload = () => {
           setTimeout(() => printWindow.print(), 500);
         };
+      } else {
+        // Fallback if popup blocked
+        document.body.innerHTML = '';
+        document.open();
+        document.write(htmlContent);
+        document.close();
       }
-    } else {
-      // If popup blocked, open in same window
-      const newWindow = window.open('', '_self');
-      newWindow.document.write(htmlContent);
-      newWindow.document.close();
     }
   };
 
