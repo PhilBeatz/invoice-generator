@@ -294,16 +294,14 @@ export default function InvoiceGenerator() {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;line-height:1.6;background:white}
+body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14px;line-height:1.5;background:white}
 @media print{
-  body{padding:20px}
-  @page{margin:15mm}
-  .no-print{display:none!important}
-  html,body{height:auto;overflow:visible}
+  body{padding:0;margin:0}
+  @page{margin:10mm;size:auto}
+  html,body{width:100%;height:auto}
 }
-@media screen and (max-width:600px){body{padding:20px;padding-bottom:80px}}
 
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:50px;flex-wrap:wrap;gap:20px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 .business-info{max-width:400px}
 .business-name{font-size:28px;font-weight:700;color:#1e40af;margin-bottom:8px}
 .business-details{color:#6b7280;font-size:14px;line-height:1.8}
@@ -317,12 +315,12 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .invoice-meta-label{color:#3b82f6;font-weight:500}
 .invoice-meta-value{color:#374151}
 
-.issued-to{margin-bottom:40px}
+.issued-to{margin-bottom:25px}
 .issued-to h3{font-size:15px;font-weight:700;color:#1f2937;margin-bottom:12px}
 .issued-to-row{margin-bottom:5px;font-size:14px;color:#6b7280}
 .issued-to-row strong{color:#1f2937;font-weight:600}
 
-.items-table{width:100%;border-collapse:collapse;margin-bottom:30px}
+.items-table{width:100%;border-collapse:collapse;margin-bottom:20px}
 .items-table th{background:#f1f5f9;text-align:left;padding:14px 16px;font-size:14px;color:#475569;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
 .items-table th:nth-child(2),.items-table th:nth-child(3),.items-table th:nth-child(4){text-align:center}
 .items-table th:last-child{text-align:right}
@@ -331,7 +329,7 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .items-table td:nth-child(2),.items-table td:nth-child(3),.items-table td:nth-child(4){text-align:center}
 .items-table td:last-child{text-align:right}
 
-.totals{display:flex;justify-content:flex-end;margin-bottom:30px}
+.totals{display:flex;justify-content:flex-end;margin-bottom:20px}
 .totals-box{width:300px;text-align:right}
 .totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9}
 .totals-row span:first-child{color:#6b7280}
@@ -340,7 +338,7 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .totals-row.total span:first-child{color:#1f2937}
 .totals-row.total span:last-child{color:#1f2937}
 
-.payment-details{margin-top:30px}
+.payment-details{margin-top:20px}
 .payment-details h3{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:16px}
 .payment-section{margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #e2e8f0}
 .payment-section:last-child{border-bottom:none}
@@ -350,11 +348,6 @@ body{font-family:'Inter',sans-serif;padding:40px;color:#1f2937;font-size:15px;li
 .payment-row{display:flex;gap:10px}
 .payment-label{min-width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
-
-.action-bar{position:fixed;bottom:0;left:0;right:0;padding:16px;background:#1f2937;display:flex;gap:12px;justify-content:center;box-shadow:0 -4px 20px rgba(0,0,0,0.3)}
-.action-btn{padding:14px 28px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
-.print-btn{background:#3b82f6;color:white}
-.back-btn{background:#4b5563;color:white}
 </style></head><body>
 
 <div class="header">
@@ -415,38 +408,38 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fo
 
 ${generatePaymentDetailsHTML()}
 
-${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6">${invoice.endMessage}</div>` : ''}
-
-<div class="action-bar no-print">
-<button class="action-btn back-btn" onclick="window.location.reload()">← Back</button>
-<button class="action-btn print-btn" onclick="window.print()">📥 Save PDF</button>
-</div>
+${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:1px solid #e2e8f0;font-size:13px;color:#6b7280;line-height:1.5">${invoice.endMessage}</div>` : ''}
 
 </body></html>`;
 
-    // For mobile: navigate in same window
-    if (isMobile) {
-      document.body.innerHTML = '';
-      document.open();
-      document.write(htmlContent);
-      document.close();
-    } else {
-      // For desktop: open in new tab
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-        printWindow.onload = () => {
-          setTimeout(() => printWindow.print(), 500);
-        };
-      } else {
-        // Fallback if popup blocked
-        document.body.innerHTML = '';
-        document.open();
-        document.write(htmlContent);
-        document.close();
-      }
-    }
+    // Create a hidden iframe for printing
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+    document.body.appendChild(printFrame);
+
+    const frameDoc = printFrame.contentWindow || printFrame.contentDocument;
+    const doc = frameDoc.document || frameDoc;
+    
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    // Wait for content to load then print
+    printFrame.onload = () => {
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        // Remove iframe after print dialog closes
+        setTimeout(() => {
+          document.body.removeChild(printFrame);
+        }, 1000);
+      }, 500);
+    };
   };
 
   const tabs = [
