@@ -58,6 +58,26 @@ export default function InvoiceGenerator() {
     }
   }, []);
 
+  // Load draft invoice from localStorage (for mobile back button)
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('dayonetools_invoice_draft');
+    const savedLogo = localStorage.getItem('dayonetools_logo_draft');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        setInvoice(prev => ({ ...prev, ...parsed }));
+        // Clear the draft after loading
+        localStorage.removeItem('dayonetools_invoice_draft');
+      } catch (e) {
+        console.error('Failed to load draft:', e);
+      }
+    }
+    if (savedLogo) {
+      setLogoPreview(savedLogo);
+      localStorage.removeItem('dayonetools_logo_draft');
+    }
+  }, []);
+
   // Save customers to localStorage when changed
   useEffect(() => {
     localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
@@ -257,6 +277,12 @@ export default function InvoiceGenerator() {
   };
 
   const downloadPDF = () => {
+    // Save current state to localStorage before showing PDF (for mobile back button)
+    if (isMobile) {
+      localStorage.setItem('dayonetools_invoice_draft', JSON.stringify(invoice));
+      localStorage.setItem('dayonetools_logo_draft', logoPreview || '');
+    }
+
     const htmlContent = `<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -381,7 +407,7 @@ ${generatePaymentDetailsHTML()}
 ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:14px;color:#6b7280;line-height:1.6;margin-bottom:80px">${invoice.endMessage}</div>` : '<div style="margin-bottom:80px"></div>'}
 
 <div class="action-bar no-print">
-<button class="action-btn back-btn" onclick="window.history.back()">← Back</button>
+<button class="action-btn back-btn" onclick="window.location.reload()">← Back</button>
 <button class="action-btn print-btn" onclick="window.print()">📥 Save PDF</button>
 </div>
 
