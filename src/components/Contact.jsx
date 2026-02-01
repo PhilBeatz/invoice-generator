@@ -19,13 +19,13 @@ export default function Contact() {
   }, []);
 
   const colors = {
-    bg: '#0a0a0a',
-    bgCard: '#141414',
-    bgInput: '#1f1f1f',
-    text: '#ffffff',
+    bg: '#1a1a2e',
+    bgCard: '#1f2937',
+    bgInput: '#374151',
+    text: '#f3f4f6',
     textMuted: '#9ca3af',
-    accent: '#10b981',
-    border: '#2d2d2d',
+    accent: '#3b82f6',
+    border: '#4b5563',
     red: '#ef4444',
   };
 
@@ -86,7 +86,7 @@ export default function Contact() {
     <div style={{ minHeight: '100vh', background: colors.bg, fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        input:focus, select:focus, textarea:focus { border-color: #10b981 !important; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6 !important; }
         input::placeholder, textarea::placeholder { color: #6b7280; }
         select option { background: #1f1f1f; color: #f3f4f6; }
       `}</style>
@@ -162,8 +162,8 @@ export default function Contact() {
               </h2>
               <p style={{ fontSize: '15px', color: colors.textMuted, lineHeight: '1.7', marginBottom: '32px' }}>
                 Get help with technical issues, report bugs, request features, ask questions, or explore partnership opportunities. Our team is here to support you. Prefer email? Reach us at{' '}
-                <a href="mailto:contact@dayonetools.app" style={{ color: colors.text, textDecoration: 'underline' }}>
-                  contact@dayonetools.app
+                <a href="mailto:dayonetoolsapp@gmail.com" style={{ color: colors.text, textDecoration: 'underline' }}>
+                  dayonetoolsapp@gmail.com
                 </a>
               </p>
 
@@ -179,7 +179,7 @@ export default function Contact() {
                 <span style={{ fontSize: '20px' }}>✉️</span>
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Email</div>
-                  <div style={{ fontSize: '14px', color: colors.textMuted }}>contact@dayonetools.app</div>
+                  <div style={{ fontSize: '14px', color: colors.textMuted }}>dayonetoolsapp@gmail.com</div>
                 </div>
               </div>
             </div>
