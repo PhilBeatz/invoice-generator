@@ -139,6 +139,23 @@ export default function Header() {
             </div>
           )}
         </div>
+
+        {/* Contact Link */}
+        <Link
+          to="/contact"
+          style={{
+            color: colors.textMuted,
+            textDecoration: 'none',
+            fontSize: '14px',
+            fontWeight: '500',
+            fontFamily: "'Inter', sans-serif",
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => e.target.style.color = colors.text}
+          onMouseLeave={(e) => e.target.style.color = colors.textMuted}
+        >
+          Contact
+        </Link>
       </nav>
 
       {/* Right side - placeholder for future Dashboard button */}
