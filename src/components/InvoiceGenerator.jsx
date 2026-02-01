@@ -302,8 +302,8 @@ body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14
 }
 
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
-.business-info{max-width:400px}
-.business-name{font-size:28px;font-weight:700;color:#1e40af;margin-bottom:8px}
+.business-info{max-width:450px}
+.business-name{font-size:22px;font-weight:700;color:#1e40af;margin-bottom:6px;white-space:nowrap}
 .business-details{color:#6b7280;font-size:14px;line-height:1.8}
 .logo-img{max-width:180px;max-height:70px;margin-bottom:12px}
 
