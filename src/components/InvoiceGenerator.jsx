@@ -216,7 +216,13 @@ export default function InvoiceGenerator() {
   const total = invoice.taxIncluded ? afterDiscount + shippingAmount : afterDiscount + taxAmount + shippingAmount;
 
   const formatCurrency = (amount) => `${currencySymbol}${amount.toFixed(2)}`;
-  const formatDate = (dateStr) => { if (!dateStr) return ''; return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); };
+  const formatDate = (dateStr) => { 
+    if (!dateStr) return ''; 
+    // Parse the date string as local time (not UTC) to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }); 
+  };
 
   // Generate payment details HTML for PDF
   const generatePaymentDetailsHTML = () => {
