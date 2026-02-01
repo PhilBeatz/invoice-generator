@@ -622,8 +622,8 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
                               </div>
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                              <button onClick={() => handleEditCustomer(customer)} style={{ padding: '6px 10px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>✏️</button>
-                              <button onClick={() => handleDeleteCustomer(customer.id)} style={{ padding: '6px 10px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>🗑</button>
+                              <button onClick={() => handleEditCustomer(customer)} style={{ padding: '8px 12px', background: colors.bgInput, color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', cursor: 'pointer', fontSize: '16px' }}>✏️</button>
+                              <button onClick={() => handleDeleteCustomer(customer.id)} style={{ padding: '8px 12px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px' }}>🗑</button>
                             </div>
                           </div>
                         </div>
@@ -651,7 +651,6 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
           fontWeight: '800', 
           color: colors.text, 
           marginBottom: '12px',
-          fontStyle: 'italic',
           letterSpacing: '-1px'
         }}>
           Free Invoice Generator
@@ -931,7 +930,7 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
                             />
                             <button 
                               onClick={() => updateField('customFields', invoice.customFields.filter(f => f.id !== field.id))}
-                              style={{ padding: '10px 12px', background: colors.red, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                              style={{ padding: '10px 14px', background: colors.red, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '18px' }}>
                               🗑
                             </button>
                           </div>
@@ -1056,7 +1055,7 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
                             <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} />
                           </div>
                           <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
+                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '18px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
                           </div>
                         </div>
                       ) : (
@@ -1074,7 +1073,7 @@ ${invoice.endMessage ? `<div style="margin-top:30px;padding-top:20px;border-top:
                             <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} />
                           </div>
                           <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '14px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
+                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '18px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
                           </div>
                         </div>
                       )}
