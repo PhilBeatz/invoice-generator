@@ -12,27 +12,27 @@ export default function LandingPage({ darkMode = true }) {
   }, []);
 
   const colors = darkMode ? {
-    bg: '#0f1419',
+    bg: '#1a1a2e',
     text: '#ffffff',
     textMuted: '#9ca3af',
-    accent: '#10b981',
-    accentLight: '#a7f3d0',
-    cardBg: 'rgba(16, 185, 129, 0.05)',
+    accent: '#3b82f6',
+    accentLight: '#60a5fa',
+    cardBg: 'rgba(59, 130, 246, 0.05)',
   } : {
-    bg: '#ffffff',
+    bg: '#f1f5f9',
     text: '#1f2937',
     textMuted: '#6b7280',
-    accent: '#10b981',
-    accentLight: '#059669',
-    cardBg: 'rgba(16, 185, 129, 0.08)',
+    accent: '#3b82f6',
+    accentLight: '#2563eb',
+    cardBg: 'rgba(59, 130, 246, 0.08)',
   };
 
   return (
     <div style={{ 
       minHeight: 'calc(100vh - 120px)', 
       background: darkMode 
-        ? `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16, 185, 129, 0.15), transparent), ${colors.bg}`
-        : `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(16, 185, 129, 0.1), transparent), ${colors.bg}`,
+        ? `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(59, 130, 246, 0.15), transparent), ${colors.bg}`
+        : `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(59, 130, 246, 0.1), transparent), ${colors.bg}`,
       fontFamily: "'Inter', sans-serif",
       display: 'flex',
       flexDirection: 'column',
@@ -94,15 +94,15 @@ export default function LandingPage({ darkMode = true }) {
             textDecoration: 'none',
             borderRadius: '8px',
             transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
           }}
           onMouseEnter={(e) => {
             e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.5)';
+            e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)';
           }}
           onMouseLeave={(e) => {
             e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.4)';
+            e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)';
           }}
         >
           Get Started
