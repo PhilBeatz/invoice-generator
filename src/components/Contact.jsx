@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Contact() {
+export default function Contact({ darkMode = true }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,7 +18,7 @@ export default function Contact() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const colors = {
+  const colors = darkMode ? {
     bg: '#1a1a2e',
     bgCard: '#1f2937',
     bgInput: '#374151',
@@ -26,6 +26,15 @@ export default function Contact() {
     textMuted: '#9ca3af',
     accent: '#3b82f6',
     border: '#4b5563',
+    red: '#ef4444',
+  } : {
+    bg: '#f1f5f9',
+    bgCard: '#ffffff',
+    bgInput: '#f8fafc',
+    text: '#1f2937',
+    textMuted: '#6b7280',
+    accent: '#3b82f6',
+    border: '#d1d5db',
     red: '#ef4444',
   };
 
