@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Header() {
+export default function Header({ darkMode = true }) {
   const [productsOpen, setProductsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -16,13 +16,20 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const colors = {
+  const colors = darkMode ? {
     bg: '#111111',
     text: '#ffffff',
     textMuted: '#9ca3af',
     accent: '#3b82f6',
     border: '#2d2d2d',
     dropdownBg: '#1a1a1a',
+  } : {
+    bg: '#ffffff',
+    text: '#1f2937',
+    textMuted: '#6b7280',
+    accent: '#3b82f6',
+    border: '#e5e7eb',
+    dropdownBg: '#ffffff',
   };
 
   return (
