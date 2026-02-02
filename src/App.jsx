@@ -21,7 +21,7 @@ export default function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: darkMode ? '#0f1419' : '#ffffff' 
+      background: darkMode ? '#1a1a2e' : '#f1f5f9' 
     }}>
       <Header darkMode={darkMode} />
       <div style={{ flex: 1 }}>
