@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import LandingPage from './components/LandingPage';
 import InvoiceGenerator from './components/InvoiceGenerator';
 import Contact from './components/Contact';
 
@@ -20,12 +21,12 @@ export default function App() {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column',
-      background: darkMode ? '#1a1a2e' : '#f1f5f9' 
+      background: darkMode ? '#0f1419' : '#ffffff' 
     }}>
       <Header darkMode={darkMode} />
       <div style={{ flex: 1 }}>
         <Routes>
-          <Route path="/" element={<InvoiceGenerator darkMode={darkMode} />} />
+          <Route path="/" element={<LandingPage darkMode={darkMode} />} />
           <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
           <Route path="/contact" element={<Contact darkMode={darkMode} />} />
         </Routes>
