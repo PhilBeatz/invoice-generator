@@ -32,7 +32,7 @@ const generateInvoiceNumber = () => {
   return `${prefix}-${random}-${suffix}`;
 };
 
-export default function InvoiceGenerator() {
+export default function InvoiceGenerator({ darkMode = true }) {
   const [invoice, setInvoice] = useState(defaultInvoice);
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
@@ -450,7 +450,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
     { id: 'payment', label: 'Payment', icon: '💳' },
   ];
 
-  const colors = {
+  const colors = darkMode ? {
     bg: '#1a1a2e',
     bgLight: '#16213e',
     bgCard: '#1f2937',
@@ -460,6 +460,18 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
     text: '#f3f4f6',
     textMuted: '#9ca3af',
     border: '#4b5563',
+    green: '#10b981',
+    red: '#dc2626',
+  } : {
+    bg: '#f1f5f9',
+    bgLight: '#e2e8f0',
+    bgCard: '#ffffff',
+    bgInput: '#f8fafc',
+    accent: '#3b82f6',
+    accentHover: '#2563eb',
+    text: '#1f2937',
+    textMuted: '#6b7280',
+    border: '#d1d5db',
     green: '#10b981',
     red: '#dc2626',
   };
