@@ -372,8 +372,7 @@ ${invoice.customFields.map(f => f.label && f.value ? `<div class="invoice-meta-r
 <h3>Issued To:</h3>
 <div class="issued-to-row"><strong>Name:</strong> ${invoice.customerName || ''}</div>
 ${invoice.customerIdentifier ? `<div class="issued-to-row"><strong>ID:</strong> ${invoice.customerIdentifier}</div>` : ''}
-<div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}</div>
-<div class="issued-to-row"><strong>Zip Code:</strong> ${invoice.customerZipCode || ''}</div>
+<div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}${invoice.customerZipCode ? `, ${invoice.customerZipCode}` : ''}</div>
 ${invoice.customerPhone ? `<div class="issued-to-row"><strong>Phone:</strong> ${invoice.customerPhone}</div>` : ''}
 ${invoice.customerEmail ? `<div class="issued-to-row"><strong>Email:</strong> ${invoice.customerEmail}</div>` : ''}
 </div>
@@ -1302,8 +1301,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   <div style={{ fontSize: '11px', fontWeight: '700', color: '#1f2937', marginBottom: '4px' }}>Issued To:</div>
                   <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.5' }}>
                     <div>{invoice.customerName || 'Customer Name'}</div>
-                    {invoice.customerAddress && <div>{invoice.customerAddress}</div>}
-                    {invoice.customerZipCode && <div>{invoice.customerZipCode}</div>}
+                    {invoice.customerAddress && <div>{invoice.customerAddress}{invoice.customerZipCode ? `, ${invoice.customerZipCode}` : ''}</div>}
                     {invoice.customerEmail && <div>{invoice.customerEmail}</div>}
                   </div>
                 </div>
