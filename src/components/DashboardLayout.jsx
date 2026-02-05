@@ -1,0 +1,127 @@
+import React, { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import DashboardSidebar from './DashboardSidebar';
+import DashboardOverview from './DashboardOverview';
+import DashboardPlaceholder from './DashboardPlaceholder';
+
+export default function DashboardLayout({ darkMode = true }) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const colors = darkMode ? {
+    bg: '#1a1a2e',
+    text: '#f3f4f6',
+    border: '#374151',
+  } : {
+    bg: '#f1f5f9',
+    text: '#1f2937',
+    border: '#e5e7eb',
+  };
+
+  return (
+    <div style={{ display: 'flex', minHeight: 'calc(100vh - 120px)', background: colors.bg }}>
+      {/* Sidebar - Desktop */}
+      {!isMobile && (
+        <DashboardSidebar darkMode={darkMode} isMobile={false} />
+      )}
+
+      {/* Sidebar - Mobile overlay */}
+      {isMobile && (
+        <DashboardSidebar 
+          darkMode={darkMode} 
+          isMobile={true} 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+        />
+      )}
+
+      {/* Main Content */}
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {/* Mobile Header Bar */}
+        {isMobile && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px',
+            borderBottom: `1px solid ${colors.border}`,
+            background: darkMode ? '#111827' : '#ffffff',
+          }}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: 'none',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '8px',
+                padding: '8px 10px',
+                cursor: 'pointer',
+                color: colors.text,
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              ☰
+            </button>
+            <span style={{ 
+              fontSize: '15px', 
+              fontWeight: '600', 
+              color: colors.text, 
+              fontFamily: "'Inter', sans-serif" 
+            }}>
+              Dashboard
+            </span>
+          </div>
+        )}
+
+        {/* Dashboard Routes */}
+        <Routes>
+          <Route index element={<DashboardOverview darkMode={darkMode} />} />
+          <Route path="analytics" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Analytics" icon="📈" description="Track your revenue, invoice trends, and business growth with interactive charts and reports." />
+          } />
+          <Route path="vault" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." />
+          } />
+          <Route path="invoices" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Invoices" icon="📋" description="View, search, and manage all your invoices. Filter by status, date, or customer." />
+          } />
+          <Route path="customers" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Customers" icon="👥" description="Manage your customer database. Add, edit, and track customer information and invoice history." />
+          } />
+          <Route path="payment-methods" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Payment Methods" icon="💳" description="Configure your accepted payment methods including bank transfers, PayPal, and crypto." />
+          } />
+          <Route path="configuration" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Invoice Configuration" icon="⚙️" description="Set up default invoice templates, numbering schemes, and automation rules." />
+          } />
+          <Route path="products" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Products" icon="📦" description="Manage your product catalog. Add items with prices, descriptions, and SKUs." />
+          } />
+          <Route path="categories" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Categories" icon="📁" description="Organize your products into categories for easier management and reporting." />
+          } />
+          <Route path="properties" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." />
+          } />
+          <Route path="organization" element={
+            <DashboardPlaceholder darkMode={darkMode} title="My Organization" icon="🏢" description="Manage your company profile, branding, and business information." />
+          } />
+          <Route path="employees" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Employees" icon="👤" description="Manage team members, roles, and permissions for your organization." />
+          } />
+          <Route path="settings" element={
+            <DashboardPlaceholder darkMode={darkMode} title="Settings" icon="⚙️" description="Configure your account settings, notifications, and preferences." />
+          } />
+        </Routes>
+      </div>
+    </div>
+  );
+}
