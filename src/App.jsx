@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import LandingPage from './components/LandingPage';
 import InvoiceGenerator from './components/InvoiceGenerator';
 import Contact from './components/Contact';
+import DashboardLayout from './components/DashboardLayout';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/" element={<LandingPage darkMode={darkMode} />} />
           <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
           <Route path="/contact" element={<Contact darkMode={darkMode} />} />
+          <Route path="/dashboard/*" element={<DashboardLayout darkMode={darkMode} />} />
         </Routes>
       </div>
       <Footer darkMode={darkMode} setDarkMode={setDarkMode} />
