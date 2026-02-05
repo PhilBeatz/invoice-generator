@@ -46,17 +46,24 @@ export default function Header({ darkMode = true, user = null, supabase = null }
   };
 
   return (
-    <header style={{
+    <div style={{
       background: colors.bg,
       borderBottom: `1px solid ${colors.border}`,
-      padding: '0 24px',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      width: '100%',
+    }}>
+    <header style={{
+      padding: '0 40px',
       height: '60px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
+      maxWidth: '1100px',
+      margin: '0 auto',
+      width: '100%',
+      boxSizing: 'border-box',
     }}>
       {/* Logo / Brand */}
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -336,5 +343,6 @@ export default function Header({ darkMode = true, user = null, supabase = null }
         )}
       </div>
     </header>
+    </div>
   );
 }
