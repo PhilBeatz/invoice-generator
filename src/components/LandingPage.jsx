@@ -38,7 +38,7 @@ export default function LandingPage({ darkMode = true }) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: isMobile ? '60px 20px' : '80px 20px',
+      padding: isMobile ? '40px 20px 60px' : '60px 20px 80px',
       textAlign: 'center',
     }}>
       <style>{`

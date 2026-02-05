@@ -211,6 +211,7 @@ export default function SignUp({ darkMode = true }) {
           fontWeight: '700',
           color: colors.text,
           marginBottom: '8px',
+          textAlign: 'center',
         }}>
           Create an account
         </h1>
@@ -218,6 +219,7 @@ export default function SignUp({ darkMode = true }) {
           fontSize: '15px',
           color: colors.textMuted,
           marginBottom: '32px',
+          textAlign: 'center',
         }}>
           Get started with Day One Tools
         </p>
