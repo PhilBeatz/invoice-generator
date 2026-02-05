@@ -165,8 +165,29 @@ export default function Header({ darkMode = true }) {
         </Link>
       </nav>
 
-      {/* Right side - placeholder for future Dashboard button */}
-      <div style={{ width: '100px' }}></div>
+      {/* Dashboard Button */}
+      <Link
+        to="/dashboard"
+        style={{
+          padding: '8px 18px',
+          background: 'transparent',
+          color: colors.accent,
+          borderRadius: '6px',
+          border: `1.5px solid ${colors.accent}`,
+          textDecoration: 'none',
+          fontSize: '13px',
+          fontWeight: '600',
+          fontFamily: "'Inter', sans-serif",
+          transition: 'all 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; }}
+      >
+        Dashboard <span style={{ fontSize: '14px' }}>↗</span>
+      </Link>
     </header>
   );
 }
