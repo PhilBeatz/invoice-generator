@@ -1,20 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Header({ darkMode = true }) {
+export default function Header({ darkMode = true, user = null, supabase = null }) {
   const [productsOpen, setProductsOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const userMenuRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setProductsOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    setUserMenuOpen(false);
+  };
 
   const colors = darkMode ? {
     bg: '#111111',
@@ -165,29 +177,160 @@ export default function Header({ darkMode = true }) {
         </Link>
       </nav>
 
-      {/* Dashboard Button */}
-      <Link
-        to="/dashboard"
-        style={{
-          padding: '8px 18px',
-          background: 'transparent',
-          color: colors.accent,
-          borderRadius: '6px',
-          border: `1.5px solid ${colors.accent}`,
-          textDecoration: 'none',
-          fontSize: '13px',
-          fontWeight: '600',
-          fontFamily: "'Inter', sans-serif",
-          transition: 'all 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; }}
-      >
-        Dashboard <span style={{ fontSize: '14px' }}>↗</span>
-      </Link>
+      {/* Right Side - Auth Buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {user ? (
+          <>
+            {/* Dashboard Button - only when logged in */}
+            <Link
+              to="/dashboard"
+              style={{
+                padding: '8px 18px',
+                background: 'transparent',
+                color: colors.accent,
+                borderRadius: '6px',
+                border: `1.5px solid ${colors.accent}`,
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: '600',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; }}
+            >
+              Dashboard <span style={{ fontSize: '14px' }}>↗</span>
+            </Link>
+
+            {/* User Avatar / Menu */}
+            <div ref={userMenuRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: colors.accent,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                {user.email?.charAt(0).toUpperCase() || '?'}
+              </button>
+
+              {userMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: '0',
+                  marginTop: '8px',
+                  background: colors.dropdownBg,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  padding: '8px 0',
+                  minWidth: '200px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+                  zIndex: 200,
+                }}>
+                  <div style={{ padding: '12px 16px', borderBottom: `1px solid ${colors.border}` }}>
+                    <div style={{ fontSize: '13px', fontWeight: '600', color: colors.text, fontFamily: "'Inter', sans-serif" }}>
+                      {user.user_metadata?.full_name || 'User'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px', fontFamily: "'Inter', sans-serif" }}>
+                      {user.email}
+                    </div>
+                  </div>
+                  <Link
+                    to="/dashboard/settings"
+                    onClick={() => setUserMenuOpen(false)}
+                    style={{
+                      display: 'block',
+                      padding: '10px 16px',
+                      color: colors.textMuted,
+                      textDecoration: 'none',
+                      fontSize: '13px',
+                      fontFamily: "'Inter', sans-serif",
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.color = colors.text}
+                    onMouseLeave={(e) => e.target.style.color = colors.textMuted}
+                  >
+                    ⚙️ Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '10px 16px',
+                      color: '#ef4444',
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      fontFamily: "'Inter', sans-serif",
+                      transition: 'opacity 0.15s',
+                    }}
+                    onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                    onMouseLeave={(e) => e.target.style.opacity = '1'}
+                  >
+                    🚪 Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Login / Sign Up - when not logged in */}
+            <Link
+              to="/login"
+              style={{
+                color: colors.textMuted,
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: '500',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => e.target.style.color = colors.text}
+              onMouseLeave={(e) => e.target.style.color = colors.textMuted}
+            >
+              Log in
+            </Link>
+            <Link
+              to="/signup"
+              style={{
+                padding: '8px 18px',
+                background: colors.accent,
+                color: '#ffffff',
+                borderRadius: '6px',
+                border: 'none',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: '600',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={(e) => e.target.style.opacity = '0.85'}
+              onMouseLeave={(e) => e.target.style.opacity = '1'}
+            >
+              Sign up
+            </Link>
+          </>
+        )}
+      </div>
     </header>
   );
 }
