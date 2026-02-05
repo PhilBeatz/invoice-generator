@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Header({ darkMode = true, user = null, supabase = null }) {
   const [productsOpen, setProductsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
   const userMenuRef = useRef(null);
+  const location = useLocation();
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function Header({ darkMode = true, user = null, supabase = null }
       </Link>
 
       {/* Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
         {/* Products Dropdown */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button
@@ -297,15 +298,15 @@ export default function Header({ darkMode = true, user = null, supabase = null }
             <Link
               to="/login"
               style={{
-                color: colors.textMuted,
+                color: location.pathname === '/login' ? colors.accent : colors.textMuted,
                 textDecoration: 'none',
                 fontSize: '13px',
-                fontWeight: '500',
+                fontWeight: location.pathname === '/login' ? '600' : '500',
                 fontFamily: "'Inter', sans-serif",
                 transition: 'color 0.2s',
               }}
-              onMouseEnter={(e) => e.target.style.color = colors.text}
-              onMouseLeave={(e) => e.target.style.color = colors.textMuted}
+              onMouseEnter={(e) => e.target.style.color = location.pathname === '/login' ? colors.accent : colors.text}
+              onMouseLeave={(e) => e.target.style.color = location.pathname === '/login' ? colors.accent : colors.textMuted}
             >
               Log in
             </Link>
@@ -313,18 +314,21 @@ export default function Header({ darkMode = true, user = null, supabase = null }
               to="/signup"
               style={{
                 padding: '8px 18px',
-                background: colors.accent,
-                color: '#ffffff',
+                background: location.pathname === '/signup' ? colors.accent : 'transparent',
+                color: location.pathname === '/signup' ? '#ffffff' : colors.accent,
                 borderRadius: '6px',
-                border: 'none',
+                border: `1.5px solid ${colors.accent}`,
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontWeight: '600',
                 fontFamily: "'Inter', sans-serif",
-                transition: 'opacity 0.2s',
+                transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => e.target.style.opacity = '0.85'}
-              onMouseLeave={(e) => e.target.style.opacity = '1'}
+              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
+              onMouseLeave={(e) => { 
+                e.currentTarget.style.background = location.pathname === '/signup' ? colors.accent : 'transparent'; 
+                e.currentTarget.style.color = location.pathname === '/signup' ? '#ffffff' : colors.accent; 
+              }}
             >
               Sign up
             </Link>
