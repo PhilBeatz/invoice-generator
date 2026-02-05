@@ -9,7 +9,6 @@ export default function Login({ darkMode = true }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [googleTooltip, setGoogleTooltip] = useState(false);
 
   const colors = darkMode ? {
     bg: '#1a1a2e',
@@ -65,9 +64,22 @@ export default function Login({ darkMode = true }) {
   };
 
   const handleGoogleLogin = async () => {
-    // Placeholder - will be enabled once Google OAuth is configured
-    setGoogleTooltip(true);
-    setTimeout(() => setGoogleTooltip(false), 3000);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://dayonetools.app/dashboard',
+        },
+      });
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
   };
 
   const inputStyle = {
@@ -156,25 +168,6 @@ export default function Login({ darkMode = true }) {
             </svg>
             Continue with Google
           </button>
-          {googleTooltip && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
-              padding: '8px 16px',
-              background: colors.accent,
-              color: '#ffffff',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              whiteSpace: 'nowrap',
-              zIndex: 10,
-            }}>
-              Coming soon! Use email login for now.
-            </div>
-          )}
         </div>
 
         {/* Divider */}
