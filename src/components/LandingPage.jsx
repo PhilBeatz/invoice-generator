@@ -74,60 +74,101 @@ export default function LandingPage({ darkMode = true }) {
       {/* CTA Buttons */}
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: isMobile ? '16px' : '24px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        gap: '20px',
       }}>
-        {/* Get Started Button */}
-        <Link
-          to="/signup"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '16px 32px',
-            background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
-            color: darkMode ? '#0f1419' : '#ffffff',
-            fontSize: '16px',
-            fontWeight: '600',
-            textDecoration: 'none',
-            borderRadius: '8px',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)';
-          }}
-        >
-          Get Started
-          <span style={{ fontSize: '18px' }}>›</span>
-        </Link>
+        {/* Top Row - Get Started + Try Free */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? '12px' : '16px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}>
+          {/* Get Started Button */}
+          <Link
+            to="/signup"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '16px 32px',
+              background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
+              color: '#ffffff',
+              fontSize: '16px',
+              fontWeight: '600',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)';
+            }}
+          >
+            Get Started
+            <span style={{ fontSize: '18px' }}>›</span>
+          </Link>
 
-        {/* Talk to Us Link */}
+          {/* Try Free Invoice Generator Button */}
+          <Link
+            to="/invoicegenerator"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '16px 32px',
+              background: 'transparent',
+              color: colors.accent,
+              fontSize: '16px',
+              fontWeight: '600',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              border: `1.5px solid ${colors.accent}`,
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.accent;
+              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = colors.accent;
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            Try Free Invoice Generator
+          </Link>
+        </div>
+
+        {/* Talk to Us - Below */}
         <Link
           to="/contact"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '16px 24px',
-            color: colors.accent,
-            fontSize: '16px',
-            fontWeight: '600',
+            padding: '8px 24px',
+            color: colors.textMuted,
+            fontSize: '15px',
+            fontWeight: '500',
             textDecoration: 'none',
-            transition: 'gap 0.2s',
+            transition: 'color 0.2s, gap 0.2s',
           }}
           onMouseEnter={(e) => {
-            e.target.style.gap = '12px';
+            e.currentTarget.style.color = colors.accent;
+            e.currentTarget.style.gap = '12px';
           }}
           onMouseLeave={(e) => {
-            e.target.style.gap = '8px';
+            e.currentTarget.style.color = colors.textMuted;
+            e.currentTarget.style.gap = '8px';
           }}
         >
           Talk to Us
