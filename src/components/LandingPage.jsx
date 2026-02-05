@@ -81,7 +81,7 @@ export default function LandingPage({ darkMode = true }) {
       }}>
         {/* Get Started Button */}
         <Link
-          to="/invoicegenerator"
+          to="/signup"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
