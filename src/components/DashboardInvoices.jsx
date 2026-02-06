@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 export default function DashboardInvoices({ darkMode = true }) {
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [clientFilter, setClientFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -46,6 +48,14 @@ export default function DashboardInvoices({ darkMode = true }) {
     }
   }, []);
 
+  // Load customers from localStorage
+  useEffect(() => {
+    const savedCustomers = localStorage.getItem('dayonetools_customers');
+    if (savedCustomers) {
+      setCustomers(JSON.parse(savedCustomers));
+    }
+  }, []);
+
   // Close actions menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setShowActionsMenu(null);
@@ -64,9 +74,11 @@ export default function DashboardInvoices({ darkMode = true }) {
       
       const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
       
+      const matchesClient = clientFilter === 'all' || inv.customerName === clientFilter || inv.customerId === clientFilter;
+      
       const matchesDate = !dateFilter || inv.issueDate === dateFilter;
       
-      return matchesSearch && matchesStatus && matchesDate;
+      return matchesSearch && matchesStatus && matchesClient && matchesDate;
     })
     .sort((a, b) => {
       let aVal = a[sortBy] || '';
@@ -265,6 +277,20 @@ export default function DashboardInvoices({ darkMode = true }) {
             <option value="draft">Draft</option>
           </select>
 
+          {/* Client Filter */}
+          <select
+            value={clientFilter}
+            onChange={(e) => setClientFilter(e.target.value)}
+            style={{ ...selectStyle, flex: '0 0 180px' }}
+          >
+            <option value="all">All Clients</option>
+            {customers.map(customer => (
+              <option key={customer.id} value={customer.name}>
+                {customer.name}
+              </option>
+            ))}
+          </select>
+
           {/* Date Filter */}
           <input
             type="date"
@@ -356,11 +382,11 @@ export default function DashboardInvoices({ darkMode = true }) {
               No invoices found
             </h3>
             <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '20px' }}>
-              {searchQuery || statusFilter !== 'all' || dateFilter 
+              {searchQuery || statusFilter !== 'all' || clientFilter !== 'all' || dateFilter 
                 ? 'Try adjusting your filters' 
                 : 'Get started by creating your first invoice'}
             </p>
-            {!searchQuery && statusFilter === 'all' && !dateFilter && (
+            {!searchQuery && statusFilter === 'all' && clientFilter === 'all' && !dateFilter && (
               <button
                 onClick={() => navigate('/dashboard/create')}
                 style={{
