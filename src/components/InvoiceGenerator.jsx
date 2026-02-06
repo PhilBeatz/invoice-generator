@@ -722,6 +722,38 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
   // Save invoice to localStorage and navigate to detail page (for dashboard)
   const saveInvoiceAndNavigate = () => {
+    // Validation - check required fields
+    const errors = [];
+    
+    // Company/Business validation
+    if (!invoice.businessName?.trim()) {
+      errors.push('Business/Company name is required');
+    }
+    
+    // Customer validation
+    if (!invoice.customerName?.trim()) {
+      errors.push('Customer name is required');
+    }
+    
+    // Product/Service validation - at least one item with description and amount
+    const validItems = invoice.items.filter(item => {
+      const hasDescription = item.description?.trim();
+      const hasAmount = invoice.invoiceMode === 'products' 
+        ? (item.quantity > 0 && item.price > 0)
+        : (item.hours > 0 && item.rate > 0);
+      return hasDescription && hasAmount;
+    });
+    
+    if (validItems.length === 0) {
+      errors.push('At least one product/service with description and price is required');
+    }
+    
+    // Show errors if validation fails
+    if (errors.length > 0) {
+      alert('Please complete the following:\n\n• ' + errors.join('\n• '));
+      return;
+    }
+
     // Calculate totals
     const subtotal = invoice.items.reduce((sum, item) => {
       const amount = invoice.invoiceMode === 'products' 
