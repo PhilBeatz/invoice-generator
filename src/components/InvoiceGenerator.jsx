@@ -495,13 +495,6 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   };
 
   const downloadPDF = () => {
-    // Validate before generating PDF
-    const errors = validateInvoice();
-    if (errors.length > 0) {
-      alert('Please complete the following:\n\n• ' + errors.join('\n• '));
-      return;
-    }
-
     // Save current state to localStorage before showing PDF (for mobile back button)
     if (isMobile) {
       localStorage.setItem('dayonetools_invoice_draft', JSON.stringify(invoice));
