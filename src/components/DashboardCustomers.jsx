@@ -330,7 +330,7 @@ export default function DashboardCustomers({ darkMode = true }) {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 120px' }}
+            style={{ ...selectStyle, flex: '0 0 140px' }}
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
@@ -343,7 +343,7 @@ export default function DashboardCustomers({ darkMode = true }) {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 130px' }}
+            style={{ ...selectStyle, flex: '0 0 150px' }}
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
@@ -353,7 +353,7 @@ export default function DashboardCustomers({ darkMode = true }) {
           <select
             value={perPage}
             onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-            style={{ ...selectStyle, flex: '0 0 120px' }}
+            style={{ ...selectStyle, flex: '0 0 140px' }}
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
