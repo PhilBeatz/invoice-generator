@@ -80,11 +80,13 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
     <div style={{
       width: '240px',
       height: '100%',
+      minHeight: '100%',
       background: colors.bg,
       borderRight: `1px solid ${colors.border}`,
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden',
+      position: 'sticky',
+      top: 0,
     }}>
       {/* Company Name */}
       <div style={{ padding: '20px 16px', borderBottom: `1px solid ${colors.border}` }}>
@@ -94,7 +96,7 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
         <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>Business Dashboard</div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation - scrollable area */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
         {/* General */}
         <div style={sectionHeaderStyle}>General</div>
@@ -174,6 +176,58 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
           <span style={{ fontSize: '16px' }}>⚙️</span> Settings
         </Link>
       </nav>
+
+      {/* User Section at Bottom */}
+      <div style={{ 
+        borderTop: `1px solid ${colors.border}`,
+        padding: '16px',
+        marginTop: 'auto',
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '10px 12px',
+          borderRadius: '8px',
+          background: colors.bgHover,
+        }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: '#3b82f6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: '600',
+          }}>
+            U
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ 
+              fontSize: '13px', 
+              fontWeight: '500', 
+              color: darkMode ? '#ffffff' : '#1f2937',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              User
+            </div>
+            <div style={{ 
+              fontSize: '11px', 
+              color: colors.textMuted,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              user@example.com
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 

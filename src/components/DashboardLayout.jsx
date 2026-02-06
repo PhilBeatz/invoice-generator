@@ -29,7 +29,7 @@ export default function DashboardLayout({ darkMode = true }) {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 73px)', background: colors.bg }}>
+    <div style={{ display: 'flex', minHeight: 'calc(100vh - 73px)', height: 'calc(100vh - 73px)', background: colors.bg }}>
       {/* Sidebar - Desktop */}
       {!isMobile && (
         <DashboardSidebar darkMode={darkMode} isMobile={false} />
