@@ -971,9 +971,9 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   </div>
                   
                   {/* Template Submenu */}
-                  <div style={{ position: 'relative' }}>
+                  <div>
                     <div 
-                      onClick={() => { setShowTemplateSubmenu(!showTemplateSubmenu); setShowLanguageSubmenu(false); setShowDateSubmenu(false); }}
+                      onClick={(e) => { e.stopPropagation(); setShowTemplateSubmenu(!showTemplateSubmenu); setShowLanguageSubmenu(false); setShowDateSubmenu(false); }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -981,42 +981,35 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         padding: '12px 16px',
                         cursor: 'pointer',
                         borderBottom: `1px solid ${colors.border}`,
+                        background: showTemplateSubmenu ? `${colors.accent}10` : 'transparent',
                       }}
                     >
                       <span style={{ fontSize: '14px', color: colors.text }}>📄 Template</span>
-                      <span style={{ color: colors.textMuted }}>›</span>
+                      <span style={{ color: colors.textMuted, transform: showTemplateSubmenu ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
                     </div>
                     
                     {showTemplateSubmenu && (
                       <div style={{
-                        position: 'absolute',
-                        left: '-220px',
-                        top: 0,
-                        background: colors.bgCard,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '8px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                        minWidth: '200px',
-                        zIndex: 1001,
+                        background: colors.bgInput,
+                        borderBottom: `1px solid ${colors.border}`,
                       }}>
-                        {templates.map((t) => (
+                        {templates.map((tpl) => (
                           <div 
-                            key={t.id}
-                            onClick={() => { setSelectedTemplate(t.id); setShowTemplateSubmenu(false); }}
+                            key={tpl.id}
+                            onClick={(e) => { e.stopPropagation(); setSelectedTemplate(tpl.id); setShowTemplateSubmenu(false); }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '10px',
-                              padding: '12px 16px',
+                              padding: '10px 16px 10px 32px',
                               cursor: 'pointer',
-                              borderBottom: `1px solid ${colors.border}`,
-                              background: selectedTemplate === t.id ? `${colors.accent}20` : 'transparent',
+                              background: selectedTemplate === tpl.id ? `${colors.accent}20` : 'transparent',
                             }}
                           >
-                            <span style={{ width: '16px' }}>{selectedTemplate === t.id ? '•' : ''}</span>
+                            <span style={{ width: '16px', color: colors.accent }}>{selectedTemplate === tpl.id ? '•' : ''}</span>
                             <div>
-                              <div style={{ fontSize: '14px', color: colors.text, fontWeight: selectedTemplate === t.id ? '600' : '400' }}>{t.name}</div>
-                              <div style={{ fontSize: '11px', color: colors.textMuted }}>{t.description}</div>
+                              <div style={{ fontSize: '13px', color: colors.text, fontWeight: selectedTemplate === tpl.id ? '600' : '400' }}>{tpl.name}</div>
+                              <div style={{ fontSize: '11px', color: colors.textMuted }}>{tpl.description}</div>
                             </div>
                           </div>
                         ))}
@@ -1025,9 +1018,9 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   </div>
                   
                   {/* Language Submenu */}
-                  <div style={{ position: 'relative' }}>
+                  <div>
                     <div 
-                      onClick={() => { setShowLanguageSubmenu(!showLanguageSubmenu); setShowTemplateSubmenu(false); setShowDateSubmenu(false); }}
+                      onClick={(e) => { e.stopPropagation(); setShowLanguageSubmenu(!showLanguageSubmenu); setShowTemplateSubmenu(false); setShowDateSubmenu(false); }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1035,43 +1028,36 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         padding: '12px 16px',
                         cursor: 'pointer',
                         borderBottom: `1px solid ${colors.border}`,
+                        background: showLanguageSubmenu ? `${colors.accent}10` : 'transparent',
                       }}
                     >
                       <span style={{ fontSize: '14px', color: colors.text }}>🌐 Invoice Language</span>
-                      <span style={{ color: colors.textMuted }}>›</span>
+                      <span style={{ color: colors.textMuted, transform: showLanguageSubmenu ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
                     </div>
                     
                     {showLanguageSubmenu && (
                       <div style={{
-                        position: 'absolute',
-                        left: '-220px',
-                        top: 0,
-                        background: colors.bgCard,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '8px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                        minWidth: '180px',
-                        maxHeight: '300px',
+                        background: colors.bgInput,
+                        borderBottom: `1px solid ${colors.border}`,
+                        maxHeight: '200px',
                         overflowY: 'auto',
-                        zIndex: 1001,
                       }}>
                         {languages.map((lang) => (
                           <div 
                             key={lang.code}
-                            onClick={() => { setInvoiceLanguage(lang.code); setShowLanguageSubmenu(false); }}
+                            onClick={(e) => { e.stopPropagation(); setInvoiceLanguage(lang.code); setShowLanguageSubmenu(false); }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '10px',
-                              padding: '10px 16px',
+                              padding: '10px 16px 10px 32px',
                               cursor: 'pointer',
-                              borderBottom: `1px solid ${colors.border}`,
                               background: invoiceLanguage === lang.code ? `${colors.accent}20` : 'transparent',
                             }}
                           >
-                            <span style={{ width: '16px' }}>{invoiceLanguage === lang.code ? '•' : ''}</span>
+                            <span style={{ width: '16px', color: colors.accent }}>{invoiceLanguage === lang.code ? '•' : ''}</span>
                             <div>
-                              <div style={{ fontSize: '14px', color: colors.text }}>{lang.name}</div>
+                              <div style={{ fontSize: '13px', color: colors.text }}>{lang.name}</div>
                               <div style={{ fontSize: '11px', color: colors.textMuted }}>{lang.native}</div>
                             </div>
                           </div>
@@ -1081,50 +1067,44 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   </div>
                   
                   {/* Date Format Submenu */}
-                  <div style={{ position: 'relative' }}>
+                  <div>
                     <div 
-                      onClick={() => { setShowDateSubmenu(!showDateSubmenu); setShowTemplateSubmenu(false); setShowLanguageSubmenu(false); }}
+                      onClick={(e) => { e.stopPropagation(); setShowDateSubmenu(!showDateSubmenu); setShowTemplateSubmenu(false); setShowLanguageSubmenu(false); }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '12px 16px',
                         cursor: 'pointer',
+                        background: showDateSubmenu ? `${colors.accent}10` : 'transparent',
                       }}
                     >
                       <span style={{ fontSize: '14px', color: colors.text }}>📅 Date Format</span>
-                      <span style={{ color: colors.textMuted }}>›</span>
+                      <span style={{ color: colors.textMuted, transform: showDateSubmenu ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
                     </div>
                     
                     {showDateSubmenu && (
                       <div style={{
-                        position: 'absolute',
-                        left: '-220px',
-                        top: 0,
-                        background: colors.bgCard,
-                        border: `1px solid ${colors.border}`,
-                        borderRadius: '8px',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                        minWidth: '180px',
-                        zIndex: 1001,
+                        background: colors.bgInput,
+                        maxHeight: '200px',
+                        overflowY: 'auto',
                       }}>
                         {dateFormats.map((df) => (
                           <div 
                             key={df.id}
-                            onClick={() => { setDateFormat(df.id); setShowDateSubmenu(false); }}
+                            onClick={(e) => { e.stopPropagation(); setDateFormat(df.id); setShowDateSubmenu(false); }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               gap: '10px',
-                              padding: '10px 16px',
+                              padding: '10px 16px 10px 32px',
                               cursor: 'pointer',
-                              borderBottom: `1px solid ${colors.border}`,
                               background: dateFormat === df.id ? `${colors.accent}20` : 'transparent',
                             }}
                           >
-                            <span style={{ width: '16px' }}>{dateFormat === df.id ? '•' : ''}</span>
+                            <span style={{ width: '16px', color: colors.accent }}>{dateFormat === df.id ? '•' : ''}</span>
                             <div>
-                              <div style={{ fontSize: '14px', color: colors.text }}>{df.label}</div>
+                              <div style={{ fontSize: '13px', color: colors.text }}>{df.label}</div>
                               <div style={{ fontSize: '11px', color: colors.textMuted }}>{df.example}</div>
                             </div>
                           </div>
