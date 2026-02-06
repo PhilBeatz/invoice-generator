@@ -24,12 +24,137 @@ const currencies = [
   { code: 'CAD', symbol: 'C$' }, { code: 'AUD', symbol: 'A$' }, { code: 'JPY', symbol: '¥' }, { code: 'INR', symbol: '₹' },
 ];
 
+// Invoice Templates
+const templates = [
+  { id: 'regular', name: 'Regular', description: 'Balanced default design' },
+  { id: 'bold', name: 'Bold Professional', description: 'Strong dark header style' },
+  { id: 'mono', name: 'Mono', description: 'Clean and minimal style' },
+  { id: 'modern', name: 'Startup Modern', description: 'Modern and sleek style' },
+];
+
+// Invoice Languages
+const languages = [
+  { code: 'english', name: 'English', native: 'English' },
+  { code: 'spanish', name: 'Spanish', native: 'Español' },
+  { code: 'french', name: 'French', native: 'Français' },
+  { code: 'german', name: 'German', native: 'Deutsch' },
+  { code: 'italian', name: 'Italian', native: 'Italiano' },
+  { code: 'portuguese', name: 'Portuguese', native: 'Português' },
+  { code: 'chinese', name: 'Chinese', native: '中文' },
+  { code: 'japanese', name: 'Japanese', native: '日本語' },
+  { code: 'korean', name: 'Korean', native: '한국어' },
+  { code: 'arabic', name: 'Arabic', native: 'العربية' },
+];
+
+// Language translations for invoice labels
+const translations = {
+  english: { invoice: 'INVOICE', invoiceNumber: 'Invoice #', issueDate: 'Issue Date', dueDate: 'Due Date', issuedTo: 'Issued To', product: 'Product', service: 'Service', qty: 'Qty', hrs: 'Hrs', rate: 'Rate', price: 'Unit Price', amount: 'Amount', subtotal: 'Subtotal', shipping: 'Shipping', discount: 'Discount', tax: 'Tax', total: 'Total', paymentDetails: 'Payment Details', paymentMethod: 'Payment Method' },
+  spanish: { invoice: 'FACTURA', invoiceNumber: 'Factura #', issueDate: 'Fecha de Emisión', dueDate: 'Fecha de Vencimiento', issuedTo: 'Emitido A', product: 'Producto', service: 'Servicio', qty: 'Cant', hrs: 'Hrs', rate: 'Tarifa', price: 'Precio', amount: 'Importe', subtotal: 'Subtotal', shipping: 'Envío', discount: 'Descuento', tax: 'Impuesto', total: 'Total', paymentDetails: 'Detalles de Pago', paymentMethod: 'Método de Pago' },
+  french: { invoice: 'FACTURE', invoiceNumber: 'Facture #', issueDate: "Date d'Émission", dueDate: "Date d'Échéance", issuedTo: 'Émis À', product: 'Produit', service: 'Service', qty: 'Qté', hrs: 'Hrs', rate: 'Taux', price: 'Prix', amount: 'Montant', subtotal: 'Sous-total', shipping: 'Livraison', discount: 'Remise', tax: 'Taxe', total: 'Total', paymentDetails: 'Détails de Paiement', paymentMethod: 'Mode de Paiement' },
+  german: { invoice: 'RECHNUNG', invoiceNumber: 'Rechnung #', issueDate: 'Ausstellungsdatum', dueDate: 'Fälligkeitsdatum', issuedTo: 'Ausgestellt An', product: 'Produkt', service: 'Dienstleistung', qty: 'Menge', hrs: 'Std', rate: 'Satz', price: 'Preis', amount: 'Betrag', subtotal: 'Zwischensumme', shipping: 'Versand', discount: 'Rabatt', tax: 'Steuer', total: 'Gesamt', paymentDetails: 'Zahlungsdetails', paymentMethod: 'Zahlungsmethode' },
+  italian: { invoice: 'FATTURA', invoiceNumber: 'Fattura #', issueDate: 'Data di Emissione', dueDate: 'Data di Scadenza', issuedTo: 'Emesso A', product: 'Prodotto', service: 'Servizio', qty: 'Qtà', hrs: 'Ore', rate: 'Tariffa', price: 'Prezzo', amount: 'Importo', subtotal: 'Subtotale', shipping: 'Spedizione', discount: 'Sconto', tax: 'Tasse', total: 'Totale', paymentDetails: 'Dettagli Pagamento', paymentMethod: 'Metodo di Pagamento' },
+  portuguese: { invoice: 'FATURA', invoiceNumber: 'Fatura #', issueDate: 'Data de Emissão', dueDate: 'Data de Vencimento', issuedTo: 'Emitido Para', product: 'Produto', service: 'Serviço', qty: 'Qtd', hrs: 'Hrs', rate: 'Taxa', price: 'Preço', amount: 'Valor', subtotal: 'Subtotal', shipping: 'Frete', discount: 'Desconto', tax: 'Imposto', total: 'Total', paymentDetails: 'Detalhes do Pagamento', paymentMethod: 'Forma de Pagamento' },
+  chinese: { invoice: '发票', invoiceNumber: '发票编号', issueDate: '开票日期', dueDate: '到期日', issuedTo: '开票给', product: '产品', service: '服务', qty: '数量', hrs: '小时', rate: '费率', price: '单价', amount: '金额', subtotal: '小计', shipping: '运费', discount: '折扣', tax: '税', total: '总计', paymentDetails: '付款详情', paymentMethod: '付款方式' },
+  japanese: { invoice: '請求書', invoiceNumber: '請求書番号', issueDate: '発行日', dueDate: '支払期日', issuedTo: '請求先', product: '商品', service: 'サービス', qty: '数量', hrs: '時間', rate: '単価', price: '価格', amount: '金額', subtotal: '小計', shipping: '送料', discount: '割引', tax: '税', total: '合計', paymentDetails: '支払い詳細', paymentMethod: '支払い方法' },
+  korean: { invoice: '청구서', invoiceNumber: '청구서 번호', issueDate: '발행일', dueDate: '만기일', issuedTo: '청구 대상', product: '제품', service: '서비스', qty: '수량', hrs: '시간', rate: '요율', price: '가격', amount: '금액', subtotal: '소계', shipping: '배송비', discount: '할인', tax: '세금', total: '총계', paymentDetails: '결제 정보', paymentMethod: '결제 방법' },
+  arabic: { invoice: 'فاتورة', invoiceNumber: 'رقم الفاتورة', issueDate: 'تاريخ الإصدار', dueDate: 'تاريخ الاستحقاق', issuedTo: 'صادرة إلى', product: 'منتج', service: 'خدمة', qty: 'الكمية', hrs: 'ساعات', rate: 'معدل', price: 'السعر', amount: 'المبلغ', subtotal: 'المجموع الفرعي', shipping: 'الشحن', discount: 'خصم', tax: 'ضريبة', total: 'الإجمالي', paymentDetails: 'تفاصيل الدفع', paymentMethod: 'طريقة الدفع' },
+};
+
+// Date Formats
+const dateFormats = [
+  { id: 'MM/DD/YYYY', label: 'MM/DD/YYYY', example: '12/31/2025' },
+  { id: 'DD/MM/YYYY', label: 'DD/MM/YYYY', example: '31/12/2025' },
+  { id: 'YYYY-MM-DD', label: 'YYYY-MM-DD', example: '2025-12-31' },
+  { id: 'Month DD, YYYY', label: 'Month DD, YYYY', example: 'December 31, 2025' },
+  { id: 'DD Month YYYY', label: 'DD Month YYYY', example: '31 December 2025' },
+  { id: 'Mon DD, YYYY', label: 'Mon DD, YYYY', example: 'Dec 31, 2025' },
+  { id: 'DD Mon YYYY', label: 'DD Mon YYYY', example: '31 Dec 2025' },
+];
+
+// Template style configurations
+const getTemplateStyles = (templateId) => {
+  switch (templateId) {
+    case 'bold':
+      return {
+        headerBg: '#1a1a2e',
+        headerText: '#ffffff',
+        accentColor: '#10b981',
+        invoiceBadgeBg: '#10b981',
+        invoiceBadgeText: '#ffffff',
+        tableHeaderBg: '#f1f5f9',
+        borderColor: '#e2e8f0',
+        totalBg: '#1a1a2e',
+        totalText: '#ffffff',
+      };
+    case 'mono':
+      return {
+        headerBg: '#ffffff',
+        headerText: '#1f2937',
+        accentColor: '#6b7280',
+        invoiceBadgeBg: '#f3f4f6',
+        invoiceBadgeText: '#374151',
+        tableHeaderBg: '#f9fafb',
+        borderColor: '#e5e7eb',
+        totalBg: '#f9fafb',
+        totalText: '#1f2937',
+      };
+    case 'modern':
+      return {
+        headerBg: '#ffffff',
+        headerText: '#1f2937',
+        accentColor: '#3b82f6',
+        invoiceBadgeBg: '#3b82f6',
+        invoiceBadgeText: '#ffffff',
+        tableHeaderBg: '#eff6ff',
+        borderColor: '#dbeafe',
+        totalBg: '#3b82f6',
+        totalText: '#ffffff',
+      };
+    default: // regular
+      return {
+        headerBg: '#ffffff',
+        headerText: '#1e40af',
+        accentColor: '#3b82f6',
+        invoiceBadgeBg: '#3b82f6',
+        invoiceBadgeText: '#ffffff',
+        tableHeaderBg: '#f8fafc',
+        borderColor: '#e2e8f0',
+        totalBg: '#f8fafc',
+        totalText: '#1f2937',
+      };
+  }
+};
+
 // Generate random invoice number
 const generateInvoiceNumber = () => {
   const prefix = 'INV';
   const random = Math.floor(Math.random() * 900000) + 100000;
   const suffix = Math.floor(Math.random() * 900) + 100;
   return `${prefix}-${random}-${suffix}`;
+};
+
+// Format date based on selected format
+const formatDateWithFormat = (dateStr, format) => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  const dd = String(day).padStart(2, '0');
+  const mm = String(month).padStart(2, '0');
+  const yyyy = year;
+  
+  switch (format) {
+    case 'MM/DD/YYYY': return `${mm}/${dd}/${yyyy}`;
+    case 'DD/MM/YYYY': return `${dd}/${mm}/${yyyy}`;
+    case 'YYYY-MM-DD': return `${yyyy}-${mm}-${dd}`;
+    case 'Month DD, YYYY': return `${months[month - 1]} ${day}, ${yyyy}`;
+    case 'DD Month YYYY': return `${day} ${months[month - 1]} ${yyyy}`;
+    case 'Mon DD, YYYY': return `${monthsShort[month - 1]} ${day}, ${yyyy}`;
+    case 'DD Mon YYYY': return `${day} ${monthsShort[month - 1]} ${yyyy}`;
+    default: return `${months[month - 1]} ${day}, ${yyyy}`;
+  }
 };
 
 export default function InvoiceGenerator({ darkMode = true, inDashboard = false }) {
@@ -39,6 +164,17 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   const [isDragging, setIsDragging] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // New: Template, Language, Date Format settings (for dashboard users)
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [livePreviewEnabled, setLivePreviewEnabled] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState('regular');
+  const [invoiceLanguage, setInvoiceLanguage] = useState('english');
+  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
+  const [showTemplateSubmenu, setShowTemplateSubmenu] = useState(false);
+  const [showLanguageSubmenu, setShowLanguageSubmenu] = useState(false);
+  const [showDateSubmenu, setShowDateSubmenu] = useState(false);
+  const [templatePreviewModal, setTemplatePreviewModal] = useState(null);
   
   // Customer Manager state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -91,7 +227,25 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showSettingsMenu && !e.target.closest('.settings-menu-container')) {
+        setShowSettingsMenu(false);
+        setShowTemplateSubmenu(false);
+        setShowLanguageSubmenu(false);
+        setShowDateSubmenu(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showSettingsMenu]);
+
+  // Get current language translations
+  const t = translations[invoiceLanguage] || translations.english;
+
   const currencySymbol = currencies.find(c => c.code === invoice.currency)?.symbol || '$';
+  const templateStyles = getTemplateStyles(selectedTemplate);
   const updateField = (field, value) => setInvoice(prev => ({ ...prev, [field]: value }));
   const updateItem = (id, field, value) => setInvoice(prev => ({ ...prev, items: prev.items.map(item => item.id === id ? { ...item, [field]: value } : item) }));
   const addItem = () => { 
@@ -289,6 +443,53 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
       localStorage.setItem('dayonetools_logo_draft', logoPreview || '');
     }
 
+    // Use template styles and translations for dashboard users
+    const ts = inDashboard ? templateStyles : getTemplateStyles('regular');
+    const lang = inDashboard ? t : translations.english;
+    const formatDateFn = inDashboard ? (d) => formatDateWithFormat(d, dateFormat) : formatDate;
+
+    // Generate template-specific styles
+    const getTemplateCSS = () => {
+      if (!inDashboard || selectedTemplate === 'regular') {
+        return `
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
+.business-name{font-size:22px;font-weight:700;color:#1e40af;margin-bottom:6px;white-space:nowrap}
+.invoice-badge{display:inline-block;padding:8px 20px;background:${ts.invoiceBadgeBg};color:${ts.invoiceBadgeText};border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:${ts.totalBg};color:${ts.totalText};padding:10px;border-radius:4px}
+`;
+      }
+      if (selectedTemplate === 'bold') {
+        return `
+.header{background:#1a1a2e;color:white;padding:24px;margin:-30px -40px 30px;border-radius:0}
+.business-name{font-size:22px;font-weight:700;color:white;margin-bottom:6px;white-space:nowrap}
+.business-details{color:rgba(255,255,255,0.7)}
+.logo-img{filter:brightness(0) invert(1)}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#10b981;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.invoice-meta-label{color:rgba(255,255,255,0.6)}
+.invoice-meta-value{color:white}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#1a1a2e;color:white;padding:10px;border-radius:4px}
+`;
+      }
+      if (selectedTemplate === 'mono') {
+        return `
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
+.business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#f3f4f6;color:#374151;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.invoice-meta-label{color:#6b7280}
+.items-table th{background:#f9fafb}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#f9fafb;color:#1f2937;padding:10px;border-radius:4px}
+`;
+      }
+      // modern
+      return `
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
+.business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#3b82f6;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.items-table th{background:#eff6ff;border-color:#dbeafe}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#3b82f6;color:white;padding:10px;border-radius:4px}
+`;
+    };
+
     const htmlContent = `<!DOCTYPE html><html><head><title>Invoice ${invoice.invoiceNumber}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -301,14 +502,11 @@ body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14
   html,body{width:100%;height:auto}
 }
 
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 .business-info{max-width:450px}
-.business-name{font-size:22px;font-weight:700;color:#1e40af;margin-bottom:6px;white-space:nowrap}
 .business-details{color:#6b7280;font-size:14px;line-height:1.8}
 .logo-img{max-width:180px;max-height:70px;margin-bottom:12px}
 
 .invoice-title{text-align:right}
-.invoice-title h1{font-size:32px;font-weight:700;color:#1f2937;letter-spacing:-0.5px;margin-bottom:12px}
 
 .invoice-meta{text-align:right;font-size:14px;line-height:2}
 .invoice-meta-row{margin-bottom:2px}
@@ -334,9 +532,6 @@ body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14
 .totals-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9}
 .totals-row span:first-child{color:#6b7280}
 .totals-row span:last-child{color:#374151}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none}
-.totals-row.total span:first-child{color:#1f2937}
-.totals-row.total span:last-child{color:#1f2937}
 
 .payment-details{margin-top:20px}
 .payment-details h3{font-size:16px;font-weight:700;color:#1f2937;margin-bottom:16px}
@@ -348,6 +543,7 @@ body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14
 .payment-row{display:flex;gap:10px}
 .payment-label{min-width:110px;font-weight:500;color:#4b5563}
 .payment-value{color:#6b7280}
+${getTemplateCSS()}
 </style></head><body>
 
 <div class="header">
@@ -357,11 +553,11 @@ ${logoPreview ? `<img src="${logoPreview}" class="logo-img" />` : ''}
 <div class="business-details">${invoice.businessAddress ? invoice.businessAddress + '<br>' : ''}${invoice.businessEmail ? invoice.businessEmail + '<br>' : ''}${invoice.businessPhone || ''}</div>
 </div>
 <div class="invoice-title">
-<h1>INVOICE</h1>
+<div class="invoice-badge">${lang.invoice}</div>
 <div class="invoice-meta">
-<div class="invoice-meta-row"><span class="invoice-meta-label">Invoice #:</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
-<div class="invoice-meta-row"><span class="invoice-meta-label">Issue Date:</span> <span class="invoice-meta-value">${formatDate(invoice.issueDate)}</span></div>
-${invoice.dueDate ? `<div class="invoice-meta-row"><span class="invoice-meta-label">Due Date:</span> <span class="invoice-meta-value">${formatDate(invoice.dueDate)}</span></div>` : ''}
+<div class="invoice-meta-row"><span class="invoice-meta-label">${lang.invoiceNumber}</span> <span class="invoice-meta-value">${invoice.invoiceNumber}</span></div>
+<div class="invoice-meta-row"><span class="invoice-meta-label">${lang.issueDate}:</span> <span class="invoice-meta-value">${formatDateFn(invoice.issueDate)}</span></div>
+${invoice.dueDate ? `<div class="invoice-meta-row"><span class="invoice-meta-label">${lang.dueDate}:</span> <span class="invoice-meta-value">${formatDateFn(invoice.dueDate)}</span></div>` : ''}
 ${invoice.paymentTermsText ? `<div class="invoice-meta-row"><span class="invoice-meta-label">Terms:</span> <span class="invoice-meta-value">${invoice.paymentTermsText}</span></div>` : ''}
 ${invoice.customFields.map(f => f.label && f.value ? `<div class="invoice-meta-row"><span class="invoice-meta-label">${f.label}:</span> <span class="invoice-meta-value">${f.value}</span></div>` : '').join('')}
 </div>
@@ -369,7 +565,7 @@ ${invoice.customFields.map(f => f.label && f.value ? `<div class="invoice-meta-r
 </div>
 
 <div class="issued-to">
-<h3>Issued To:</h3>
+<h3>${lang.issuedTo}:</h3>
 <div class="issued-to-row"><strong>Name:</strong> ${invoice.customerName || ''}</div>
 ${invoice.customerIdentifier ? `<div class="issued-to-row"><strong>ID:</strong> ${invoice.customerIdentifier}</div>` : ''}
 <div class="issued-to-row"><strong>Address:</strong> ${invoice.customerAddress || ''}${invoice.customerZipCode ? `, ${invoice.customerZipCode}` : ''}</div>
@@ -379,11 +575,11 @@ ${invoice.customerEmail ? `<div class="issued-to-row"><strong>Email:</strong> ${
 
 <table class="items-table">
 <thead><tr>
-<th style="width:${invoice.invoiceMode === 'hours' ? '40%' : '35%'}">${invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}</th>
+<th style="width:${invoice.invoiceMode === 'hours' ? '40%' : '35%'}">${invoice.invoiceMode === 'hours' ? lang.service : lang.product}</th>
 ${invoice.invoiceMode === 'products' ? '<th style="width:15%">SKU</th>' : ''}
-<th style="width:12%">${invoice.invoiceMode === 'hours' ? 'Hours' : 'Qty'}</th>
-<th style="width:18%">${invoice.invoiceMode === 'hours' ? 'Rate (/Hour)' : 'Unit Price'}</th>
-<th style="width:18%">Amount</th>
+<th style="width:12%">${invoice.invoiceMode === 'hours' ? lang.hrs : lang.qty}</th>
+<th style="width:18%">${invoice.invoiceMode === 'hours' ? lang.rate : lang.price}</th>
+<th style="width:18%">${lang.amount}</th>
 </tr></thead>
 <tbody>${invoice.items.map(item => `<tr>
 <td>${item.description || ''}</td>
@@ -396,12 +592,12 @@ ${invoice.invoiceMode === 'products' ? `<td>${item.sku || ''}</td>` : ''}
 
 <div class="totals">
 <div class="totals-box">
-<div class="totals-row"><span>Subtotal:</span><span>${formatCurrency(subtotal)}</span></div>
-${discountAmount > 0 ? `<div class="totals-row"><span>Discount:</span><span>-${formatCurrency(discountAmount)}</span></div>` : ''}
-${!invoice.taxIncluded && taxAmount > 0 ? `<div class="totals-row"><span>Tax ${invoice.taxType === 'percent' ? `(${invoice.taxRate}%)` : ''}:</span><span>${formatCurrency(taxAmount)}</span></div>` : ''}
-${invoice.taxIncluded && invoice.taxRate > 0 ? `<div class="totals-row"><span>Tax (included):</span><span>${invoice.taxType === 'percent' ? `${invoice.taxRate}%` : formatCurrency(invoice.taxRate)}</span></div>` : ''}
-${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${formatCurrency(shippingAmount)}</span></div>` : ''}
-<div class="totals-row total"><span>Total:</span><span>${formatCurrency(total)}</span></div>
+<div class="totals-row"><span>${lang.subtotal}:</span><span>${formatCurrency(subtotal)}</span></div>
+${discountAmount > 0 ? `<div class="totals-row"><span>${lang.discount}:</span><span>-${formatCurrency(discountAmount)}</span></div>` : ''}
+${!invoice.taxIncluded && taxAmount > 0 ? `<div class="totals-row"><span>${lang.tax} ${invoice.taxType === 'percent' ? `(${invoice.taxRate}%)` : ''}:</span><span>${formatCurrency(taxAmount)}</span></div>` : ''}
+${invoice.taxIncluded && invoice.taxRate > 0 ? `<div class="totals-row"><span>${lang.tax} (included):</span><span>${invoice.taxType === 'percent' ? `${invoice.taxRate}%` : formatCurrency(invoice.taxRate)}</span></div>` : ''}
+${shippingAmount > 0 ? `<div class="totals-row"><span>${lang.shipping}:</span><span>${formatCurrency(shippingAmount)}</span></div>` : ''}
+<div class="totals-row total"><span>${lang.total}:</span><span>${formatCurrency(total)}</span></div>
 </div>
 </div>
 
@@ -682,6 +878,265 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
           Use our free online invoice generator to create professional invoices in seconds — no signup required. Customize, and download a PDF invoice for your business needs.
         </p>
       </div>
+      )}
+
+      {/* Dashboard Header - shown when in dashboard */}
+      {inDashboard && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: '20px 24px',
+          borderBottom: `1px solid ${colors.border}`,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>
+              Invoice Creator
+            </h1>
+            <span style={{ fontSize: '18px' }}>📄</span>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Create Invoice Button */}
+            <button
+              onClick={downloadPDF}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                background: '#10b981',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Create Invoice <span>↗</span>
+            </button>
+            
+            {/* 3-Dot Menu Button */}
+            <div className="settings-menu-container" style={{ position: 'relative' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowSettingsMenu(!showSettingsMenu); }}
+                style={{
+                  padding: '10px 12px',
+                  background: colors.bgCard,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  color: colors.text,
+                  fontSize: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                ⋮
+              </button>
+              
+              {/* Settings Dropdown Menu */}
+              {showSettingsMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: '8px',
+                  background: colors.bgCard,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                  minWidth: '220px',
+                  zIndex: 1000,
+                  overflow: 'hidden',
+                }}>
+                  {/* Live Preview Toggle */}
+                  <div 
+                    onClick={() => setLivePreviewEnabled(!livePreviewEnabled)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      borderBottom: `1px solid ${colors.border}`,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span>{livePreviewEnabled ? '✓' : ''}</span>
+                      <span style={{ fontSize: '14px', color: colors.text }}>👁️ Live Preview</span>
+                    </div>
+                  </div>
+                  
+                  {/* Template Submenu */}
+                  <div style={{ position: 'relative' }}>
+                    <div 
+                      onClick={() => { setShowTemplateSubmenu(!showTemplateSubmenu); setShowLanguageSubmenu(false); setShowDateSubmenu(false); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 16px',
+                        cursor: 'pointer',
+                        borderBottom: `1px solid ${colors.border}`,
+                      }}
+                    >
+                      <span style={{ fontSize: '14px', color: colors.text }}>📄 Template</span>
+                      <span style={{ color: colors.textMuted }}>›</span>
+                    </div>
+                    
+                    {showTemplateSubmenu && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '-220px',
+                        top: 0,
+                        background: colors.bgCard,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                        minWidth: '200px',
+                        zIndex: 1001,
+                      }}>
+                        {templates.map((t) => (
+                          <div 
+                            key={t.id}
+                            onClick={() => { setSelectedTemplate(t.id); setShowTemplateSubmenu(false); }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '12px 16px',
+                              cursor: 'pointer',
+                              borderBottom: `1px solid ${colors.border}`,
+                              background: selectedTemplate === t.id ? `${colors.accent}20` : 'transparent',
+                            }}
+                          >
+                            <span style={{ width: '16px' }}>{selectedTemplate === t.id ? '•' : ''}</span>
+                            <div>
+                              <div style={{ fontSize: '14px', color: colors.text, fontWeight: selectedTemplate === t.id ? '600' : '400' }}>{t.name}</div>
+                              <div style={{ fontSize: '11px', color: colors.textMuted }}>{t.description}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Language Submenu */}
+                  <div style={{ position: 'relative' }}>
+                    <div 
+                      onClick={() => { setShowLanguageSubmenu(!showLanguageSubmenu); setShowTemplateSubmenu(false); setShowDateSubmenu(false); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 16px',
+                        cursor: 'pointer',
+                        borderBottom: `1px solid ${colors.border}`,
+                      }}
+                    >
+                      <span style={{ fontSize: '14px', color: colors.text }}>🌐 Invoice Language</span>
+                      <span style={{ color: colors.textMuted }}>›</span>
+                    </div>
+                    
+                    {showLanguageSubmenu && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '-220px',
+                        top: 0,
+                        background: colors.bgCard,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                        minWidth: '180px',
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                        zIndex: 1001,
+                      }}>
+                        {languages.map((lang) => (
+                          <div 
+                            key={lang.code}
+                            onClick={() => { setInvoiceLanguage(lang.code); setShowLanguageSubmenu(false); }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '10px 16px',
+                              cursor: 'pointer',
+                              borderBottom: `1px solid ${colors.border}`,
+                              background: invoiceLanguage === lang.code ? `${colors.accent}20` : 'transparent',
+                            }}
+                          >
+                            <span style={{ width: '16px' }}>{invoiceLanguage === lang.code ? '•' : ''}</span>
+                            <div>
+                              <div style={{ fontSize: '14px', color: colors.text }}>{lang.name}</div>
+                              <div style={{ fontSize: '11px', color: colors.textMuted }}>{lang.native}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Date Format Submenu */}
+                  <div style={{ position: 'relative' }}>
+                    <div 
+                      onClick={() => { setShowDateSubmenu(!showDateSubmenu); setShowTemplateSubmenu(false); setShowLanguageSubmenu(false); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 16px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ fontSize: '14px', color: colors.text }}>📅 Date Format</span>
+                      <span style={{ color: colors.textMuted }}>›</span>
+                    </div>
+                    
+                    {showDateSubmenu && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '-220px',
+                        top: 0,
+                        background: colors.bgCard,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+                        minWidth: '180px',
+                        zIndex: 1001,
+                      }}>
+                        {dateFormats.map((df) => (
+                          <div 
+                            key={df.id}
+                            onClick={() => { setDateFormat(df.id); setShowDateSubmenu(false); }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '10px 16px',
+                              cursor: 'pointer',
+                              borderBottom: `1px solid ${colors.border}`,
+                              background: dateFormat === df.id ? `${colors.accent}20` : 'transparent',
+                            }}
+                          >
+                            <span style={{ width: '16px' }}>{dateFormat === df.id ? '•' : ''}</span>
+                            <div>
+                              <div style={{ fontSize: '14px', color: colors.text }}>{df.label}</div>
+                              <div style={{ fontSize: '11px', color: colors.textMuted }}>{df.example}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Mobile Preview Toggle */}
@@ -1275,11 +1730,37 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             {/* White preview area */}
             <div style={{ padding: '16px', background: colors.bgInput }}>
               <div style={{ background: 'white', borderRadius: '8px', padding: isMobile ? '20px' : '30px', minHeight: isMobile ? '400px' : '500px', color: '#1f2937', overflowX: 'auto' }}>
-                {/* Header */}
+                {/* Header - Bold template has dark header */}
+                {selectedTemplate === 'bold' && (
+                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-20px -20px 20px' : '-30px -30px 24px', padding: isMobile ? '20px' : '24px', borderRadius: '8px 8px 0 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                      <div style={{ minWidth: '140px', flex: '1' }}>
+                        {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
+                        <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: templateStyles.headerText, marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
+                          {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
+                          {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
+                          {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', minWidth: '130px' }}>
+                        <div style={{ display: 'inline-block', padding: '6px 16px', background: templateStyles.invoiceBadgeBg, color: templateStyles.invoiceBadgeText, borderRadius: '4px', fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
+                        <div style={{ fontSize: '11px', lineHeight: '1.7', color: 'rgba(255,255,255,0.8)' }}>
+                          <div>{t.invoiceNumber} {invoice.invoiceNumber}</div>
+                          <div>{t.issueDate}: {inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</div>
+                          {invoice.dueDate && <div>{t.dueDate}: {inDashboard ? formatDateWithFormat(invoice.dueDate, dateFormat) : formatDate(invoice.dueDate)}</div>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Header - Other templates (regular, mono, modern) */}
+                {selectedTemplate !== 'bold' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                   <div style={{ minWidth: '140px', flex: '1' }}>
                     {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
-                    <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#1e40af', marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
+                    <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: templateStyles.headerText, marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
                     <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.5' }}>
                       {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                       {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
@@ -1287,20 +1768,21 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', minWidth: '130px' }}>
-                    <div style={{ fontSize: isMobile ? '18px' : '22px', fontWeight: '700', color: '#1f2937', marginBottom: '6px' }}>INVOICE</div>
+                    <div style={{ display: 'inline-block', padding: '6px 16px', background: templateStyles.invoiceBadgeBg, color: templateStyles.invoiceBadgeText, borderRadius: '4px', fontSize: isMobile ? '14px' : '16px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
                     <div style={{ fontSize: '11px', lineHeight: '1.7' }}>
-                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Invoice #:</span> {invoice.invoiceNumber}</div>
-                      <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Issue Date:</span> {formatDate(invoice.issueDate)}</div>
-                      {invoice.dueDate && <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Due Date:</span> {formatDate(invoice.dueDate)}</div>}
-                      {invoice.paymentTermsText && <div><span style={{ color: '#3b82f6', fontWeight: '500' }}>Terms:</span> {invoice.paymentTermsText}</div>}
-                      {invoice.customFields.map(f => f.label && f.value ? <div key={f.id}><span style={{ color: '#3b82f6', fontWeight: '500' }}>{f.label}:</span> {f.value}</div> : null)}
+                      <div><span style={{ color: templateStyles.accentColor, fontWeight: '500' }}>{t.invoiceNumber}</span> {invoice.invoiceNumber}</div>
+                      <div><span style={{ color: templateStyles.accentColor, fontWeight: '500' }}>{t.issueDate}:</span> {inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</div>
+                      {invoice.dueDate && <div><span style={{ color: templateStyles.accentColor, fontWeight: '500' }}>{t.dueDate}:</span> {inDashboard ? formatDateWithFormat(invoice.dueDate, dateFormat) : formatDate(invoice.dueDate)}</div>}
+                      {invoice.paymentTermsText && <div><span style={{ color: templateStyles.accentColor, fontWeight: '500' }}>Terms:</span> {invoice.paymentTermsText}</div>}
+                      {invoice.customFields.map(f => f.label && f.value ? <div key={f.id}><span style={{ color: templateStyles.accentColor, fontWeight: '500' }}>{f.label}:</span> {f.value}</div> : null)}
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Issued To */}
                 <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#1f2937', marginBottom: '4px' }}>Issued To:</div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#1f2937', marginBottom: '4px' }}>{t.issuedTo}:</div>
                   <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.5' }}>
                     <div>{invoice.customerName || 'Customer Name'}</div>
                     {invoice.customerAddress && <div>{invoice.customerAddress}{invoice.customerZipCode ? `, ${invoice.customerZipCode}` : ''}</div>}
@@ -1312,17 +1794,17 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                 <div style={{ overflowX: 'auto', marginBottom: '16px' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '280px', fontSize: '11px' }}>
                     <thead>
-                      <tr style={{ background: '#f8fafc' }}>
-                        <th style={{ textAlign: 'left', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}>
-                          {invoice.invoiceMode === 'hours' ? 'Service' : 'Product'}
+                      <tr style={{ background: templateStyles.tableHeaderBg }}>
+                        <th style={{ textAlign: 'left', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}` }}>
+                          {invoice.invoiceMode === 'hours' ? t.service : t.product}
                         </th>
-                        <th style={{ textAlign: 'center', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '40px' }}>
-                          {invoice.invoiceMode === 'hours' ? 'Hrs' : 'Qty'}
+                        <th style={{ textAlign: 'center', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '40px' }}>
+                          {invoice.invoiceMode === 'hours' ? t.hrs : t.qty}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '55px' }}>
-                          {invoice.invoiceMode === 'hours' ? 'Rate' : 'Price'}
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '55px' }}>
+                          {invoice.invoiceMode === 'hours' ? t.rate : t.price}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: '2px solid #e2e8f0', width: '60px' }}>Amount</th>
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '60px' }}>{t.amount}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1350,38 +1832,38 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
                   <div style={{ width: '160px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-                      <span style={{ color: '#64748b' }}>Subtotal:</span>
+                      <span style={{ color: '#64748b' }}>{t.subtotal}:</span>
                       <span style={{ color: '#374151' }}>{formatCurrency(subtotal)}</span>
                     </div>
                     {discountAmount > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-                        <span style={{ color: '#64748b' }}>Discount:</span>
+                        <span style={{ color: '#64748b' }}>{t.discount}:</span>
                         <span style={{ color: '#dc2626' }}>-{formatCurrency(discountAmount)}</span>
                       </div>
                     )}
                     {!invoice.taxIncluded && taxAmount > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-                        <span style={{ color: '#64748b' }}>Tax:</span>
+                        <span style={{ color: '#64748b' }}>{t.tax}:</span>
                         <span style={{ color: '#374151' }}>{formatCurrency(taxAmount)}</span>
                       </div>
                     )}
                     {shippingAmount > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-                        <span style={{ color: '#64748b' }}>Shipping:</span>
+                        <span style={{ color: '#64748b' }}>{t.shipping}:</span>
                         <span style={{ color: '#374151' }}>{formatCurrency(shippingAmount)}</span>
                       </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: '700', fontSize: '14px' }}>
-                      <span style={{ color: '#1f2937' }}>Total:</span>
-                      <span style={{ color: '#1f2937' }}>{formatCurrency(total)}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', fontWeight: '700', fontSize: '14px', background: templateStyles.totalBg, color: templateStyles.totalText, borderRadius: '4px', marginTop: '4px' }}>
+                      <span>{t.total}:</span>
+                      <span>{formatCurrency(total)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Payment Details Preview */}
                 {invoice.paymentMethods.length > 0 && (
-                  <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>Payment Details</div>
+                  <div style={{ borderTop: `1px solid ${templateStyles.borderColor}`, paddingTop: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#1f2937', marginBottom: '12px' }}>{t.paymentDetails}</div>
                     {invoice.paymentMethods.map(pm => (
                       <div key={pm.id} style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9' }}>
                         {pm.type === 'bank' && (
