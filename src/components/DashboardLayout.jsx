@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
+import DashboardCustomers from './DashboardCustomers';
 import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true }) {
@@ -96,7 +97,7 @@ export default function DashboardLayout({ darkMode = true }) {
             <DashboardPlaceholder darkMode={darkMode} title="Invoices" icon="📋" description="View, search, and manage all your invoices. Filter by status, date, or customer." />
           } />
           <Route path="customers" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Customers" icon="👥" description="Manage your customer database. Add, edit, and track customer information and invoice history." />
+            <DashboardCustomers darkMode={darkMode} />
           } />
           <Route path="payment-methods" element={
             <DashboardPlaceholder darkMode={darkMode} title="Payment Methods" icon="💳" description="Configure your accepted payment methods including bank transfers, PayPal, and crypto." />
