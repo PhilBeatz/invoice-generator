@@ -4,6 +4,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardCustomers from './DashboardCustomers';
+import DashboardInvoices from './DashboardInvoices';
 import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true }) {
@@ -28,7 +29,7 @@ export default function DashboardLayout({ darkMode = true }) {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 120px)', background: colors.bg }}>
+    <div style={{ display: 'flex', minHeight: 'calc(100vh - 73px)', background: colors.bg }}>
       {/* Sidebar - Desktop */}
       {!isMobile && (
         <DashboardSidebar darkMode={darkMode} isMobile={false} />
@@ -94,7 +95,7 @@ export default function DashboardLayout({ darkMode = true }) {
             <DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." />
           } />
           <Route path="invoices" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Invoices" icon="📋" description="View, search, and manage all your invoices. Filter by status, date, or customer." />
+            <DashboardInvoices darkMode={darkMode} />
           } />
           <Route path="customers" element={
             <DashboardCustomers darkMode={darkMode} />
