@@ -7,7 +7,7 @@ import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
 import InvoiceGenerator from './InvoiceGenerator';
 
-export default function DashboardLayout({ darkMode = true }) {
+export default function DashboardLayout({ darkMode = true, user }) {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -32,7 +32,7 @@ export default function DashboardLayout({ darkMode = true }) {
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 73px)', height: 'calc(100vh - 73px)', background: colors.bg }}>
       {/* Sidebar - Desktop */}
       {!isMobile && (
-        <DashboardSidebar darkMode={darkMode} isMobile={false} />
+        <DashboardSidebar darkMode={darkMode} isMobile={false} user={user} />
       )}
 
       {/* Sidebar - Mobile overlay */}
@@ -41,7 +41,8 @@ export default function DashboardLayout({ darkMode = true }) {
           darkMode={darkMode} 
           isMobile={true} 
           isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
+          onClose={() => setSidebarOpen(false)}
+          user={user}
         />
       )}
 

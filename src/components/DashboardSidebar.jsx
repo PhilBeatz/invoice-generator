@@ -1,13 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function DashboardSidebar({ darkMode = true, isMobile = false, isOpen = true, onClose }) {
+export default function DashboardSidebar({ darkMode = true, isMobile = false, isOpen = true, onClose, user }) {
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState({
     invoice: true,
     products: false,
     organization: false,
   });
+
+  // Get company name from user metadata or localStorage
+  const getCompanyName = () => {
+    // First check user metadata from Supabase
+    if (user?.user_metadata?.company_name) {
+      return user.user_metadata.company_name;
+    }
+    // Then check localStorage for saved business info
+    const savedBusiness = localStorage.getItem('dayonetools_business_info');
+    if (savedBusiness) {
+      const businessInfo = JSON.parse(savedBusiness);
+      if (businessInfo.name) return businessInfo.name;
+    }
+    // Fallback to user's name or email
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'My Business';
+  };
+
+  const companyName = getCompanyName();
 
   const colors = darkMode ? {
     bg: '#111827',
@@ -90,8 +114,16 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
     }}>
       {/* Company Name */}
       <div style={{ padding: '20px 16px', borderBottom: `1px solid ${colors.border}` }}>
-        <div style={{ fontSize: '14px', fontWeight: '700', color: darkMode ? '#ffffff' : '#1f2937', fontFamily: "'Inter', sans-serif" }}>
-          Day One Tools
+        <div style={{ 
+          fontSize: '14px', 
+          fontWeight: '700', 
+          color: darkMode ? '#ffffff' : '#1f2937', 
+          fontFamily: "'Inter', sans-serif",
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {companyName}
         </div>
         <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>Business Dashboard</div>
       </div>
