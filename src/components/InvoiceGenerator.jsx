@@ -464,7 +464,44 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     return html;
   };
 
+  // Validation function used by both downloadPDF and saveInvoiceAndNavigate
+  const validateInvoice = () => {
+    const errors = [];
+    
+    // Company/Business validation
+    if (!invoice.businessName?.trim()) {
+      errors.push('Business/Company name is required');
+    }
+    
+    // Customer validation
+    if (!invoice.customerName?.trim()) {
+      errors.push('Customer name is required');
+    }
+    
+    // Product/Service validation - at least one item with description and amount
+    const validItems = invoice.items.filter(item => {
+      const hasDescription = item.description?.trim();
+      const hasAmount = invoice.invoiceMode === 'products' 
+        ? (item.quantity > 0 && item.price > 0)
+        : (item.hours > 0 && item.rate > 0);
+      return hasDescription && hasAmount;
+    });
+    
+    if (validItems.length === 0) {
+      errors.push('At least one product/service with description and price is required');
+    }
+    
+    return errors;
+  };
+
   const downloadPDF = () => {
+    // Validate before generating PDF
+    const errors = validateInvoice();
+    if (errors.length > 0) {
+      alert('Please complete the following:\n\n• ' + errors.join('\n• '));
+      return;
+    }
+
     // Save current state to localStorage before showing PDF (for mobile back button)
     if (isMobile) {
       localStorage.setItem('dayonetools_invoice_draft', JSON.stringify(invoice));
@@ -722,33 +759,8 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
   // Save invoice to localStorage and navigate to detail page (for dashboard)
   const saveInvoiceAndNavigate = () => {
-    // Validation - check required fields
-    const errors = [];
-    
-    // Company/Business validation
-    if (!invoice.businessName?.trim()) {
-      errors.push('Business/Company name is required');
-    }
-    
-    // Customer validation
-    if (!invoice.customerName?.trim()) {
-      errors.push('Customer name is required');
-    }
-    
-    // Product/Service validation - at least one item with description and amount
-    const validItems = invoice.items.filter(item => {
-      const hasDescription = item.description?.trim();
-      const hasAmount = invoice.invoiceMode === 'products' 
-        ? (item.quantity > 0 && item.price > 0)
-        : (item.hours > 0 && item.rate > 0);
-      return hasDescription && hasAmount;
-    });
-    
-    if (validItems.length === 0) {
-      errors.push('At least one product/service with description and price is required');
-    }
-    
-    // Show errors if validation fails
+    // Validate before saving
+    const errors = validateInvoice();
     if (errors.length > 0) {
       alert('Please complete the following:\n\n• ' + errors.join('\n• '));
       return;
