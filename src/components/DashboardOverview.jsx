@@ -53,7 +53,7 @@ export default function DashboardOverview({ darkMode = true }) {
   ];
 
   const quickActions = [
-    { label: 'Generate New Invoice', icon: '＋', to: '/invoicegenerator', highlight: true },
+    { label: 'Generate New Invoice', icon: '＋', to: '/dashboard/create', highlight: true },
     { label: 'Manage Customers', icon: '👥', to: '/dashboard/customers', highlight: false },
     { label: 'Manage Products', icon: '📦', to: '/dashboard/products', highlight: false },
     { label: 'View Analytics', icon: '📈', to: '/dashboard/analytics', highlight: false },

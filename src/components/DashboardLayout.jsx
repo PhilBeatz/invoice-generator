@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
+import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -84,6 +85,7 @@ export default function DashboardLayout({ darkMode = true }) {
         {/* Dashboard Routes */}
         <Routes>
           <Route index element={<DashboardOverview darkMode={darkMode} />} />
+          <Route path="create" element={<InvoiceGenerator darkMode={darkMode} inDashboard={true} />} />
           <Route path="analytics" element={
             <DashboardPlaceholder darkMode={darkMode} title="Analytics" icon="📈" description="Track your revenue, invoice trends, and business growth with interactive charts and reports." />
           } />

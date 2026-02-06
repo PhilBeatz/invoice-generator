@@ -117,7 +117,7 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
         </button>
         {expandedSections.invoice && (
           <div>
-            <Link to="/invoicegenerator" style={subItemStyle('/invoicegenerator')} onClick={onClose}>
+            <Link to="/dashboard/create" style={subItemStyle('/dashboard/create')} onClick={onClose}>
               ＋ Create
             </Link>
             <Link to="/dashboard/invoices" style={subItemStyle('/dashboard/invoices')} onClick={onClose}>

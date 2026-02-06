@@ -32,7 +32,7 @@ const generateInvoiceNumber = () => {
   return `${prefix}-${random}-${suffix}`;
 };
 
-export default function InvoiceGenerator({ darkMode = true }) {
+export default function InvoiceGenerator({ darkMode = true, inDashboard = false }) {
   const [invoice, setInvoice] = useState(defaultInvoice);
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
@@ -659,7 +659,8 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         </div>
       )}
 
-      {/* Hero Header */}
+      {/* Hero Header - hidden when in dashboard */}
+      {!inDashboard && (
       <div style={{ background: colors.bg, padding: isMobile ? '30px 16px 20px' : '40px 20px 30px', textAlign: 'center' }}>
         <h1 style={{ 
           fontSize: isMobile ? '28px' : '48px', 
@@ -681,6 +682,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
           Use our free online invoice generator to create professional invoices in seconds — no signup required. Customize, and download a PDF invoice for your business needs.
         </p>
       </div>
+      )}
 
       {/* Mobile Preview Toggle */}
       {isMobile && (
