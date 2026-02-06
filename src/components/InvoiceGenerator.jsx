@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
@@ -158,6 +159,7 @@ const formatDateWithFormat = (dateStr, format) => {
 };
 
 export default function InvoiceGenerator({ darkMode = true, inDashboard = false }) {
+  const navigate = useNavigate();
   const [invoice, setInvoice] = useState(defaultInvoice);
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
@@ -191,6 +193,32 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     const savedCustomers = localStorage.getItem('dayonetools_customers');
     if (savedCustomers) {
       setCustomers(JSON.parse(savedCustomers));
+    }
+  }, []);
+
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+
+  // Load invoice for editing (when coming from Edit button)
+  useEffect(() => {
+    const editInvoice = localStorage.getItem('dayonetools_edit_invoice');
+    if (editInvoice) {
+      try {
+        const parsed = JSON.parse(editInvoice);
+        setInvoice(prev => ({ 
+          ...prev, 
+          ...parsed,
+          // Map items properly
+          items: parsed.items || [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
+        }));
+        setIsEditMode(true);
+        setEditingInvoiceId(parsed.id);
+        // Clear the edit data after loading
+        localStorage.removeItem('dayonetools_edit_invoice');
+      } catch (e) {
+        console.error('Failed to load invoice for editing:', e);
+      }
     }
   }, []);
 
@@ -692,6 +720,108 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
     marginBottom: '8px' 
   };
 
+  // Save invoice to localStorage and navigate to detail page (for dashboard)
+  const saveInvoiceAndNavigate = () => {
+    // Calculate totals
+    const subtotal = invoice.items.reduce((sum, item) => {
+      const amount = invoice.invoiceMode === 'products' 
+        ? (item.quantity || 0) * (item.price || 0)
+        : (item.hours || 0) * (item.rate || 0);
+      return sum + amount;
+    }, 0);
+    
+    const shipping = parseFloat(invoice.shippingCost) || 0;
+    const discount = parseFloat(invoice.discount) || 0;
+    
+    let taxAmount = 0;
+    if (invoice.taxType === 'percent') {
+      taxAmount = (subtotal - discount + shipping) * ((parseFloat(invoice.taxRate) || 0) / 100);
+    } else {
+      taxAmount = parseFloat(invoice.taxRate) || 0;
+    }
+    
+    const total = subtotal + shipping - discount + taxAmount;
+
+    // Load existing invoices
+    const savedInvoices = localStorage.getItem('dayonetools_invoices');
+    let invoices = savedInvoices ? JSON.parse(savedInvoices) : [];
+
+    if (isEditMode && editingInvoiceId) {
+      // UPDATE existing invoice
+      const invoiceIndex = invoices.findIndex(inv => inv.id === editingInvoiceId);
+      if (invoiceIndex !== -1) {
+        invoices[invoiceIndex] = {
+          ...invoices[invoiceIndex],
+          ...invoice,
+          subtotal: subtotal,
+          shipping: shipping,
+          discount: discount,
+          tax: taxAmount,
+          total: total,
+          updatedAt: new Date().toISOString(),
+          items: invoice.items.map(item => ({
+            ...item,
+            amount: invoice.invoiceMode === 'products' 
+              ? (item.quantity || 0) * (item.price || 0)
+              : (item.hours || 0) * (item.rate || 0),
+          })),
+        };
+      }
+      
+      // Save back to localStorage
+      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
+      
+      // Navigate back to invoice detail page
+      navigate(`/dashboard/invoices/${editingInvoiceId}`);
+    } else {
+      // CREATE new invoice
+      const invoiceToSave = {
+        id: Date.now().toString(),
+        ...invoice,
+        customerName: invoice.customerName,
+        customerEmail: invoice.customerEmail,
+        customerPhone: invoice.customerPhone,
+        customerAddress: invoice.customerAddress,
+        subtotal: subtotal,
+        shipping: shipping,
+        discount: discount,
+        tax: taxAmount,
+        total: total,
+        status: 'draft',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        items: invoice.items.map(item => ({
+          ...item,
+          amount: invoice.invoiceMode === 'products' 
+            ? (item.quantity || 0) * (item.price || 0)
+            : (item.hours || 0) * (item.rate || 0),
+        })),
+      };
+
+      // Add new invoice
+      invoices.push(invoiceToSave);
+      
+      // Save back to localStorage
+      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
+
+      // Update customer invoice count
+      if (invoice.customerName) {
+        const savedCustomers = localStorage.getItem('dayonetools_customers');
+        if (savedCustomers) {
+          const customers = JSON.parse(savedCustomers);
+          const customerIndex = customers.findIndex(c => c.name === invoice.customerName);
+          if (customerIndex !== -1) {
+            customers[customerIndex].invoiceCount = (customers[customerIndex].invoiceCount || 0) + 1;
+            localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
+          }
+        }
+      }
+
+      // Navigate to invoice detail page
+      navigate(`/dashboard/invoices/${invoiceToSave.id}`);
+    }
+  };
+
   const showEditPanel = !isMobile || !showPreview;
   const showPreviewPanel = !isMobile || showPreview;
 
@@ -891,15 +1021,15 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>
-              Invoice Creator
+              {isEditMode ? `Edit Invoice #${invoice.invoiceNumber}` : 'Invoice Creator'}
             </h1>
             <span style={{ fontSize: '18px' }}>📄</span>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Create Invoice Button */}
+            {/* Create/Save Invoice Button */}
             <button
-              onClick={downloadPDF}
+              onClick={saveInvoiceAndNavigate}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -915,7 +1045,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                 fontFamily: "'Inter', sans-serif",
               }}
             >
-              Create Invoice <span>↗</span>
+              {isEditMode ? 'Update Invoice' : 'Create Invoice'} <span>↗</span>
             </button>
             
             {/* 3-Dot Menu Button */}

@@ -124,7 +124,13 @@ export default function DashboardInvoices({ darkMode = true }) {
   };
 
   const handleViewInvoice = (invoice) => {
-    // Store invoice data and navigate to creator
+    // Navigate to invoice detail page
+    navigate(`/dashboard/invoices/${invoice.id}`);
+    setShowActionsMenu(null);
+  };
+
+  const handleEditInvoice = (invoice) => {
+    // Store invoice data and navigate to creator for editing
     localStorage.setItem('dayonetools_edit_invoice', JSON.stringify(invoice));
     navigate('/dashboard/create');
     setShowActionsMenu(null);
@@ -133,8 +139,10 @@ export default function DashboardInvoices({ darkMode = true }) {
   const getStatusBadge = (status) => {
     const styles = {
       paid: { bg: `${colors.green}20`, color: colors.green, label: 'Paid' },
+      sent: { bg: `${colors.accent}20`, color: colors.accent, label: 'Sent' },
       pending: { bg: `${colors.yellow}20`, color: colors.yellow, label: 'Pending' },
       overdue: { bg: `${colors.red}20`, color: colors.red, label: 'Overdue' },
+      cancelled: { bg: `${colors.red}20`, color: colors.red, label: 'Cancelled' },
       draft: { bg: `${colors.textMuted}20`, color: colors.textMuted, label: 'Draft' },
     };
     const style = styles[status] || styles.draft;
@@ -271,10 +279,12 @@ export default function DashboardInvoices({ darkMode = true }) {
             style={{ ...selectStyle, flex: '0 0 150px' }}
           >
             <option value="all">All Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="pending">Pending</option>
-            <option value="overdue">Overdue</option>
             <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+            <option value="cancelled">Cancelled</option>
           </select>
 
           {/* Client Filter */}
@@ -520,7 +530,7 @@ export default function DashboardInvoices({ darkMode = true }) {
                       👁️ View
                     </button>
                     <button
-                      onClick={() => handleViewInvoice(invoice)}
+                      onClick={() => handleEditInvoice(invoice)}
                       style={{
                         display: 'block',
                         width: '100%',

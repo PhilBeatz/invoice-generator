@@ -5,6 +5,7 @@ import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
+import InvoiceDetail from './InvoiceDetail';
 import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true, user }) {
@@ -97,6 +98,9 @@ export default function DashboardLayout({ darkMode = true, user }) {
           } />
           <Route path="invoices" element={
             <DashboardInvoices darkMode={darkMode} />
+          } />
+          <Route path="invoices/:invoiceId" element={
+            <InvoiceDetail darkMode={darkMode} />
           } />
           <Route path="customers" element={
             <DashboardCustomers darkMode={darkMode} />
