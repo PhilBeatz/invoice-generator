@@ -67,7 +67,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
           <Route path="/dashboard/*" element={
             <ProtectedRoute>
-              <DashboardLayout darkMode={darkMode} />
+              <DashboardLayout darkMode={darkMode} user={user} />
             </ProtectedRoute>
           } />
         </Routes>
