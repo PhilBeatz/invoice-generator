@@ -44,14 +44,26 @@ export default function DashboardProducts({ darkMode = true }) {
     }
   }, []);
 
+  // Load categories from localStorage
+  const [savedCategories, setSavedCategories] = useState([]);
+  useEffect(() => {
+    const saved = localStorage.getItem('dayonetools_categories');
+    if (saved) {
+      setSavedCategories(JSON.parse(saved));
+    }
+  }, [showModal]);
+
   // Save products to localStorage
   const saveProducts = (newProducts) => {
     setProducts(newProducts);
     localStorage.setItem('dayonetools_products', JSON.stringify(newProducts));
   };
 
-  // Get unique categories
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+  // Get unique categories from both saved categories and existing product categories
+  const categories = [...new Set([
+    ...savedCategories.filter(c => c.status === 'active').map(c => c.name),
+    ...products.map(p => p.category).filter(Boolean)
+  ])];
 
   // Filter and sort products
   const filteredProducts = products
