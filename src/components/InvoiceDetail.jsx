@@ -11,12 +11,12 @@ export default function InvoiceDetail({ darkMode = true }) {
   const [descriptionText, setDescriptionText] = useState('');
 
   const colors = darkMode ? {
-    bg: '#1a1a2e',
-    bgCard: '#252540',
-    bgInput: '#1e1e32',
-    text: '#f3f4f6',
-    textMuted: '#9ca3af',
-    border: '#374151',
+    bg: '#0d1117',
+    bgCard: '#161b22',
+    bgInput: '#21262d',
+    text: '#e6edf3',
+    textMuted: '#8b949e',
+    border: '#30363d',
     accent: '#3b82f6',
     green: '#10b981',
     yellow: '#f59e0b',
@@ -166,34 +166,36 @@ export default function InvoiceDetail({ darkMode = true }) {
   const cardStyle = {
     background: colors.bgCard,
     border: `1px solid ${colors.border}`,
-    borderRadius: '12px',
-    padding: '24px',
-    marginBottom: '20px',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '12px',
   };
 
   const labelStyle = {
-    fontSize: '12px',
+    fontSize: '10px',
     fontWeight: '500',
     color: colors.textMuted,
-    marginBottom: '4px',
+    marginBottom: '3px',
     display: 'block',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   };
 
   const valueStyle = {
-    fontSize: '14px',
+    fontSize: '13px',
     color: colors.text,
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ padding: '20px', fontFamily: "'Inter', sans-serif" }}>
       {/* Breadcrumb */}
       <div style={{ 
-        fontSize: '13px', 
+        fontSize: '11px', 
         color: colors.textMuted, 
-        marginBottom: '16px',
+        marginBottom: '12px',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '6px',
       }}>
         <Link to="/dashboard" style={{ color: colors.textMuted, textDecoration: 'none' }}>Dashboard</Link>
         <span>›</span>
@@ -207,7 +209,7 @@ export default function InvoiceDetail({ darkMode = true }) {
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '24px',
+        marginBottom: '20px',
         flexWrap: 'wrap',
         gap: '16px',
       }}>
@@ -217,7 +219,7 @@ export default function InvoiceDetail({ darkMode = true }) {
             style={{ 
               color: colors.accent, 
               textDecoration: 'none',
-              fontSize: '14px',
+              fontSize: '12px',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
@@ -225,23 +227,23 @@ export default function InvoiceDetail({ darkMode = true }) {
           >
             ← Back
           </Link>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: colors.text, margin: 0 }}>
+          <h1 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: 0 }}>
             Invoice #{invoice.invoiceNumber}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={() => alert('Share PDF feature coming soon!')}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: '6px',
+              padding: '7px 12px',
               background: 'transparent',
               color: colors.text,
               border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              fontSize: '14px',
+              borderRadius: '6px',
+              fontSize: '12px',
               fontWeight: '500',
               cursor: 'pointer',
             }}
@@ -255,13 +257,13 @@ export default function InvoiceDetail({ darkMode = true }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: '6px',
+              padding: '7px 12px',
               background: 'transparent',
               color: invoice.status === 'cancelled' ? colors.textMuted : colors.text,
               border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              fontSize: '14px',
+              borderRadius: '6px',
+              fontSize: '12px',
               fontWeight: '500',
               cursor: invoice.status === 'cancelled' ? 'not-allowed' : 'pointer',
               opacity: invoice.status === 'cancelled' ? 0.5 : 1,
@@ -273,7 +275,7 @@ export default function InvoiceDetail({ darkMode = true }) {
       </div>
 
       {/* Main Content Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '16px' }}>
         {/* Left Column */}
         <div>
           {/* Invoice Details Card */}
