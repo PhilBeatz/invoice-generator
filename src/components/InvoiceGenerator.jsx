@@ -200,6 +200,23 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
 
+  // Product modal states
+  const [showTemporaryProductModal, setShowTemporaryProductModal] = useState(false);
+  const [showProductSelectorModal, setShowProductSelectorModal] = useState(false);
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [productSearch, setProductSearch] = useState('');
+  const [productCategoryFilter, setProductCategoryFilter] = useState('all');
+  const [selectedCatalogProducts, setSelectedCatalogProducts] = useState([]);
+  const [tempProduct, setTempProduct] = useState({ name: '', model: '', price: '' });
+
+  // Load catalog products from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('dayonetools_products');
+    if (saved) {
+      setCatalogProducts(JSON.parse(saved));
+    }
+  }, [showProductSelectorModal]);
+
   // Load invoice for editing (when coming from Edit button)
   useEffect(() => {
     const editInvoice = localStorage.getItem('dayonetools_edit_invoice');
@@ -1744,25 +1761,302 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
               {activeTab === 'items' && (
                 <div>
+                  {/* Selected Products Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: 0 }}>Selected Products</h3>
+                      <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Manage products in your invoice</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button 
+                        onClick={() => setShowTemporaryProductModal(true)}
+                        style={{ 
+                          padding: '8px 14px', 
+                          background: colors.bgInput, 
+                          color: colors.text, 
+                          border: `1px solid ${colors.border}`, 
+                          borderRadius: '6px', 
+                          fontWeight: '500', 
+                          fontSize: '13px', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                        + Add Temporary
+                      </button>
+                      <button 
+                        onClick={() => setShowProductSelectorModal(true)}
+                        style={{ 
+                          padding: '8px 14px', 
+                          background: colors.green, 
+                          color: '#fff', 
+                          border: 'none', 
+                          borderRadius: '6px', 
+                          fontWeight: '500', 
+                          fontSize: '13px', 
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                        + Add Product
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Products List or Empty State */}
+                  {invoice.items.length === 0 || (invoice.items.length === 1 && !invoice.items[0].description) ? (
+                    <div style={{ 
+                      border: `1px dashed ${colors.border}`, 
+                      borderRadius: '8px', 
+                      padding: '40px 20px', 
+                      textAlign: 'center',
+                      background: colors.bgInput,
+                      marginBottom: '20px',
+                    }}>
+                      <div style={{ fontSize: '16px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>No products selected</div>
+                      <div style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '16px' }}>
+                        Add products from your catalog or create temporary products<br/>to get started with your invoice
+                      </div>
+                      <button 
+                        onClick={() => setShowProductSelectorModal(true)}
+                        style={{ 
+                          padding: '10px 20px', 
+                          background: colors.green, 
+                          color: '#fff', 
+                          border: 'none', 
+                          borderRadius: '6px', 
+                          fontWeight: '500', 
+                          fontSize: '14px', 
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                        + Add Product
+                      </button>
+                    </div>
+                  ) : (
+                    /* Products Table */
+                    <div style={{ 
+                      border: `1px solid ${colors.border}`, 
+                      borderRadius: '8px', 
+                      overflow: 'hidden',
+                      marginBottom: '20px',
+                    }}>
+                      {/* Table Header */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '2fr 1fr 80px 100px 40px',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        background: colors.bgInput,
+                        borderBottom: `1px solid ${colors.border}`,
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        color: colors.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}>
+                        <div>Product</div>
+                        <div style={{ textAlign: 'center' }}>Qty</div>
+                        <div style={{ textAlign: 'right' }}>Unit Price</div>
+                        <div style={{ textAlign: 'right' }}>Amount</div>
+                        <div></div>
+                      </div>
+
+                      {/* Product Rows */}
+                      {invoice.items.filter(item => item.description).map((item, idx) => (
+                        <div key={item.id} style={{
+                          display: 'grid',
+                          gridTemplateColumns: '2fr 1fr 80px 100px 40px',
+                          gap: '12px',
+                          padding: '12px 16px',
+                          borderBottom: `1px solid ${colors.border}`,
+                          alignItems: 'center',
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>{item.description}</div>
+                            {item.sku && <div style={{ fontSize: '12px', color: colors.textMuted }}>SKU: {item.sku}</div>}
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <input 
+                              type="number" 
+                              min="1" 
+                              value={item.quantity} 
+                              onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                              style={{ 
+                                width: '60px', 
+                                padding: '6px 8px', 
+                                background: colors.bgInput, 
+                                border: `1px solid ${colors.border}`, 
+                                borderRadius: '4px', 
+                                color: colors.text, 
+                                fontSize: '13px', 
+                                textAlign: 'center' 
+                              }}
+                            />
+                          </div>
+                          <div style={{ textAlign: 'right', fontSize: '13px', color: colors.text }}>
+                            ${parseFloat(item.price || 0).toFixed(2)}
+                          </div>
+                          <div style={{ textAlign: 'right', fontSize: '14px', fontWeight: '600', color: colors.text }}>
+                            ${((item.quantity || 1) * (item.price || 0)).toFixed(2)}
+                          </div>
+                          <div>
+                            <button 
+                              onClick={() => removeItem(item.id)}
+                              style={{ 
+                                padding: '6px 8px', 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: colors.red, 
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add Products Button Row */}
+                      <div style={{ padding: '12px 16px' }}>
+                        <button 
+                          onClick={() => setShowProductSelectorModal(true)}
+                          style={{ 
+                            width: '100%',
+                            padding: '12px', 
+                            background: colors.green, 
+                            color: '#fff', 
+                            border: 'none', 
+                            borderRadius: '6px', 
+                            fontWeight: '500', 
+                            fontSize: '14px', 
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}>
+                          + Add Products
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Shipping & Discount */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={labelStyle}>Shipping Cost (Optional):</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>📦</span>
+                        <input type="number" min="0" step="0.01" style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="Shipping Cost" value={invoice.shippingCost || ''} onChange={(e) => updateField('shippingCost', parseFloat(e.target.value) || 0)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Discount (Optional):</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷️</span>
+                        <input type="number" min="0" step="0.01" style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="Discount amount" value={invoice.discount || ''} onChange={(e) => updateField('discount', parseFloat(e.target.value) || 0)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tax Rate & Type */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={labelStyle}>Tax Rate</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🏷️</span>
+                        <input type="number" min="0" step="0.01" style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="18%" value={invoice.taxRate || ''} onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Tax Type</label>
+                      <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                        <button className="mode-btn" onClick={() => updateField('taxType', 'percent')} style={{ flex: 1, padding: '11px', background: invoice.taxType === 'percent' ? colors.green : colors.bgInput, color: invoice.taxType === 'percent' ? '#fff' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>%</button>
+                        <button className="mode-btn" onClick={() => updateField('taxType', 'fixed')} style={{ flex: 1, padding: '11px', background: invoice.taxType === 'fixed' ? colors.green : colors.bgInput, color: invoice.taxType === 'fixed' ? '#fff' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>Number</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tax Included Toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <div 
+                      className={`toggle-switch ${invoice.taxIncluded ? 'active' : ''}`} 
+                      onClick={() => updateField('taxIncluded', !invoice.taxIncluded)}
+                      style={{
+                        width: '44px',
+                        height: '24px',
+                        borderRadius: '12px',
+                        background: invoice.taxIncluded ? colors.green : colors.bgInput,
+                        border: `1px solid ${colors.border}`,
+                        position: 'relative',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <div style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        background: '#fff',
+                        position: 'absolute',
+                        top: '2px',
+                        left: invoice.taxIncluded ? '22px' : '2px',
+                        transition: 'left 0.2s',
+                      }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>Tax included in prices</div>
+                      <div style={{ fontSize: '12px', color: colors.textMuted }}>Tax will be added to the subtotal.</div>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ borderTop: `1px solid ${colors.border}`, margin: '20px 0' }}></div>
+
+                  {/* Assigned Employee (Placeholder) */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={labelStyle}>Assigned Employee</label>
+                    <div style={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '12px 14px',
+                      background: colors.bgInput,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: '6px',
+                      color: colors.textMuted,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                    }}>
+                      <span>👤</span>
+                      Click to assign an employee
+                    </div>
+                  </div>
+
                   {/* Invoice Mode Toggle */}
-                  <div style={{ marginBottom: '16px' }}>
+                  <div>
                     <label style={labelStyle}>Invoice Mode:</label>
-                    <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+                    <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', border: `1px solid ${colors.border}`, width: 'fit-content' }}>
                       <button 
                         className="mode-btn"
                         onClick={() => updateField('invoiceMode', 'products')}
                         style={{ 
-                          flex: 1,
-                          padding: '10px 16px', 
-                          background: invoice.invoiceMode === 'products' ? colors.accent : colors.bgInput,
-                          color: invoice.invoiceMode === 'products' ? '#0f172a' : colors.textMuted,
+                          padding: '10px 20px', 
+                          background: invoice.invoiceMode === 'products' ? colors.green : colors.bgInput,
+                          color: invoice.invoiceMode === 'products' ? '#fff' : colors.textMuted,
                           border: 'none',
                           fontWeight: '500',
                           fontSize: '13px',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px'
+                          gap: '6px',
+                          cursor: 'pointer',
                         }}>
                         📦 Products
                       </button>
@@ -1770,113 +2064,19 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         className="mode-btn"
                         onClick={() => updateField('invoiceMode', 'hours')}
                         style={{ 
-                          flex: 1,
-                          padding: '10px 16px', 
-                          background: invoice.invoiceMode === 'hours' ? colors.accent : colors.bgInput,
-                          color: invoice.invoiceMode === 'hours' ? '#0f172a' : colors.textMuted,
+                          padding: '10px 20px', 
+                          background: invoice.invoiceMode === 'hours' ? colors.green : colors.bgInput,
+                          color: invoice.invoiceMode === 'hours' ? '#fff' : colors.textMuted,
                           border: 'none',
                           fontWeight: '500',
                           fontSize: '13px',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px'
+                          gap: '6px',
+                          cursor: 'pointer',
                         }}>
-                        ⏱ Hours
+                        ⏱️ Hours
                       </button>
-                    </div>
-                  </div>
-
-                  {/* Products/Services Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>
-                      {invoice.invoiceMode === 'hours' ? 'Services' : 'Products'}
-                    </span>
-                    <button onClick={addItem} style={{ padding: '8px 14px', background: colors.accent, color: '#0f172a', border: 'none', borderRadius: '6px', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
-                      + Add
-                    </button>
-                  </div>
-
-                  {/* Items List */}
-                  {invoice.items.map((item, idx) => (
-                    <div key={item.id} style={{ padding: '12px', background: colors.bgInput, borderRadius: '10px', marginBottom: '10px', border: `1px solid ${colors.border}` }}>
-                      {invoice.invoiceMode === 'products' ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 80px 50px 70px 36px', gap: isMobile ? '12px' : '8px', alignItems: 'end' }}>
-                          <div>
-                            <label style={labelStyle}>Name</label>
-                            <input style={{...inputStyle, background: colors.bgCard, padding: '10px 12px'}} placeholder="Product name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>SKU</label>
-                            <input style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="SKU" value={item.sku} onChange={(e) => updateItem(item.id, 'sku', e.target.value)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Qty</label>
-                            <input type="number" min="1" style={{...inputStyle, background: colors.bgCard, padding: '10px 6px', textAlign: 'center'}} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 1)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Price</label>
-                            <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.price || ''} onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)} />
-                          </div>
-                          <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '18px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 60px 80px 36px', gap: isMobile ? '12px' : '8px', alignItems: 'end' }}>
-                          <div>
-                            <label style={labelStyle}>Service</label>
-                            <input style={{...inputStyle, background: colors.bgCard, padding: '10px 12px'}} placeholder="Service name" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Hours</label>
-                            <input type="number" min="0.5" step="0.5" style={{...inputStyle, background: colors.bgCard, padding: '10px 6px', textAlign: 'center'}} value={item.hours} onChange={(e) => updateItem(item.id, 'hours', parseFloat(e.target.value) || 1)} />
-                          </div>
-                          <div>
-                            <label style={labelStyle}>Rate</label>
-                            <input type="number" min="0" step="0.01" style={{...inputStyle, background: colors.bgCard, padding: '10px 8px'}} placeholder="0.00" value={item.rate || ''} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} />
-                          </div>
-                          <div>
-                            <button onClick={() => removeItem(item.id)} disabled={invoice.items.length === 1} style={{ width: '100%', padding: '10px', background: colors.red, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: invoice.items.length === 1 ? 0.3 : 1, fontSize: '18px', marginTop: isMobile ? '0' : '22px' }}>🗑</button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Shipping & Discount */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                    <div>
-                      <label style={labelStyle}>Shipping (Optional)</label>
-                      <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0.00" value={invoice.shippingCost || ''} onChange={(e) => updateField('shippingCost', parseFloat(e.target.value) || 0)} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Discount (Optional)</label>
-                      <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0.00" value={invoice.discount || ''} onChange={(e) => updateField('discount', parseFloat(e.target.value) || 0)} />
-                    </div>
-                  </div>
-
-                  {/* Tax Rate & Type */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginTop: '12px' }}>
-                    <div>
-                      <label style={labelStyle}>Tax Rate</label>
-                      <input type="number" min="0" step="0.01" style={inputStyle} placeholder="0" value={invoice.taxRate || ''} onChange={(e) => updateField('taxRate', parseFloat(e.target.value) || 0)} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Tax Type</label>
-                      <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
-                        <button className="mode-btn" onClick={() => updateField('taxType', 'percent')} style={{ flex: 1, padding: '12px', background: invoice.taxType === 'percent' ? colors.accent : colors.bgInput, color: invoice.taxType === 'percent' ? '#0f172a' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px' }}>%</button>
-                        <button className="mode-btn" onClick={() => updateField('taxType', 'fixed')} style={{ flex: 1, padding: '12px', background: invoice.taxType === 'fixed' ? colors.accent : colors.bgInput, color: invoice.taxType === 'fixed' ? '#0f172a' : colors.textMuted, border: 'none', fontWeight: '600', fontSize: '14px' }}>#</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tax Included Toggle */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px', padding: '12px', background: colors.bgInput, borderRadius: '8px' }}>
-                    <div className={`toggle-switch ${invoice.taxIncluded ? 'active' : ''}`} onClick={() => updateField('taxIncluded', !invoice.taxIncluded)} />
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>Tax included in prices</div>
-                      <div style={{ fontSize: '12px', color: colors.textMuted }}>{invoice.taxIncluded ? 'Tax is already included' : 'Tax will be added'}</div>
                     </div>
                   </div>
                 </div>
@@ -2218,6 +2418,424 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
           </p>
         </div>
       </div>
+
+      {/* Add Temporary Product Modal */}
+      {showTemporaryProductModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '20px',
+        }}>
+          <div style={{
+            background: colors.bgCard,
+            borderRadius: '12px',
+            border: `1px solid ${colors.border}`,
+            width: '100%',
+            maxWidth: '500px',
+            overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: `1px solid ${colors.border}`,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.green, margin: 0 }}>Add Temporary Product</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Add a product that will only exist in this invoice without saving it to your product catalog.</p>
+              </div>
+              <button
+                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '' }); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: colors.textMuted,
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Form */}
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
+                    <span style={{ marginRight: '6px' }}>🏷️</span>Product Name
+                  </label>
+                  <input
+                    style={{ ...inputStyle, background: colors.bgInput }}
+                    placeholder="Enter product name"
+                    value={tempProduct.name}
+                    onChange={(e) => setTempProduct({ ...tempProduct, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
+                    <span style={{ marginRight: '6px' }}>#</span>Model (Optional)
+                  </label>
+                  <input
+                    style={{ ...inputStyle, background: colors.bgInput }}
+                    placeholder="Enter product model"
+                    value={tempProduct.model}
+                    onChange={(e) => setTempProduct({ ...tempProduct, model: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
+                  <span style={{ marginRight: '6px' }}>$</span>Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  style={{ ...inputStyle, background: colors.bgInput }}
+                  placeholder="0.00"
+                  value={tempProduct.price}
+                  onChange={(e) => setTempProduct({ ...tempProduct, price: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '' }); }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: colors.bgInput,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  color: colors.text,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!tempProduct.name || !tempProduct.price) {
+                    alert('Please enter product name and price');
+                    return;
+                  }
+                  const newItem = {
+                    id: Date.now(),
+                    description: tempProduct.name,
+                    sku: tempProduct.model,
+                    quantity: 1,
+                    price: parseFloat(tempProduct.price) || 0,
+                    hours: 1,
+                    rate: 0,
+                    isTemporary: true,
+                  };
+                  // Replace empty first item or add to list
+                  if (invoice.items.length === 1 && !invoice.items[0].description) {
+                    setInvoice(prev => ({ ...prev, items: [newItem] }));
+                  } else {
+                    setInvoice(prev => ({ ...prev, items: [...prev.items, newItem] }));
+                  }
+                  setShowTemporaryProductModal(false);
+                  setTempProduct({ name: '', model: '', price: '' });
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: colors.green,
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                Add Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Select Products from Catalog Modal */}
+      {showProductSelectorModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '20px',
+        }}>
+          <div style={{
+            background: colors.bgCard,
+            borderRadius: '12px',
+            border: `1px solid ${colors.border}`,
+            width: '100%',
+            maxWidth: '700px',
+            maxHeight: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: `1px solid ${colors.border}`,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>Select Products</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Choose products from your catalog to add to the invoice.</p>
+              </div>
+              <button
+                onClick={() => { setShowProductSelectorModal(false); setSelectedCatalogProducts([]); setProductSearch(''); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: colors.textMuted,
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Search & Filter */}
+            <div style={{ padding: '16px 24px', borderBottom: `1px solid ${colors.border}`, display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🔍</span>
+                <input
+                  style={{ ...inputStyle, paddingLeft: '42px', background: colors.bgInput }}
+                  placeholder="Search products..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                />
+              </div>
+              <select
+                value={productCategoryFilter}
+                onChange={(e) => setProductCategoryFilter(e.target.value)}
+                style={{
+                  padding: '11px 40px 11px 14px',
+                  background: colors.bgInput,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  color: colors.text,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 12px center',
+                  backgroundSize: '16px',
+                }}
+              >
+                <option value="all">🏷️ All Categories</option>
+                {[...new Set(catalogProducts.map(p => p.category).filter(Boolean))].map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Products List */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px 24px' }}>
+              {catalogProducts.filter(p => p.status === 'active' || !p.status).filter(p => {
+                const matchesSearch = !productSearch || 
+                  p.name?.toLowerCase().includes(productSearch.toLowerCase()) ||
+                  p.model?.toLowerCase().includes(productSearch.toLowerCase());
+                const matchesCategory = productCategoryFilter === 'all' || p.category === productCategoryFilter;
+                return matchesSearch && matchesCategory;
+              }).length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.4 }}>📦</div>
+                  <div style={{ fontSize: '16px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>No products found</div>
+                  <div style={{ fontSize: '13px', color: colors.textMuted }}>Create some products first</div>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gap: '8px' }}>
+                  {catalogProducts.filter(p => p.status === 'active' || !p.status).filter(p => {
+                    const matchesSearch = !productSearch || 
+                      p.name?.toLowerCase().includes(productSearch.toLowerCase()) ||
+                      p.model?.toLowerCase().includes(productSearch.toLowerCase());
+                    const matchesCategory = productCategoryFilter === 'all' || p.category === productCategoryFilter;
+                    return matchesSearch && matchesCategory;
+                  }).map(product => (
+                    <div
+                      key={product.id}
+                      onClick={() => {
+                        if (selectedCatalogProducts.includes(product.id)) {
+                          setSelectedCatalogProducts(selectedCatalogProducts.filter(id => id !== product.id));
+                        } else {
+                          setSelectedCatalogProducts([...selectedCatalogProducts, product.id]);
+                        }
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px 16px',
+                        background: selectedCatalogProducts.includes(product.id) ? `${colors.green}20` : colors.bgInput,
+                        border: `1px solid ${selectedCatalogProducts.includes(product.id) ? colors.green : colors.border}`,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCatalogProducts.includes(product.id)}
+                        onChange={() => {}}
+                        style={{ width: '18px', height: '18px', accentColor: colors.green }}
+                      />
+                      {product.photo ? (
+                        <img src={product.photo} alt={product.name} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '6px', background: colors.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', opacity: 0.5 }}>📦</div>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text }}>{product.name}</div>
+                        {product.model && <div style={{ fontSize: '12px', color: colors.textMuted }}>{product.model}</div>}
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: colors.green }}>
+                        ${parseFloat(product.price || 0).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => { setShowProductSelectorModal(false); setSelectedCatalogProducts([]); setProductSearch(''); }}
+                style={{
+                  padding: '12px 20px',
+                  background: colors.bgInput,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  color: colors.text,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowProductSelectorModal(false); setShowTemporaryProductModal(true); }}
+                style={{
+                  padding: '12px 20px',
+                  background: colors.bgInput,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '6px',
+                  color: colors.text,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                + Add Temporary
+              </button>
+              <button
+                onClick={() => {
+                  // Navigate to products page to create a new product
+                  setShowProductSelectorModal(false);
+                  if (inDashboard) {
+                    navigate('/dashboard/products');
+                  }
+                }}
+                style={{
+                  padding: '12px 20px',
+                  background: colors.green,
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                + Create Product
+              </button>
+              <button
+                onClick={() => {
+                  // Add selected products to invoice
+                  const productsToAdd = catalogProducts.filter(p => selectedCatalogProducts.includes(p.id));
+                  const newItems = productsToAdd.map(p => ({
+                    id: Date.now() + Math.random(),
+                    description: p.name,
+                    sku: p.model || '',
+                    quantity: 1,
+                    price: parseFloat(p.price) || 0,
+                    hours: 1,
+                    rate: 0,
+                    productId: p.id,
+                  }));
+                  
+                  if (newItems.length > 0) {
+                    // Replace empty first item or add to list
+                    if (invoice.items.length === 1 && !invoice.items[0].description) {
+                      setInvoice(prev => ({ ...prev, items: newItems }));
+                    } else {
+                      setInvoice(prev => ({ ...prev, items: [...prev.items, ...newItems] }));
+                    }
+                  }
+                  
+                  setShowProductSelectorModal(false);
+                  setSelectedCatalogProducts([]);
+                  setProductSearch('');
+                }}
+                style={{
+                  padding: '12px 20px',
+                  background: selectedCatalogProducts.length > 0 ? colors.green : colors.bgInput,
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: selectedCatalogProducts.length > 0 ? '#fff' : colors.textMuted,
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                + Add Selected ({selectedCatalogProducts.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
