@@ -15,12 +15,12 @@ export default function DashboardInvoices({ darkMode = true }) {
   const [selectedInvoices, setSelectedInvoices] = useState([]);
 
   const colors = darkMode ? {
-    bg: '#1a1a2e',
-    bgCard: '#252540',
-    bgInput: '#1e1e32',
-    text: '#f3f4f6',
-    textMuted: '#9ca3af',
-    border: '#374151',
+    bg: '#0f1419',
+    bgCard: '#161b22',
+    bgInput: '#21262d',
+    text: '#e6edf3',
+    textMuted: '#8b949e',
+    border: '#30363d',
     accent: '#3b82f6',
     accentHover: '#2563eb',
     green: '#10b981',
@@ -150,11 +150,11 @@ export default function DashboardInvoices({ darkMode = true }) {
     return (
       <span style={{
         display: 'inline-block',
-        padding: '4px 12px',
+        padding: '3px 8px',
         background: style.bg,
         color: style.color,
-        borderRadius: '20px',
-        fontSize: '12px',
+        borderRadius: '4px',
+        fontSize: '11px',
         fontWeight: '500',
       }}>
         {style.label}
@@ -178,9 +178,9 @@ export default function DashboardInvoices({ darkMode = true }) {
     padding: '12px 14px',
     background: colors.bgInput,
     border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
+    borderRadius: '6px',
     color: colors.text,
-    fontSize: '14px',
+    fontSize: '13px',
     fontFamily: "'Inter', sans-serif",
     outline: 'none',
   };
@@ -189,29 +189,29 @@ export default function DashboardInvoices({ darkMode = true }) {
     ...inputStyle,
     cursor: 'pointer',
     appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    backgroundSize: '16px',
-    paddingRight: '40px',
+    backgroundPosition: 'right 10px center',
+    backgroundSize: '14px',
+    paddingRight: '36px',
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ padding: '20px', fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'flex-start', 
-        marginBottom: '24px',
+        marginBottom: '20px',
         flexWrap: 'wrap',
-        gap: '16px',
+        gap: '12px',
       }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: colors.text, margin: 0 }}>
+          <h1 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>
             Invoices
           </h1>
-          <p style={{ fontSize: '14px', color: colors.textMuted, marginTop: '4px' }}>
+          <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
             Manage and track your invoices
           </p>
         </div>
@@ -220,14 +220,14 @@ export default function DashboardInvoices({ darkMode = true }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '12px 20px',
+            gap: '6px',
+            padding: '8px 14px',
             background: colors.accent,
             color: '#ffffff',
             border: 'none',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '600',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontWeight: '500',
             cursor: 'pointer',
             fontFamily: "'Inter', sans-serif",
           }}
@@ -322,19 +322,19 @@ export default function DashboardInvoices({ darkMode = true }) {
         background: colors.bgCard,
         border: `1px solid ${colors.border}`,
         borderTop: 'none',
-        borderBottomLeftRadius: '12px',
-        borderBottomRightRadius: '12px',
+        borderBottomLeftRadius: '8px',
+        borderBottomRightRadius: '8px',
         overflow: 'visible',
       }}>
         {/* Table Header */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '40px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 60px',
-          gap: '12px',
-          padding: '14px 20px',
+          gridTemplateColumns: '36px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 50px',
+          gap: '10px',
+          padding: '10px 16px',
           background: colors.bgInput,
           borderBottom: `1px solid ${colors.border}`,
-          fontSize: '12px',
+          fontSize: '10px',
           fontWeight: '600',
           color: colors.textMuted,
           textTransform: 'uppercase',
@@ -346,7 +346,7 @@ export default function DashboardInvoices({ darkMode = true }) {
               type="checkbox" 
               onChange={handleSelectAll}
               checked={selectedInvoices.length === filteredInvoices.length && filteredInvoices.length > 0}
-              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              style={{ width: '14px', height: '14px', cursor: 'pointer' }}
             />
           </div>
           <div>📄 Invoice #</div>
@@ -355,29 +355,29 @@ export default function DashboardInvoices({ darkMode = true }) {
           <div>⏱️ Status</div>
           <div>📅 Issued Date</div>
           <div>🕐 Created</div>
-          <div>⚙️ Actions</div>
+          <div>⚙️</div>
         </div>
 
         {filteredInvoices.length === 0 ? (
           /* Empty State */
           <div style={{ 
-            padding: '60px 20px', 
+            padding: '50px 20px', 
             textAlign: 'center',
           }}>
             <div style={{ 
-              width: '80px', 
-              height: '80px', 
-              margin: '0 auto 20px',
+              width: '60px', 
+              height: '60px', 
+              margin: '0 auto 16px',
               background: colors.bgInput,
-              borderRadius: '12px',
+              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
+              fontSize: '24px',
             }}>
               📄
             </div>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>
               No invoices found
             </h3>
             <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '20px' }}>
@@ -414,12 +414,12 @@ export default function DashboardInvoices({ darkMode = true }) {
               key={invoice.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '40px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 60px',
-                gap: '12px',
-                padding: '16px 20px',
+                gridTemplateColumns: '36px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 50px',
+                gap: '10px',
+                padding: '12px 16px',
                 borderBottom: `1px solid ${colors.border}`,
                 alignItems: 'center',
-                fontSize: '14px',
+                fontSize: '13px',
                 color: colors.text,
                 background: selectedInvoices.includes(invoice.id) ? `${colors.accent}10` : 'transparent',
               }}
@@ -430,25 +430,25 @@ export default function DashboardInvoices({ darkMode = true }) {
                   type="checkbox" 
                   checked={selectedInvoices.includes(invoice.id)}
                   onChange={() => handleSelectInvoice(invoice.id)}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  style={{ width: '14px', height: '14px', cursor: 'pointer' }}
                 />
               </div>
               
               {/* Invoice # */}
-              <div style={{ fontWeight: '500', color: colors.accent }}>
+              <div style={{ fontWeight: '500', color: colors.accent, fontSize: '12px' }}>
                 {invoice.invoiceNumber || '—'}
               </div>
               
               {/* Client */}
               <div>
-                <div style={{ fontWeight: '500' }}>{invoice.customerName || '—'}</div>
-                <div style={{ fontSize: '12px', color: colors.textMuted }}>
+                <div style={{ fontWeight: '500', fontSize: '13px' }}>{invoice.customerName || '—'}</div>
+                <div style={{ fontSize: '11px', color: colors.textMuted }}>
                   {invoice.customerEmail || ''}
                 </div>
               </div>
               
               {/* Amount */}
-              <div style={{ fontWeight: '600' }}>
+              <div style={{ fontWeight: '600', fontSize: '13px' }}>
                 {formatCurrency(invoice.total, invoice.currency)}
               </div>
               
@@ -458,12 +458,12 @@ export default function DashboardInvoices({ darkMode = true }) {
               </div>
               
               {/* Issued Date */}
-              <div style={{ color: colors.textMuted, fontSize: '13px' }}>
+              <div style={{ color: colors.textMuted, fontSize: '12px' }}>
                 {formatDate(invoice.issueDate)}
               </div>
               
               {/* Created */}
-              <div style={{ color: colors.textMuted, fontSize: '13px' }}>
+              <div style={{ color: colors.textMuted, fontSize: '12px' }}>
                 {formatDate(invoice.createdAt)}
               </div>
               
@@ -475,7 +475,7 @@ export default function DashboardInvoices({ darkMode = true }) {
                     setShowActionsMenu(showActionsMenu === invoice.id ? null : invoice.id); 
                   }}
                   style={{
-                    padding: '6px 10px',
+                    padding: '4px 8px',
                     background: 'transparent',
                     border: 'none',
                     color: colors.textMuted,

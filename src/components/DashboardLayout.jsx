@@ -20,9 +20,9 @@ export default function DashboardLayout({ darkMode = true, user }) {
   }, []);
 
   const colors = darkMode ? {
-    bg: '#1a1a2e',
-    text: '#f3f4f6',
-    border: '#374151',
+    bg: '#0d1117',
+    text: '#e6edf3',
+    border: '#21262d',
   } : {
     bg: '#f1f5f9',
     text: '#1f2937',
@@ -54,21 +54,21 @@ export default function DashboardLayout({ darkMode = true, user }) {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            padding: '12px 16px',
+            gap: '10px',
+            padding: '10px 14px',
             borderBottom: `1px solid ${colors.border}`,
-            background: darkMode ? '#111827' : '#ffffff',
+            background: darkMode ? '#0d1117' : '#ffffff',
           }}>
             <button
               onClick={() => setSidebarOpen(true)}
               style={{
                 background: 'none',
                 border: `1px solid ${colors.border}`,
-                borderRadius: '8px',
-                padding: '8px 10px',
+                borderRadius: '6px',
+                padding: '6px 8px',
                 cursor: 'pointer',
                 color: colors.text,
-                fontSize: '18px',
+                fontSize: '16px',
                 display: 'flex',
                 alignItems: 'center',
               }}
@@ -76,7 +76,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
               ☰
             </button>
             <span style={{ 
-              fontSize: '15px', 
+              fontSize: '14px', 
               fontWeight: '600', 
               color: colors.text, 
               fontFamily: "'Inter', sans-serif" 

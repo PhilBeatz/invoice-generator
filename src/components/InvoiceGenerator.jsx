@@ -704,15 +704,15 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
   ];
 
   const colors = darkMode ? {
-    bg: '#1a1a2e',
+    bg: '#0f1419',
     bgLight: '#16213e',
-    bgCard: '#1f2937',
-    bgInput: '#374151',
+    bgCard: '#1a1f2e',
+    bgInput: '#252d3d',
     accent: '#3b82f6',
     accentHover: '#60a5fa',
-    text: '#f3f4f6',
+    text: '#e5e7eb',
     textMuted: '#9ca3af',
-    border: '#4b5563',
+    border: '#2d3748',
     green: '#10b981',
     red: '#dc2626',
   } : {
@@ -731,23 +731,26 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
   const inputStyle = { 
     width: '100%', 
-    padding: '12px 14px', 
+    padding: '10px 12px', 
     border: `1px solid ${colors.border}`, 
-    borderRadius: '8px', 
-    fontSize: '16px', 
+    borderRadius: '6px', 
+    fontSize: '13px', 
     fontFamily: 'Inter, sans-serif', 
     background: colors.bgInput, 
     color: colors.text,
     boxSizing: 'border-box',
     outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
   };
   
   const labelStyle = { 
     display: 'block', 
-    fontSize: '13px', 
+    fontSize: '12px', 
     fontWeight: '500', 
     color: colors.textMuted, 
-    marginBottom: '8px' 
+    marginBottom: '6px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   };
 
   // Save invoice to localStorage and navigate to detail page (for dashboard)
@@ -1053,36 +1056,37 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: '20px 24px',
+          padding: '16px 20px',
           borderBottom: `1px solid ${colors.border}`,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h1 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: 0 }}>
               {isEditMode ? `Edit Invoice #${invoice.invoiceNumber}` : 'Invoice Creator'}
             </h1>
-            <span style={{ fontSize: '18px' }}>📄</span>
+            <span style={{ fontSize: '14px', opacity: 0.7 }}>📄</span>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Create/Save Invoice Button */}
             <button
               onClick={saveInvoiceAndNavigate}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                background: '#10b981',
+                gap: '6px',
+                padding: '8px 16px',
+                background: colors.accent,
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '600',
+                fontSize: '13px',
+                fontWeight: '500',
                 cursor: 'pointer',
                 fontFamily: "'Inter', sans-serif",
+                transition: 'background 0.2s',
               }}
             >
-              {isEditMode ? 'Update Invoice' : 'Create Invoice'} <span>↗</span>
+              {isEditMode ? 'Update Invoice' : 'Create Invoice'} <span style={{ fontSize: '12px' }}>↗</span>
             </button>
             
             {/* 3-Dot Menu Button */}
@@ -1329,48 +1333,51 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         {showEditPanel && (
           <div style={{ 
             background: colors.bgCard, 
-            borderRadius: '12px', 
+            borderRadius: '8px', 
             border: `1px solid ${colors.border}`, 
             overflow: 'hidden', 
             width: '100%', 
-            maxWidth: isMobile ? '100%' : '600px', 
+            maxWidth: isMobile ? '100%' : '580px', 
             minWidth: isMobile ? '100%' : '320px', 
-            flex: isMobile ? '1 1 100%' : '1 1 550px'
+            flex: isMobile ? '1 1 100%' : '1 1 520px'
           }}>
-            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '18px' }}>📋</span>
-              <span style={{ fontSize: '16px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
+            <div style={{ padding: '14px 18px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px' }}>📋</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
+              </div>
             </div>
             
-            <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '8px 12px', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '12px 16px', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
               {tabs.map(tab => (
                 <button 
                   key={tab.id} 
                   className="tab-btn"
                   onClick={() => setActiveTab(tab.id)} 
                   style={{ 
-                    padding: isMobile ? '10px 12px' : '12px 14px', 
+                    padding: '8px 14px', 
                     background: activeTab === tab.id ? colors.accent : 'transparent', 
-                    border: 'none', 
-                    fontSize: isMobile ? '12px' : '13px', 
+                    border: activeTab === tab.id ? 'none' : `1px solid transparent`,
+                    fontSize: '12px', 
                     fontWeight: '500', 
-                    color: activeTab === tab.id ? '#0f172a' : colors.textMuted, 
+                    color: activeTab === tab.id ? '#ffffff' : colors.textMuted, 
                     cursor: 'pointer', 
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     whiteSpace: 'nowrap', 
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    flexShrink: 0
+                    gap: '6px',
+                    flexShrink: 0,
+                    transition: 'all 0.2s',
                   }}>
-                  {tab.icon} {tab.label}
+                  <span style={{ fontSize: '12px' }}>{tab.icon}</span> {tab.label}
                 </button>
               ))}
             </div>
 
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: '16px 18px' }}>
               {activeTab === 'business' && (
-                <div style={{ display: 'grid', gap: '16px' }}>
+                <div style={{ display: 'grid', gap: '14px' }}>
                   <div>
                     <label style={labelStyle}>Logo</label>
                     <label 
