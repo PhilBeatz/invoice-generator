@@ -1377,39 +1377,158 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
             <div style={{ padding: '24px' }}>
               {activeTab === 'business' && (
-                <div style={{ display: 'grid', gap: '18px' }}>
-                  <div>
-                    <label style={labelStyle}>Logo</label>
-                    <label 
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      style={{ 
-                        border: `1px dashed ${isDragging ? colors.accent : colors.border}`, 
-                        borderRadius: '6px', 
-                        padding: '24px', 
-                        textAlign: 'center', 
-                        cursor: 'pointer', 
-                        display: 'block', 
-                        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : colors.bgInput, 
-                        transition: 'all 0.15s' 
-                      }}>
-                      <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
-                      {logoPreview ? (
-                        <img src={logoPreview} alt="Logo" style={{ maxWidth: '160px', maxHeight: '80px' }} />
-                      ) : (
-                        <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '14px' }}>
-                          <div style={{ fontSize: '24px', marginBottom: '8px', opacity: 0.6 }}>📷</div>
-                          <div>Drag & drop your logo here</div>
-                          <div style={{ fontSize: '13px', marginTop: '4px', opacity: 0.7 }}>or tap to browse</div>
-                        </div>
-                      )}
-                    </label>
+                <div style={{ display: 'grid', gap: '24px' }}>
+                  {/* Section Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>Company Information</h3>
+                      <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Your organization details for invoices</p>
+                    </div>
                   </div>
-                  <div><label style={labelStyle}>Business Name</label><input style={inputStyle} placeholder="Your Company Name" value={invoice.businessName} onChange={(e) => updateField('businessName', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Address</label><input style={inputStyle} placeholder="123 Business St, City, State" value={invoice.businessAddress} onChange={(e) => updateField('businessAddress', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Email</label><input type="email" style={inputStyle} placeholder="billing@company.com" value={invoice.businessEmail} onChange={(e) => updateField('businessEmail', e.target.value)} /></div>
-                  <div><label style={labelStyle}>Phone</label><input type="tel" style={inputStyle} placeholder="(555) 123-4567" value={invoice.businessPhone} onChange={(e) => updateField('businessPhone', e.target.value)} /></div>
+
+                  {/* Company Name */}
+                  <div>
+                    <label style={labelStyle}>Company Name</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '14px' }}>🏢</span>
+                      <input style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="Your Company Name" value={invoice.businessName} onChange={(e) => updateField('businessName', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label style={labelStyle}>Address</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '14px' }}>🏠</span>
+                      <input style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="123 Business St, City, State" value={invoice.businessAddress} onChange={(e) => updateField('businessAddress', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Email & Phone - Two Column */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={labelStyle}>Email</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '14px' }}>✉️</span>
+                        <input type="email" style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="billing@company.com" value={invoice.businessEmail} onChange={(e) => updateField('businessEmail', e.target.value)} />
+                      </div>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Phone</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '14px' }}>📞</span>
+                        <input type="tel" style={{ ...inputStyle, paddingLeft: '42px' }} placeholder="(555) 123-4567" value={invoice.businessPhone} onChange={(e) => updateField('businessPhone', e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ borderTop: `1px solid ${colors.border}`, margin: '8px 0' }}></div>
+
+                  {/* Branding Section */}
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: '0 0 16px 0' }}>Branding & Authorization</h3>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                      {/* Company Logo */}
+                      <div>
+                        <label style={labelStyle}>Company Logo</label>
+                        <label 
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          style={{ 
+                            border: `1px dashed ${isDragging ? colors.accent : colors.border}`, 
+                            borderRadius: '8px', 
+                            padding: '24px', 
+                            textAlign: 'center', 
+                            cursor: 'pointer', 
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '140px',
+                            background: isDragging ? 'rgba(59, 130, 246, 0.1)' : colors.bgInput, 
+                            transition: 'all 0.15s' 
+                          }}>
+                          <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+                          {logoPreview ? (
+                            <>
+                              <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '60px', marginBottom: '12px' }} />
+                              <button 
+                                onClick={(e) => { e.preventDefault(); setLogoPreview(''); }}
+                                style={{ 
+                                  padding: '6px 12px', 
+                                  background: 'transparent', 
+                                  border: `1px solid ${colors.border}`, 
+                                  borderRadius: '4px', 
+                                  color: colors.text, 
+                                  fontSize: '12px', 
+                                  cursor: 'pointer' 
+                                }}
+                              >
+                                Remove Logo
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.4 }}>🖼️</div>
+                              <div style={{ color: colors.textMuted, fontSize: '13px', marginBottom: '12px' }}>No logo uploaded yet.</div>
+                              <div style={{ 
+                                padding: '8px 16px', 
+                                background: 'transparent', 
+                                border: `1px solid ${colors.border}`, 
+                                borderRadius: '6px', 
+                                color: colors.text, 
+                                fontSize: '13px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}>
+                                ⬆️ Upload New Logo
+                              </div>
+                            </>
+                          )}
+                        </label>
+                      </div>
+
+                      {/* Signature/Stamp Placeholder */}
+                      <div>
+                        <label style={labelStyle}>Default Signature/Stamp</label>
+                        <div style={{ 
+                          border: `1px dashed ${colors.border}`, 
+                          borderRadius: '8px', 
+                          padding: '24px', 
+                          textAlign: 'center', 
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '140px',
+                          background: colors.bgInput, 
+                        }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px', opacity: 0.4 }}>✍️</div>
+                          <div style={{ color: colors.textMuted, fontSize: '13px', marginBottom: '12px' }}>No signature uploaded</div>
+                          <div style={{ 
+                            padding: '8px 16px', 
+                            background: 'transparent', 
+                            border: `1px solid ${colors.border}`, 
+                            borderRadius: '6px', 
+                            color: colors.text, 
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            cursor: 'pointer',
+                            opacity: 0.6,
+                          }}>
+                            ⬆️ Upload Signature
+                          </div>
+                          <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '8px' }}>Coming soon</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
