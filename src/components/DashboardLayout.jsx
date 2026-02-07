@@ -5,6 +5,7 @@ import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
+import DashboardProducts from './DashboardProducts';
 import InvoiceDetail from './InvoiceDetail';
 import InvoiceGenerator from './InvoiceGenerator';
 
@@ -112,7 +113,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardPlaceholder darkMode={darkMode} title="Invoice Configuration" icon="⚙️" description="Set up default invoice templates, numbering schemes, and automation rules." />
           } />
           <Route path="products" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Products" icon="📦" description="Manage your product catalog. Add items with prices, descriptions, and SKUs." />
+            <DashboardProducts darkMode={darkMode} />
           } />
           <Route path="categories" element={
             <DashboardPlaceholder darkMode={darkMode} title="Categories" icon="📁" description="Organize your products into categories for easier management and reporting." />
