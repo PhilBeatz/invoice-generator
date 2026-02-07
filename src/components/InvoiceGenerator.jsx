@@ -1327,7 +1327,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
       )}
 
       {/* Main */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 24px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 24px 24px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
         
         {/* Left Panel - Invoice Details */}
         {showEditPanel && (
@@ -1337,9 +1337,9 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             border: `1px solid ${colors.border}`, 
             overflow: 'hidden', 
             width: '100%', 
-            maxWidth: isMobile ? '100%' : '560px', 
-            minWidth: isMobile ? '100%' : '360px', 
-            flex: isMobile ? '1 1 100%' : '1 1 520px'
+            maxWidth: isMobile ? '100%' : '640px', 
+            minWidth: isMobile ? '100%' : '400px', 
+            flex: isMobile ? '1 1 100%' : '1 1 600px'
           }}>
             <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1355,7 +1355,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   className="tab-btn"
                   onClick={() => setActiveTab(tab.id)} 
                   style={{ 
-                    padding: '8px 14px', 
+                    padding: '9px 16px', 
                     background: activeTab === tab.id ? colors.accent : 'transparent', 
                     border: 'none',
                     fontSize: '13px', 
@@ -1375,9 +1375,9 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
               ))}
             </div>
 
-            <div style={{ padding: '20px' }}>
+            <div style={{ padding: '24px' }}>
               {activeTab === 'business' && (
-                <div style={{ display: 'grid', gap: '16px' }}>
+                <div style={{ display: 'grid', gap: '18px' }}>
                   <div>
                     <label style={labelStyle}>Logo</label>
                     <label 
@@ -1387,7 +1387,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                       style={{ 
                         border: `1px dashed ${isDragging ? colors.accent : colors.border}`, 
                         borderRadius: '6px', 
-                        padding: '20px', 
+                        padding: '24px', 
                         textAlign: 'center', 
                         cursor: 'pointer', 
                         display: 'block', 
@@ -1396,7 +1396,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                       }}>
                       <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                       {logoPreview ? (
-                        <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} />
+                        <img src={logoPreview} alt="Logo" style={{ maxWidth: '160px', maxHeight: '80px' }} />
                       ) : (
                         <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '14px' }}>
                           <div style={{ fontSize: '24px', marginBottom: '8px', opacity: 0.6 }}>📷</div>
@@ -1886,8 +1886,8 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             borderRadius: '8px', 
             border: `1px solid ${colors.border}`, 
             overflow: 'hidden', 
-            flex: isMobile ? '1 1 100%' : '2 1 500px', 
-            minWidth: isMobile ? '100%' : '360px',
+            flex: isMobile ? '1 1 100%' : '1.2 1 550px', 
+            minWidth: isMobile ? '100%' : '400px',
             width: isMobile ? '100%' : 'auto'
           }}>
             <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
@@ -1901,11 +1901,11 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             </div>
             
             {/* White preview area */}
-            <div style={{ padding: '16px', background: colors.bgInput }}>
-              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '20px' : '28px', minHeight: isMobile ? '380px' : '480px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ padding: '20px', background: colors.bgInput }}>
+              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '24px' : '32px', minHeight: isMobile ? '400px' : '520px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 {/* Header - Bold template has dark header */}
                 {selectedTemplate === 'bold' && (
-                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-20px -20px 20px' : '-28px -28px 24px', padding: isMobile ? '20px' : '24px', borderRadius: '6px 6px 0 0' }}>
+                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ minWidth: '140px', flex: '1' }}>
                         {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
