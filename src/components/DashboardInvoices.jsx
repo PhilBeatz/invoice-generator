@@ -236,16 +236,17 @@ export default function DashboardInvoices({ darkMode = true }) {
         </button>
       </div>
 
-      {/* Filters Card */}
+      {/* Filters Row - integrated with table */}
       <div style={{
         background: colors.bgCard,
         border: `1px solid ${colors.border}`,
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '20px',
+        borderTopLeftRadius: '12px',
+        borderTopRightRadius: '12px',
+        borderBottom: 'none',
+        padding: '16px 20px',
       }}>
         {/* Search Bar */}
-        <div style={{ position: 'relative', marginBottom: '16px' }}>
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
           <span style={{ 
             position: 'absolute', 
             left: '14px', 
@@ -268,7 +269,7 @@ export default function DashboardInvoices({ darkMode = true }) {
         {/* Filter Row */}
         <div style={{ 
           display: 'flex', 
-          gap: '12px', 
+          gap: '10px', 
           flexWrap: 'wrap',
           alignItems: 'center',
         }}>
@@ -276,7 +277,7 @@ export default function DashboardInvoices({ darkMode = true }) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 150px' }}
+            style={{ ...selectStyle, flex: '0 0 130px', padding: '10px 12px' }}
           >
             <option value="all">All Statuses</option>
             <option value="draft">Draft</option>
@@ -287,27 +288,13 @@ export default function DashboardInvoices({ darkMode = true }) {
             <option value="cancelled">Cancelled</option>
           </select>
 
-          {/* Client Filter */}
-          <select
-            value={clientFilter}
-            onChange={(e) => setClientFilter(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 180px' }}
-          >
-            <option value="all">All Clients</option>
-            {customers.map(customer => (
-              <option key={customer.id} value={customer.name}>
-                {customer.name}
-              </option>
-            ))}
-          </select>
-
           {/* Date Filter */}
           <input
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             placeholder="Pick a date"
-            style={{ ...inputStyle, flex: '0 0 180px' }}
+            style={{ ...inputStyle, flex: '0 0 150px', padding: '10px 12px' }}
           />
 
           {/* Sort & Display */}
@@ -318,7 +305,7 @@ export default function DashboardInvoices({ darkMode = true }) {
               setSortBy(field);
               setSortOrder(order);
             }}
-            style={{ ...selectStyle, flex: '0 0 160px' }}
+            style={{ ...selectStyle, flex: '0 0 150px', padding: '10px 12px' }}
           >
             <option value="createdAt-desc">Newest First</option>
             <option value="createdAt-asc">Oldest First</option>
@@ -334,8 +321,10 @@ export default function DashboardInvoices({ darkMode = true }) {
       <div style={{
         background: colors.bgCard,
         border: `1px solid ${colors.border}`,
-        borderRadius: '12px',
-        overflow: 'hidden',
+        borderTop: 'none',
+        borderBottomLeftRadius: '12px',
+        borderBottomRightRadius: '12px',
+        overflow: 'visible',
       }}>
         {/* Table Header */}
         <div style={{
@@ -502,14 +491,15 @@ export default function DashboardInvoices({ darkMode = true }) {
                   <div style={{
                     position: 'absolute',
                     right: 0,
-                    top: '100%',
+                    bottom: '100%',
+                    marginBottom: '4px',
                     background: colors.bgCard,
                     border: `1px solid ${colors.border}`,
                     borderRadius: '8px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    zIndex: 100,
+                    zIndex: 1000,
                     minWidth: '140px',
-                    overflow: 'hidden',
+                    overflow: 'visible',
                   }}>
                     <button
                       onClick={() => handleViewInvoice(invoice)}
