@@ -150,11 +150,11 @@ export default function DashboardInvoices({ darkMode = true }) {
     return (
       <span style={{
         display: 'inline-block',
-        padding: '3px 8px',
+        padding: '4px 10px',
         background: style.bg,
         color: style.color,
         borderRadius: '4px',
-        fontSize: '11px',
+        fontSize: '12px',
         fontWeight: '500',
       }}>
         {style.label}
@@ -180,7 +180,7 @@ export default function DashboardInvoices({ darkMode = true }) {
     border: `1px solid ${colors.border}`,
     borderRadius: '6px',
     color: colors.text,
-    fontSize: '13px',
+    fontSize: '14px',
     fontFamily: "'Inter', sans-serif",
     outline: 'none',
   };
@@ -191,27 +191,27 @@ export default function DashboardInvoices({ darkMode = true }) {
     appearance: 'none',
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 10px center',
-    backgroundSize: '14px',
-    paddingRight: '36px',
+    backgroundPosition: 'right 12px center',
+    backgroundSize: '16px',
+    paddingRight: '40px',
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'flex-start', 
-        marginBottom: '20px',
+        marginBottom: '24px',
         flexWrap: 'wrap',
-        gap: '12px',
+        gap: '16px',
       }}>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>
+          <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, margin: 0 }}>
             Invoices
           </h1>
-          <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
+          <p style={{ fontSize: '14px', color: colors.textMuted, marginTop: '4px' }}>
             Manage and track your invoices
           </p>
         </div>
@@ -220,13 +220,13 @@ export default function DashboardInvoices({ darkMode = true }) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '8px 14px',
+            gap: '8px',
+            padding: '10px 18px',
             background: colors.accent,
             color: '#ffffff',
             border: 'none',
             borderRadius: '6px',
-            fontSize: '13px',
+            fontSize: '14px',
             fontWeight: '500',
             cursor: 'pointer',
             fontFamily: "'Inter', sans-serif",
@@ -329,12 +329,12 @@ export default function DashboardInvoices({ darkMode = true }) {
         {/* Table Header */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '36px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 50px',
-          gap: '10px',
-          padding: '10px 16px',
+          gridTemplateColumns: '40px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 60px',
+          gap: '12px',
+          padding: '14px 20px',
           background: colors.bgInput,
           borderBottom: `1px solid ${colors.border}`,
-          fontSize: '10px',
+          fontSize: '11px',
           fontWeight: '600',
           color: colors.textMuted,
           textTransform: 'uppercase',
@@ -346,7 +346,7 @@ export default function DashboardInvoices({ darkMode = true }) {
               type="checkbox" 
               onChange={handleSelectAll}
               checked={selectedInvoices.length === filteredInvoices.length && filteredInvoices.length > 0}
-              style={{ width: '14px', height: '14px', cursor: 'pointer' }}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
           </div>
           <div>📄 Invoice #</div>
@@ -361,23 +361,23 @@ export default function DashboardInvoices({ darkMode = true }) {
         {filteredInvoices.length === 0 ? (
           /* Empty State */
           <div style={{ 
-            padding: '50px 20px', 
+            padding: '60px 20px', 
             textAlign: 'center',
           }}>
             <div style={{ 
-              width: '60px', 
-              height: '60px', 
-              margin: '0 auto 16px',
+              width: '70px', 
+              height: '70px', 
+              margin: '0 auto 20px',
               background: colors.bgInput,
-              borderRadius: '10px',
+              borderRadius: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '24px',
+              fontSize: '28px',
             }}>
               📄
             </div>
-            <h3 style={{ fontSize: '15px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>
               No invoices found
             </h3>
             <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '20px' }}>
@@ -414,12 +414,12 @@ export default function DashboardInvoices({ darkMode = true }) {
               key={invoice.id}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '36px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 50px',
-                gap: '10px',
-                padding: '12px 16px',
+                gridTemplateColumns: '40px 1.5fr 2fr 1.2fr 1fr 1.2fr 1.2fr 60px',
+                gap: '12px',
+                padding: '14px 20px',
                 borderBottom: `1px solid ${colors.border}`,
                 alignItems: 'center',
-                fontSize: '13px',
+                fontSize: '14px',
                 color: colors.text,
                 background: selectedInvoices.includes(invoice.id) ? `${colors.accent}10` : 'transparent',
               }}
@@ -430,25 +430,25 @@ export default function DashboardInvoices({ darkMode = true }) {
                   type="checkbox" 
                   checked={selectedInvoices.includes(invoice.id)}
                   onChange={() => handleSelectInvoice(invoice.id)}
-                  style={{ width: '14px', height: '14px', cursor: 'pointer' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                 />
               </div>
               
               {/* Invoice # */}
-              <div style={{ fontWeight: '500', color: colors.accent, fontSize: '12px' }}>
+              <div style={{ fontWeight: '500', color: colors.accent, fontSize: '13px' }}>
                 {invoice.invoiceNumber || '—'}
               </div>
               
               {/* Client */}
               <div>
-                <div style={{ fontWeight: '500', fontSize: '13px' }}>{invoice.customerName || '—'}</div>
-                <div style={{ fontSize: '11px', color: colors.textMuted }}>
+                <div style={{ fontWeight: '500', fontSize: '14px' }}>{invoice.customerName || '—'}</div>
+                <div style={{ fontSize: '12px', color: colors.textMuted }}>
                   {invoice.customerEmail || ''}
                 </div>
               </div>
               
               {/* Amount */}
-              <div style={{ fontWeight: '600', fontSize: '13px' }}>
+              <div style={{ fontWeight: '600', fontSize: '14px' }}>
                 {formatCurrency(invoice.total, invoice.currency)}
               </div>
               
@@ -458,12 +458,12 @@ export default function DashboardInvoices({ darkMode = true }) {
               </div>
               
               {/* Issued Date */}
-              <div style={{ color: colors.textMuted, fontSize: '12px' }}>
+              <div style={{ color: colors.textMuted, fontSize: '13px' }}>
                 {formatDate(invoice.issueDate)}
               </div>
               
               {/* Created */}
-              <div style={{ color: colors.textMuted, fontSize: '12px' }}>
+              <div style={{ color: colors.textMuted, fontSize: '13px' }}>
                 {formatDate(invoice.createdAt)}
               </div>
               
@@ -475,7 +475,7 @@ export default function DashboardInvoices({ darkMode = true }) {
                     setShowActionsMenu(showActionsMenu === invoice.id ? null : invoice.id); 
                   }}
                   style={{
-                    padding: '4px 8px',
+                    padding: '6px 10px',
                     background: 'transparent',
                     border: 'none',
                     color: colors.textMuted,

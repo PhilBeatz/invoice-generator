@@ -63,9 +63,9 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    padding: '8px 12px',
+    padding: '10px 14px',
     borderRadius: '6px',
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: isActive(path) ? '500' : '400',
     color: isActive(path) ? colors.textActive : colors.text,
     background: isActive(path) ? colors.bgActive : 'transparent',
@@ -80,17 +80,17 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
 
   const subItemStyle = (path) => ({
     ...navItemStyle(path),
-    padding: '7px 12px 7px 38px',
-    fontSize: '12px',
+    padding: '8px 14px 8px 40px',
+    fontSize: '13px',
   });
 
   const sectionHeaderStyle = {
-    fontSize: '10px',
+    fontSize: '11px',
     fontWeight: '600',
     color: colors.sectionText,
     textTransform: 'uppercase',
     letterSpacing: '0.8px',
-    padding: '16px 12px 6px',
+    padding: '20px 14px 8px',
     fontFamily: "'Inter', sans-serif",
   };
 
@@ -102,7 +102,7 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
 
   const sidebarContent = (
     <div style={{
-      width: '220px',
+      width: '240px',
       height: '100%',
       minHeight: '100%',
       background: colors.bg,
@@ -113,9 +113,9 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
       top: 0,
     }}>
       {/* Company Name */}
-      <div style={{ padding: '16px 12px', borderBottom: `1px solid ${colors.border}` }}>
+      <div style={{ padding: '20px 14px', borderBottom: `1px solid ${colors.border}` }}>
         <div style={{ 
-          fontSize: '13px', 
+          fontSize: '14px', 
           fontWeight: '600', 
           color: darkMode ? '#ffffff' : '#1f2937', 
           fontFamily: "'Inter', sans-serif",

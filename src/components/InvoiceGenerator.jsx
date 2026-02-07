@@ -731,10 +731,10 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 
   const inputStyle = { 
     width: '100%', 
-    padding: '10px 12px', 
+    padding: '11px 14px', 
     border: `1px solid ${colors.border}`, 
     borderRadius: '6px', 
-    fontSize: '13px', 
+    fontSize: '14px', 
     fontFamily: 'Inter, sans-serif', 
     background: colors.bgInput, 
     color: colors.text,
@@ -1056,37 +1056,37 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: '16px 20px',
+          padding: '18px 24px',
           borderBottom: `1px solid ${colors.border}`,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h1 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>
               {isEditMode ? `Edit Invoice #${invoice.invoiceNumber}` : 'Invoice Creator'}
             </h1>
-            <span style={{ fontSize: '14px', opacity: 0.7 }}>📄</span>
+            <span style={{ fontSize: '16px', opacity: 0.7 }}>📄</span>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {/* Create/Save Invoice Button */}
             <button
               onClick={saveInvoiceAndNavigate}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '8px 16px',
+                gap: '8px',
+                padding: '10px 18px',
                 background: colors.accent,
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '6px',
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: '500',
                 cursor: 'pointer',
                 fontFamily: "'Inter', sans-serif",
                 transition: 'background 0.2s',
               }}
             >
-              {isEditMode ? 'Update Invoice' : 'Create Invoice'} <span style={{ fontSize: '12px' }}>↗</span>
+              {isEditMode ? 'Update Invoice' : 'Create Invoice'} <span style={{ fontSize: '14px' }}>↗</span>
             </button>
             
             {/* 3-Dot Menu Button */}
@@ -1327,7 +1327,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
       )}
 
       {/* Main */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 16px 20px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 24px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-start' }}>
         
         {/* Left Panel - Invoice Details */}
         {showEditPanel && (
@@ -1337,47 +1337,47 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             border: `1px solid ${colors.border}`, 
             overflow: 'hidden', 
             width: '100%', 
-            maxWidth: isMobile ? '100%' : '520px', 
-            minWidth: isMobile ? '100%' : '320px', 
-            flex: isMobile ? '1 1 100%' : '1 1 480px'
+            maxWidth: isMobile ? '100%' : '560px', 
+            minWidth: isMobile ? '100%' : '360px', 
+            flex: isMobile ? '1 1 100%' : '1 1 520px'
           }}>
-            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px' }}>📋</span>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '16px' }}>📋</span>
+                <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Invoice Details</span>
               </div>
             </div>
             
-            <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '10px 14px', gap: '4px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: colors.bgInput }}>
+            <div style={{ display: 'flex', borderBottom: `1px solid ${colors.border}`, padding: '12px 16px', gap: '6px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: colors.bgInput }}>
               {tabs.map(tab => (
                 <button 
                   key={tab.id} 
                   className="tab-btn"
                   onClick={() => setActiveTab(tab.id)} 
                   style={{ 
-                    padding: '6px 12px', 
+                    padding: '8px 14px', 
                     background: activeTab === tab.id ? colors.accent : 'transparent', 
                     border: 'none',
-                    fontSize: '11px', 
+                    fontSize: '13px', 
                     fontWeight: '500', 
                     color: activeTab === tab.id ? '#ffffff' : colors.textMuted, 
                     cursor: 'pointer', 
-                    borderRadius: '5px',
+                    borderRadius: '6px',
                     whiteSpace: 'nowrap', 
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px',
+                    gap: '6px',
                     flexShrink: 0,
                     transition: 'all 0.15s',
                   }}>
-                  <span style={{ fontSize: '11px' }}>{tab.icon}</span> {tab.label}
+                  <span style={{ fontSize: '13px' }}>{tab.icon}</span> {tab.label}
                 </button>
               ))}
             </div>
 
-            <div style={{ padding: '14px 16px' }}>
+            <div style={{ padding: '20px' }}>
               {activeTab === 'business' && (
-                <div style={{ display: 'grid', gap: '12px' }}>
+                <div style={{ display: 'grid', gap: '16px' }}>
                   <div>
                     <label style={labelStyle}>Logo</label>
                     <label 
@@ -1387,7 +1387,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                       style={{ 
                         border: `1px dashed ${isDragging ? colors.accent : colors.border}`, 
                         borderRadius: '6px', 
-                        padding: '16px', 
+                        padding: '20px', 
                         textAlign: 'center', 
                         cursor: 'pointer', 
                         display: 'block', 
@@ -1396,12 +1396,12 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                       }}>
                       <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                       {logoPreview ? (
-                        <img src={logoPreview} alt="Logo" style={{ maxWidth: '120px', maxHeight: '60px' }} />
+                        <img src={logoPreview} alt="Logo" style={{ maxWidth: '140px', maxHeight: '70px' }} />
                       ) : (
-                        <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '12px' }}>
-                          <div style={{ fontSize: '18px', marginBottom: '6px', opacity: 0.6 }}>📷</div>
+                        <div style={{ color: isDragging ? colors.accent : colors.textMuted, fontSize: '14px' }}>
+                          <div style={{ fontSize: '24px', marginBottom: '8px', opacity: 0.6 }}>📷</div>
                           <div>Drag & drop your logo here</div>
-                          <div style={{ fontSize: '11px', marginTop: '3px', opacity: 0.7 }}>or tap to browse</div>
+                          <div style={{ fontSize: '13px', marginTop: '4px', opacity: 0.7 }}>or tap to browse</div>
                         </div>
                       )}
                     </label>
@@ -1414,10 +1414,10 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
               )}
 
               {activeTab === 'customer' && (
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  <div style={{ marginBottom: '2px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: colors.text }}>Select Customer</span>
-                    <p style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>Manage customer in your invoice</p>
+                <div style={{ display: 'grid', gap: '16px' }}>
+                  <div style={{ marginBottom: '4px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Select Customer</span>
+                    <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Manage customer in your invoice</p>
                   </div>
                   
                   {/* Select Customer Button */}
@@ -1425,18 +1425,18 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     onClick={() => setShowCustomerModal(true)}
                     style={{ 
                       width: '100%', 
-                      padding: '12px', 
+                      padding: '14px', 
                       background: colors.bgInput, 
                       color: colors.textMuted, 
                       border: `1px dashed ${colors.border}`, 
                       borderRadius: '6px', 
                       fontWeight: '500', 
-                      fontSize: '12px', 
+                      fontSize: '14px', 
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px'
+                      gap: '8px'
                     }}>
                     👥 Select Customer
                   </button>
@@ -1446,7 +1446,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     <div style={{ 
                       border: `1px dashed ${colors.border}`, 
                       borderRadius: '6px', 
-                      padding: '24px', 
+                      padding: '28px', 
                       textAlign: 'center',
                       background: colors.bgInput,
                     }}>
@@ -1886,27 +1886,27 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             borderRadius: '8px', 
             border: `1px solid ${colors.border}`, 
             overflow: 'hidden', 
-            flex: isMobile ? '1 1 100%' : '2 1 480px', 
-            minWidth: isMobile ? '100%' : '320px',
+            flex: isMobile ? '1 1 100%' : '2 1 500px', 
+            minWidth: isMobile ? '100%' : '360px',
             width: isMobile ? '100%' : 'auto'
           }}>
-            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '12px' }}>📄</span>
-                <span style={{ fontSize: '13px', fontWeight: '600', color: colors.text }}>Invoice Preview</span>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '16px' }}>📄</span>
+                <span style={{ fontSize: '15px', fontWeight: '600', color: colors.text }}>Invoice Preview</span>
               </div>
-              <button onClick={downloadPDF} style={{ padding: '7px 14px', background: colors.accent, color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <button onClick={downloadPDF} style={{ padding: '10px 18px', background: colors.accent, color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: '500', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 📥 Download PDF
               </button>
             </div>
             
             {/* White preview area */}
-            <div style={{ padding: '12px', background: colors.bgInput }}>
-              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '16px' : '24px', minHeight: isMobile ? '350px' : '450px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ padding: '16px', background: colors.bgInput }}>
+              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '20px' : '28px', minHeight: isMobile ? '380px' : '480px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 {/* Header - Bold template has dark header */}
                 {selectedTemplate === 'bold' && (
-                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-16px -16px 16px' : '-24px -24px 20px', padding: isMobile ? '16px' : '20px', borderRadius: '6px 6px 0 0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-20px -20px 20px' : '-28px -28px 24px', padding: isMobile ? '20px' : '24px', borderRadius: '6px 6px 0 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ minWidth: '140px', flex: '1' }}>
                         {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
                         <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: templateStyles.headerText, marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>

@@ -138,13 +138,13 @@ export default function DashboardOverview({ darkMode = true }) {
   };
 
   return (
-    <div style={{ padding: isMobile ? '16px' : '20px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ padding: isMobile ? '20px' : '24px', fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, marginBottom: '4px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>
           Dashboard
         </h1>
-        <p style={{ fontSize: '12px', color: colors.textMuted }}>
+        <p style={{ fontSize: '14px', color: colors.textMuted }}>
           Welcome back! Here's an overview of your business.
         </p>
       </div>
@@ -153,55 +153,55 @@ export default function DashboardOverview({ darkMode = true }) {
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
-        gap: '12px', 
-        marginBottom: '20px' 
+        gap: '16px', 
+        marginBottom: '24px' 
       }}>
         {/* Total Invoices */}
-        <div style={{ ...cardStyle, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Invoices</span>
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>📄</span>
+        <div style={{ ...cardStyle, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Invoices</span>
+            <span style={{ fontSize: '14px', opacity: 0.6 }}>📄</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+          <div style={{ fontSize: '28px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
             {totalInvoices}
           </div>
-          <div style={{ fontSize: '11px', color: colors.textMuted }}>No change from last month</div>
+          <div style={{ fontSize: '13px', color: colors.textMuted }}>No change from last month</div>
         </div>
 
         {/* Monthly Sales */}
-        <div style={{ ...cardStyle, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Monthly Sales</span>
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>💰</span>
+        <div style={{ ...cardStyle, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Monthly Sales</span>
+            <span style={{ fontSize: '14px', opacity: 0.6 }}>💰</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+          <div style={{ fontSize: '28px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
             {formatCurrency(monthlySales)}
           </div>
-          <div style={{ fontSize: '11px', color: colors.textMuted }}>No change from last month</div>
+          <div style={{ fontSize: '13px', color: colors.textMuted }}>No change from last month</div>
         </div>
 
         {/* Outstanding */}
-        <div style={{ ...cardStyle, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outstanding</span>
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>⏰</span>
+        <div style={{ ...cardStyle, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outstanding</span>
+            <span style={{ fontSize: '14px', opacity: 0.6 }}>⏰</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+          <div style={{ fontSize: '28px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
             {formatCurrency(outstanding)}
           </div>
-          <div style={{ fontSize: '11px', color: colors.textMuted }}>{unpaidCount} unpaid invoices</div>
+          <div style={{ fontSize: '13px', color: colors.textMuted }}>{unpaidCount} unpaid invoices</div>
         </div>
 
         {/* Customers */}
-        <div style={{ ...cardStyle, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customers</span>
-            <span style={{ fontSize: '12px', opacity: 0.6 }}>👥</span>
+        <div style={{ ...cardStyle, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customers</span>
+            <span style={{ fontSize: '14px', opacity: 0.6 }}>👥</span>
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+          <div style={{ fontSize: '28px', fontWeight: '700', color: colors.text, marginBottom: '4px' }}>
             {totalCustomers}
           </div>
-          <div style={{ fontSize: '11px', color: colors.green }}>+{totalCustomers} new this month</div>
+          <div style={{ fontSize: '13px', color: colors.green }}>+{totalCustomers} new this month</div>
         </div>
       </div>
 
