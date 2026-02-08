@@ -207,7 +207,7 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
   const [selectedCatalogProducts, setSelectedCatalogProducts] = useState([]);
-  const [tempProduct, setTempProduct] = useState({ name: '', model: '', price: '' });
+  const [tempProduct, setTempProduct] = useState({ name: '', model: '', price: '', quantity: 1 });
 
   // Load catalog products from localStorage
   useEffect(() => {
@@ -238,6 +238,52 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
       }
     }
   }, []);
+
+  // Persist invoice form data to survive tab switches, minimizes, and HMR in dev
+  // Save form state on every change
+  useEffect(() => {
+    if (!isEditMode) {
+      localStorage.setItem('dayonetools_invoice_formstate', JSON.stringify(invoice));
+    }
+  }, [invoice, isEditMode]);
+
+  // Save logo separately (too large for frequent JSON serialization with invoice)
+  useEffect(() => {
+    if (logoPreview && !isEditMode) {
+      localStorage.setItem('dayonetools_logo_formstate', logoPreview);
+    }
+  }, [logoPreview, isEditMode]);
+
+  // Restore form state on mount (runs once)
+  useEffect(() => {
+    // Don't restore if we're in edit mode (edit data is loaded separately)
+    if (isEditMode) return;
+    
+    const savedForm = localStorage.getItem('dayonetools_invoice_formstate');
+    const savedLogo = localStorage.getItem('dayonetools_logo_formstate');
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        // Only restore if there's actual data (not just defaults)
+        const hasData = parsed.businessName || parsed.customerName || 
+          parsed.items?.some(item => item.description || item.price > 0 || item.rate > 0);
+        if (hasData) {
+          setInvoice(prev => ({ ...prev, ...parsed }));
+        }
+      } catch (e) {
+        console.error('Failed to restore form state:', e);
+      }
+    }
+    if (savedLogo) {
+      setLogoPreview(savedLogo);
+    }
+  }, []);
+
+  // Clear form state when invoice is successfully saved/created
+  const clearFormState = () => {
+    localStorage.removeItem('dayonetools_invoice_formstate');
+    localStorage.removeItem('dayonetools_logo_formstate');
+  };
 
   // Load draft invoice from localStorage (for mobile back button)
   useEffect(() => {
@@ -897,6 +943,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
       localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
       
       // Navigate back to invoice detail page
+      clearFormState();
       navigate(`/dashboard/invoices/${editingInvoiceId}`);
     } else {
       // CREATE new invoice
@@ -947,6 +994,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
       }
 
       // Navigate to invoice detail page
+      clearFormState();
       navigate(`/dashboard/invoices/${invoiceToSave.id}`);
     }
   };
@@ -2527,7 +2575,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                 <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Add a product that will only exist in this invoice without saving it to your product catalog.</p>
               </div>
               <button
-                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '' }); }}
+                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '', quantity: 1 }); }}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -2567,26 +2615,42 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
-                  <span style={{ marginRight: '6px' }}>$</span>Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  style={{ ...inputStyle, background: colors.bgInput }}
-                  placeholder="0.00"
-                  value={tempProduct.price}
-                  onChange={(e) => setTempProduct({ ...tempProduct, price: e.target.value })}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
+                    <span style={{ marginRight: '6px' }}>$</span>Price
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    style={{ ...inputStyle, background: colors.bgInput }}
+                    placeholder="0.00"
+                    value={tempProduct.price}
+                    onChange={(e) => setTempProduct({ ...tempProduct, price: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: colors.textMuted, marginBottom: '6px' }}>
+                    <span style={{ marginRight: '6px' }}>📦</span>Quantity
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    style={{ ...inputStyle, background: colors.bgInput }}
+                    placeholder="1"
+                    value={tempProduct.quantity}
+                    onChange={(e) => setTempProduct({ ...tempProduct, quantity: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
             {/* Actions */}
             <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', gap: '12px' }}>
               <button
-                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '' }); }}
+                onClick={() => { setShowTemporaryProductModal(false); setTempProduct({ name: '', model: '', price: '', quantity: 1 }); }}
                 style={{
                   flex: 1,
                   padding: '12px',
@@ -2611,7 +2675,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     id: Date.now(),
                     description: tempProduct.name,
                     sku: tempProduct.model,
-                    quantity: 1,
+                    quantity: parseInt(tempProduct.quantity) || 1,
                     price: parseFloat(tempProduct.price) || 0,
                     hours: 1,
                     rate: 0,
@@ -2624,7 +2688,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     setInvoice(prev => ({ ...prev, items: [...prev.items, newItem] }));
                   }
                   setShowTemporaryProductModal(false);
-                  setTempProduct({ name: '', model: '', price: '' });
+                  setTempProduct({ name: '', model: '', price: '', quantity: 1 });
                 }}
                 style={{
                   flex: 1,
