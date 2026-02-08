@@ -8,6 +8,7 @@ import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
 import DashboardCategories from './DashboardCategories';
 import DashboardOrganization from './DashboardOrganization';
+import DashboardEmployees from './DashboardEmployees';
 import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import InvoiceGenerator from './InvoiceGenerator';
@@ -128,7 +129,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardOrganization darkMode={darkMode} />
           } />
           <Route path="employees" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Employees" icon="👤" description="Manage team members, roles, and permissions for your organization." />
+            <DashboardEmployees darkMode={darkMode} />
           } />
           <Route path="settings" element={
             <DashboardSettings darkMode={darkMode} />
