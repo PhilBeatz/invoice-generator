@@ -1472,7 +1472,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             background: colors.bgCard, 
             borderRadius: '8px', 
             border: `1px solid ${colors.border}`, 
-            overflow: 'hidden', 
+            overflow: 'visible', 
             width: '100%', 
             maxWidth: isMobile ? '100%' : '640px', 
             minWidth: isMobile ? '100%' : '400px', 

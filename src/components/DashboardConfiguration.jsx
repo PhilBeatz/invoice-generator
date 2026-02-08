@@ -206,7 +206,7 @@ export default function DashboardConfiguration({ darkMode = true }) {
                   {strategies.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
               ) : (
-                <div style={{ ...iS, background: colors.bgInput, opacity: 0.8 }}>
+                <div style={{ ...iS, background: colors.bgInput, opacity: 0.8, minHeight: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <div>{strategies.find(s => s.value === cur.strategy)?.label || 'Sequential'}</div>
                   <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>{strategies.find(s => s.value === cur.strategy)?.desc}</div>
                 </div>
@@ -281,7 +281,7 @@ export default function DashboardConfiguration({ darkMode = true }) {
                 {dateFormats.map(f => <option key={f.value} value={f.value}>{f.value} — {f.ex}</option>)}
               </select>
             ) : (
-              <div style={{ ...iS, opacity: 0.8 }}>
+              <div style={{ ...iS, opacity: 0.8, minHeight: '42px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div>{cur.defaultDateFormat}</div>
                 <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>{dateFormats.find(f => f.value === cur.defaultDateFormat)?.ex}</div>
               </div>

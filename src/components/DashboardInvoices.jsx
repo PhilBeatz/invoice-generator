@@ -290,7 +290,7 @@ export default function DashboardInvoices({ darkMode = true }) {
       )}
 
       {/* Table */}
-      <div style={{background:colors.bgCard,border:`1px solid ${colors.border}`,borderRadius:selectedInvoices.length>0?'0 0 8px 8px':'8px',overflow:'hidden'}}>
+      <div style={{background:colors.bgCard,border:`1px solid ${colors.border}`,borderRadius:selectedInvoices.length>0?'0 0 8px 8px':'8px',overflow:'visible'}}>
         <div style={{display:'grid',gridTemplateColumns:'40px 1.4fr 2fr 1.1fr 1fr 1.1fr 1.3fr 50px',gap:'8px',padding:'12px 20px',borderBottom:`1px solid ${colors.border}`,background:colors.bgCard2}}>
           <div><input type="checkbox" checked={allSel} ref={el=>{if(el)el.indeterminate=someSel;}} onChange={e=>setSelectedInvoices(e.target.checked?page.map(i=>i.id):[])} style={{width:'16px',height:'16px',cursor:'pointer',accentColor:colors.accent}}/></div>
           {[{c:'invoiceNumber',l:'📄 Invoice #'},{c:'customerName',l:'👤 Client'},{c:'total',l:'$ Amount'},{c:'status',l:'⊘ Status'},{c:'issueDate',l:'📅 Issued Date'},{c:'createdAt',l:'🕐 Created'}].map(h=>(
