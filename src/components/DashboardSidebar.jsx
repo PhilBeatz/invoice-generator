@@ -201,12 +201,11 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
             <Link to="/dashboard/employees" style={subItemStyle('/dashboard/employees')} onClick={onClose}>
               👤 Employees
             </Link>
+            <Link to="/dashboard/settings" style={subItemStyle('/dashboard/settings')} onClick={onClose}>
+              ⚙️ Settings
+            </Link>
           </div>
         )}
-
-        <Link to="/dashboard/settings" style={{ ...navItemStyle('/dashboard/settings'), marginTop: '8px' }} onClick={onClose}>
-          <span style={{ fontSize: '16px' }}>⚙️</span> Settings
-        </Link>
       </nav>
     </div>
   );
