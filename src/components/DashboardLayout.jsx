@@ -8,9 +8,9 @@ import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
 import DashboardCategories from './DashboardCategories';
 import DashboardOrganization from './DashboardOrganization';
-import DashboardEmployees from './DashboardEmployees';
 import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
+import DashboardConfiguration from './DashboardConfiguration';
 import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true, user }) {
@@ -114,7 +114,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardPlaceholder darkMode={darkMode} title="Payment Methods" icon="💳" description="Configure your accepted payment methods including bank transfers, PayPal, and crypto." />
           } />
           <Route path="configuration" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Invoice Configuration" icon="⚙️" description="Set up default invoice templates, numbering schemes, and automation rules." />
+            <DashboardConfiguration darkMode={darkMode} />
           } />
           <Route path="products" element={
             <DashboardProducts darkMode={darkMode} />
@@ -129,7 +129,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardOrganization darkMode={darkMode} />
           } />
           <Route path="employees" element={
-            <DashboardEmployees darkMode={darkMode} />
+            <DashboardPlaceholder darkMode={darkMode} title="Employees" icon="👤" description="Manage team members, roles, and permissions for your organization." />
           } />
           <Route path="settings" element={
             <DashboardSettings darkMode={darkMode} />
