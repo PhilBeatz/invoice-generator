@@ -243,7 +243,7 @@ export default function DashboardProducts({ darkMode = true }) {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{ ...selectStyle, width: '150px', flex: 'none' }}
+            style={{ ...selectStyle, width: '170px', flex: 'none' }}
           >
             <option value="all">All Products</option>
             {categories.map(cat => (
@@ -255,7 +255,7 @@ export default function DashboardProducts({ darkMode = true }) {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{ ...selectStyle, width: '140px', flex: 'none' }}
+            style={{ ...selectStyle, width: '160px', flex: 'none' }}
           >
             <option value="created">Created Date</option>
             <option value="name">Name</option>
@@ -266,7 +266,7 @@ export default function DashboardProducts({ darkMode = true }) {
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            style={{ ...selectStyle, width: '130px', flex: 'none' }}
+            style={{ ...selectStyle, width: '150px', flex: 'none' }}
           >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
@@ -276,7 +276,7 @@ export default function DashboardProducts({ darkMode = true }) {
           <select
             value={perPage}
             onChange={(e) => setPerPage(Number(e.target.value))}
-            style={{ ...selectStyle, width: '120px', flex: 'none' }}
+            style={{ ...selectStyle, width: '140px', flex: 'none' }}
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
