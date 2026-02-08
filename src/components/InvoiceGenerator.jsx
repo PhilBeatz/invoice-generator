@@ -264,6 +264,74 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
   }, [customers]);
 
+  // Auto-save as draft when user starts editing (dashboard only)
+  useEffect(() => {
+    if (!inDashboard || isEditMode) return;
+    
+    // Check if invoice has any meaningful data entered
+    const hasData = invoice.businessName || invoice.customerName || 
+      invoice.items.some(item => item.description || item.price > 0 || item.rate > 0);
+    
+    if (!hasData) return;
+
+    const timer = setTimeout(() => {
+      // Calculate totals
+      const subtotal = invoice.items.reduce((sum, item) => {
+        const amount = invoice.invoiceMode === 'products' 
+          ? (item.quantity || 0) * (item.price || 0)
+          : (item.hours || 0) * (item.rate || 0);
+        return sum + amount;
+      }, 0);
+      const shipping = parseFloat(invoice.shippingCost) || 0;
+      const discount = parseFloat(invoice.discount) || 0;
+      let taxAmount = 0;
+      if (invoice.taxType === 'percent') {
+        taxAmount = (subtotal - discount + shipping) * ((parseFloat(invoice.taxRate) || 0) / 100);
+      } else {
+        taxAmount = parseFloat(invoice.taxRate) || 0;
+      }
+      const total = subtotal + shipping - discount + taxAmount;
+
+      const savedInvoices = localStorage.getItem('dayonetools_invoices');
+      let invoicesList = savedInvoices ? JSON.parse(savedInvoices) : [];
+
+      // Check if we already have an auto-draft for this invoice number
+      const existingDraftIndex = invoicesList.findIndex(
+        inv => inv.invoiceNumber === invoice.invoiceNumber && inv.status === 'draft' && inv.autoDraft === true
+      );
+
+      const draftData = {
+        ...invoice,
+        id: existingDraftIndex >= 0 ? invoicesList[existingDraftIndex].id : `draft_${Date.now().toString()}`,
+        subtotal,
+        shipping,
+        discount,
+        tax: taxAmount,
+        total,
+        status: 'draft',
+        autoDraft: true,
+        createdAt: existingDraftIndex >= 0 ? invoicesList[existingDraftIndex].createdAt : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        items: invoice.items.map(item => ({
+          ...item,
+          amount: invoice.invoiceMode === 'products' 
+            ? (item.quantity || 0) * (item.price || 0)
+            : (item.hours || 0) * (item.rate || 0),
+        })),
+      };
+
+      if (existingDraftIndex >= 0) {
+        invoicesList[existingDraftIndex] = draftData;
+      } else {
+        invoicesList.push(draftData);
+      }
+
+      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoicesList));
+    }, 2000); // 2 second debounce
+
+    return () => clearTimeout(timer);
+  }, [invoice, inDashboard, isEditMode]);
+
   // Check if mobile on mount and resize
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -845,6 +913,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         tax: taxAmount,
         total: total,
         status: 'draft',
+        autoDraft: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         items: invoice.items.map(item => ({
@@ -855,7 +924,10 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         })),
       };
 
-      // Add new invoice
+      // Remove any auto-draft for this invoice number, then add the finalized one
+      invoices = invoices.filter(
+        inv => !(inv.invoiceNumber === invoice.invoiceNumber && inv.autoDraft === true)
+      );
       invoices.push(invoiceToSave);
       
       // Save back to localStorage
