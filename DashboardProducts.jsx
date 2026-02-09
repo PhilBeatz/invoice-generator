@@ -215,68 +215,78 @@ export default function DashboardProducts({ darkMode = true }) {
         </button>
       </div>
 
-      {/* Filters Card */}
+      {/* Filters Bar */}
       <div style={{
-        background: colors.bgCard,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '8px',
-        padding: '20px',
-        marginBottom: '20px',
+        display: 'flex',
+        gap: '12px',
+        marginBottom: '16px',
+        flexWrap: 'wrap',
+        alignItems: 'flex-end',
       }}>
-        <h3 style={{ fontSize: '14px', fontWeight: '600', color: colors.text, margin: '0 0 16px 0' }}>Filters</h3>
-        
-        {/* Search and Filters Row */}
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
-          {/* Search */}
-          <div style={{ flex: '1', minWidth: '250px', position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🔍</span>
+        {/* Search */}
+        <div style={{ flex: '1', minWidth: '250px' }}>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Search</label>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>🔍</span>
             <input
               type="text"
               placeholder="Search by product name, model, or description..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ ...inputStyle, paddingLeft: '42px' }}
+              style={{ ...inputStyle, paddingLeft: '36px' }}
             />
           </div>
+        </div>
 
-          {/* Category Filter */}
+        {/* Category Filter */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Category</label>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            style={{ ...selectStyle, width: '150px', flex: 'none' }}
+            style={{ ...selectStyle, width: '170px' }}
           >
             <option value="all">All Products</option>
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
+        </div>
 
-          {/* Sort By */}
+        {/* Sort By */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Sort by</label>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{ ...selectStyle, width: '140px', flex: 'none' }}
+            style={{ ...selectStyle, width: '150px' }}
           >
             <option value="created">Created Date</option>
             <option value="name">Name</option>
             <option value="price">Price</option>
           </select>
+        </div>
 
-          {/* Sort Order */}
+        {/* Sort Order */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Order</label>
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            style={{ ...selectStyle, width: '130px', flex: 'none' }}
+            style={{ ...selectStyle, width: '140px' }}
           >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
+        </div>
 
-          {/* Per Page */}
+        {/* Per Page */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Show</label>
           <select
             value={perPage}
             onChange={(e) => setPerPage(Number(e.target.value))}
-            style={{ ...selectStyle, width: '120px', flex: 'none' }}
+            style={{ ...selectStyle, width: '140px' }}
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
@@ -284,8 +294,16 @@ export default function DashboardProducts({ darkMode = true }) {
             <option value={100}>100 per page</option>
           </select>
         </div>
+      </div>
 
-        {/* Product Properties Accordion */}
+      {/* Product Properties Accordion */}
+      <div style={{
+        background: colors.bgCard,
+        border: `1px solid ${colors.border}`,
+        borderRadius: '8px',
+        marginBottom: '16px',
+        overflow: 'hidden',
+      }}>
         <button
           onClick={() => setExpandProperties(!expandProperties)}
           style={{
