@@ -20,7 +20,7 @@ export default function DashboardConfiguration({ darkMode = true }) {
   const [nextSeq, setNextSeq] = useState(1);
 
   const colors = darkMode ? {
-    bg: '#0f1419', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
+    bg: '#0d1117', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
     text: '#e6edf3', textMuted: '#8b949e', border: '#30363d',
     accent: '#3b82f6', green: '#10b981', red: '#ef4444', orange: '#f97316',
   } : {

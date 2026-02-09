@@ -24,7 +24,7 @@ export default function DashboardInvoices({ darkMode = true }) {
   const [bulkStatusConfirm, setBulkStatusConfirm] = useState(null);
 
   const colors = darkMode ? {
-    bg: '#0f1419', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
+    bg: '#0d1117', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
     text: '#e6edf3', textMuted: '#8b949e', border: '#30363d',
     accent: '#3b82f6', green: '#10b981', yellow: '#f59e0b', red: '#ef4444', orange: '#f97316',
   } : {

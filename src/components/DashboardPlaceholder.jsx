@@ -2,11 +2,11 @@ import React from 'react';
 
 export default function DashboardPlaceholder({ darkMode = true, title = 'Coming Soon', icon = '🚧', description = '' }) {
   const colors = darkMode ? {
-    bg: '#1a1a2e',
-    bgCard: '#1f2937',
-    text: '#f3f4f6',
-    textMuted: '#9ca3af',
-    border: '#374151',
+    bg: '#0d1117',
+    bgCard: '#161b22',
+    text: '#e6edf3',
+    textMuted: '#8b949e',
+    border: '#30363d',
     accent: '#3b82f6',
   } : {
     bg: '#f1f5f9',
@@ -21,7 +21,7 @@ export default function DashboardPlaceholder({ darkMode = true, title = 'Coming 
     <div style={{ padding: '32px', fontFamily: "'Inter', sans-serif" }}>
       <div style={{
         background: colors.bgCard,
-        borderRadius: '16px',
+        borderRadius: '8px',
         border: `1px solid ${colors.border}`,
         padding: '80px 40px',
         textAlign: 'center',

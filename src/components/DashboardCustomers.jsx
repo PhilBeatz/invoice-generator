@@ -61,14 +61,16 @@ export default function DashboardCustomers({ darkMode = true }) {
   ];
 
   const colors = darkMode ? {
-    bg: '#1a1a2e',
-    bgCard: '#252540',
-    bgInput: '#1e1e32',
-    text: '#f3f4f6',
-    textMuted: '#9ca3af',
-    border: '#374151',
-    accent: '#10b981',
+    bg: '#0d1117',
+    bgCard: '#161b22',
+    bgInput: '#21262d',
+    text: '#e6edf3',
+    textMuted: '#8b949e',
+    border: '#30363d',
+    accent: '#3b82f6',
+    green: '#10b981',
     accentHover: '#059669',
+    red: '#ef4444',
   } : {
     bg: '#f1f5f9',
     bgCard: '#ffffff',
@@ -76,8 +78,10 @@ export default function DashboardCustomers({ darkMode = true }) {
     text: '#1f2937',
     textMuted: '#6b7280',
     border: '#e5e7eb',
-    accent: '#10b981',
+    accent: '#3b82f6',
+    green: '#10b981',
     accentHover: '#059669',
+    red: '#ef4444',
   };
 
   // Load customers from localStorage
@@ -224,25 +228,26 @@ export default function DashboardCustomers({ darkMode = true }) {
 
   const inputStyle = {
     width: '100%',
-    padding: '12px 14px',
+    padding: '10px 14px',
     background: colors.bgInput,
     border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
+    borderRadius: '6px',
     color: colors.text,
     fontSize: '14px',
     fontFamily: "'Inter', sans-serif",
     outline: 'none',
+    boxSizing: 'border-box',
   };
 
   const selectStyle = {
     ...inputStyle,
     cursor: 'pointer',
     appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    backgroundSize: '16px',
-    paddingRight: '40px',
+    backgroundPosition: 'right 10px center',
+    backgroundSize: '14px',
+    paddingRight: '36px',
   };
 
   return (
@@ -257,7 +262,7 @@ export default function DashboardCustomers({ darkMode = true }) {
         gap: '16px',
       }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: colors.text, margin: 0 }}>
+          <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, margin: 0 }}>
             Customers
           </h1>
           <p style={{ fontSize: '14px', color: colors.textMuted, marginTop: '4px' }}>
@@ -270,46 +275,36 @@ export default function DashboardCustomers({ darkMode = true }) {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '12px 20px',
-            background: 'transparent',
-            color: colors.accent,
-            border: `1px solid ${colors.accent}`,
-            borderRadius: '8px',
+            padding: '10px 18px',
+            background: colors.green,
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '6px',
             fontSize: '14px',
-            fontWeight: '600',
+            fontWeight: '500',
             cursor: 'pointer',
             fontFamily: "'Inter', sans-serif",
-            transition: 'all 0.2s',
           }}
-          onMouseOver={(e) => { e.target.style.background = colors.accent; e.target.style.color = '#ffffff'; }}
-          onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = colors.accent; }}
         >
           + Create Customer
         </button>
       </div>
 
-      {/* Filters Card */}
+      {/* Filters Bar */}
       <div style={{
-        background: colors.bgCard,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '20px',
+        display: 'flex',
+        gap: '12px',
+        marginBottom: '16px',
+        flexWrap: 'wrap',
+        alignItems: 'flex-end',
       }}>
-        <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '16px' }}>
-          Filters
-        </div>
-        <div style={{ 
-          display: 'flex', 
-          gap: '12px', 
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}>
-          {/* Search */}
-          <div style={{ flex: '1 1 300px', position: 'relative' }}>
+        {/* Search */}
+        <div style={{ flex: '1 1 280px' }}>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Search</label>
+          <div style={{ position: 'relative' }}>
             <span style={{ 
               position: 'absolute', 
-              left: '14px', 
+              left: '12px', 
               top: '50%', 
               transform: 'translateY(-50%)',
               color: colors.textMuted,
@@ -319,18 +314,21 @@ export default function DashboardCustomers({ darkMode = true }) {
             </span>
             <input
               type="text"
-              placeholder="Search by name, email, identifier, phone, country, or description..."
+              placeholder="Search customers..."
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              style={{ ...inputStyle, paddingLeft: '40px' }}
+              style={{ ...inputStyle, paddingLeft: '36px', borderRadius: '6px' }}
             />
           </div>
+        </div>
 
-          {/* Sort By */}
+        {/* Sort By */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Sort by</label>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 140px' }}
+            style={{ ...selectStyle, width: '140px', borderRadius: '6px' }}
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
@@ -338,22 +336,28 @@ export default function DashboardCustomers({ darkMode = true }) {
             <option value="identifier">ID</option>
             <option value="createdAt">Created</option>
           </select>
+        </div>
 
-          {/* Sort Order */}
+        {/* Sort Order */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Order</label>
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
-            style={{ ...selectStyle, flex: '0 0 150px' }}
+            style={{ ...selectStyle, width: '140px', borderRadius: '6px' }}
           >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
+            <option value="asc">A-Z</option>
+            <option value="desc">Z-A</option>
           </select>
+        </div>
 
-          {/* Per Page */}
+        {/* Per Page */}
+        <div>
+          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Show</label>
           <select
             value={perPage}
             onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-            style={{ ...selectStyle, flex: '0 0 140px' }}
+            style={{ ...selectStyle, width: '140px', borderRadius: '6px' }}
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
@@ -367,7 +371,7 @@ export default function DashboardCustomers({ darkMode = true }) {
       <div style={{
         background: colors.bgCard,
         border: `1px solid ${colors.border}`,
-        borderRadius: '12px',
+        borderRadius: '8px',
         overflow: 'hidden',
       }}>
         {paginatedCustomers.length === 0 ? (
@@ -376,7 +380,7 @@ export default function DashboardCustomers({ darkMode = true }) {
             padding: '60px 20px', 
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>👤</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}>👤</div>
             <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, marginBottom: '8px' }}>
               No customers found
             </h3>
@@ -390,13 +394,13 @@ export default function DashboardCustomers({ darkMode = true }) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '12px 24px',
-                  background: colors.accent,
+                  padding: '10px 20px',
+                  background: colors.green,
                   color: '#ffffff',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '600',
+                  fontWeight: '500',
                   cursor: 'pointer',
                   fontFamily: "'Inter', sans-serif",
                 }}

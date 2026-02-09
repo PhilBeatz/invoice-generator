@@ -141,7 +141,7 @@ export default function DashboardOverview({ darkMode = true }) {
     <div style={{ padding: isMobile ? '20px' : '24px', fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, marginBottom: '4px' }}>
           Dashboard
         </h1>
         <p style={{ fontSize: '14px', color: colors.textMuted }}>
