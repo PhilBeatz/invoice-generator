@@ -200,15 +200,13 @@ export default function LandingPage({ darkMode = true }) {
 
       {/* ===== HERO SECTION ===== */}
       <div style={{ 
-        minHeight: 'calc(100vh - 120px)', 
         background: darkMode 
           ? `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(59, 130, 246, 0.15), transparent), ${colors.bg}`
           : `radial-gradient(ellipse 80% 50% at 50% 100%, rgba(59, 130, 246, 0.1), transparent), ${colors.bg}`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: isMobile ? '40px 20px 60px' : '60px 20px 80px',
+        padding: isMobile ? '40px 20px 0' : '60px 20px 0',
         textAlign: 'center',
       }}>
         <h1 style={{
@@ -230,59 +228,36 @@ export default function LandingPage({ darkMode = true }) {
           color: colors.textMuted,
           maxWidth: '650px',
           lineHeight: '1.7',
-          marginBottom: '40px',
+          marginBottom: '32px',
         }}>
           Day One is an invoicing platform built for small-medium businesses and freelancers to create professional invoices fast, manage clients, and get paid on time.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link to="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 32px', background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`, color: '#ffffff', fontSize: '16px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)'; }}>
-              Get Started <span style={{ fontSize: '18px' }}>›</span>
-            </Link>
-            <Link to="/invoicegenerator" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 32px', background: 'transparent', color: colors.accent, fontSize: '16px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', border: `1.5px solid ${colors.accent}`, transition: 'all 0.2s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; e.currentTarget.style.transform = 'translateY(0)'; }}>
-              Try Free Invoice Generator
-            </Link>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '16px' }}>
+          <Link to="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '16px 32px', background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`, color: '#ffffff', fontSize: '16px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)'; }}>
+            Get Started <span style={{ fontSize: '18px' }}>›</span>
+          </Link>
           <Link to="/contact" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 24px', color: colors.textMuted, fontSize: '15px', fontWeight: '500', textDecoration: 'none', transition: 'color 0.2s, gap 0.2s' }}
             onMouseEnter={(e) => { e.currentTarget.style.color = colors.accent; e.currentTarget.style.gap = '12px'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = colors.textMuted; e.currentTarget.style.gap = '8px'; }}>
             Talk to Us <span style={{ fontSize: '18px' }}>→</span>
           </Link>
         </div>
-      </div>
 
-      {/* ===== DASHBOARD PREVIEW SECTION ===== */}
-      <div style={{
-        background: darkMode ? '#0d1117' : '#e2e8f0',
-        padding: isMobile ? '60px 16px' : '80px 20px',
-      }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: colors.accent, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>Your Business at a Glance</div>
-            <h2 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: '700', color: colors.text, marginBottom: '16px', letterSpacing: '-0.5px' }}>
-              Everything you need in one dashboard
-            </h2>
-            <p style={{ fontSize: '16px', color: colors.textMuted, maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
-              Track invoices, monitor revenue, manage customers, and take action — all from a single view designed for speed.
-            </p>
-          </div>
-          <div style={{ position: 'relative' }}>
-            {/* Glow effect behind the mockup */}
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '80%', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              {isMobile ? (
-                <div style={{ overflowX: 'auto', paddingBottom: '12px' }}>
-                  <div style={{ minWidth: '700px' }}><DashboardMockup /></div>
-                </div>
-              ) : (
-                <DashboardMockup />
-              )}
-            </div>
+        {/* Dashboard mockup - visible immediately, peeking up from bottom */}
+        <div style={{ width: '100%', maxWidth: '1000px', marginTop: '40px', position: 'relative' }}>
+          {/* Glow effect */}
+          <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+          <div style={{ position: 'relative', zIndex: 1, borderRadius: '12px 12px 0 0', overflow: 'hidden', boxShadow: '0 -4px 40px rgba(0,0,0,0.3)' }}>
+            {isMobile ? (
+              <div style={{ overflowX: 'auto' }}>
+                <div style={{ minWidth: '700px' }}><DashboardMockup /></div>
+              </div>
+            ) : (
+              <DashboardMockup />
+            )}
           </div>
         </div>
       </div>
