@@ -28,9 +28,9 @@ const currencies = [
 // Invoice Templates
 const templates = [
   { id: 'regular', name: 'Regular', description: 'Balanced default design' },
-  { id: 'bold', name: 'Bold Professional', description: 'Strong dark header style' },
-  { id: 'mono', name: 'Mono', description: 'Clean and minimal style' },
-  { id: 'modern', name: 'Startup Modern', description: 'Modern and sleek style' },
+  { id: 'bold', name: 'Bold Professional', description: 'Dark header with emerald accents' },
+  { id: 'mono', name: 'Mono', description: 'Ultra-minimal, typography-first' },
+  { id: 'modern', name: 'Startup Modern', description: 'Indigo accent with striped rows' },
 ];
 
 // Invoice Languages
@@ -77,39 +77,51 @@ const getTemplateStyles = (templateId) => {
   switch (templateId) {
     case 'bold':
       return {
-        headerBg: '#1a1a2e',
+        headerBg: '#0f172a',
         headerText: '#ffffff',
         accentColor: '#10b981',
         invoiceBadgeBg: '#10b981',
         invoiceBadgeText: '#ffffff',
-        tableHeaderBg: '#f1f5f9',
+        tableHeaderBg: '#0f172a',
+        tableHeaderText: '#ffffff',
         borderColor: '#e2e8f0',
-        totalBg: '#1a1a2e',
+        totalBg: '#0f172a',
         totalText: '#ffffff',
+        rowStriped: false,
+        leftAccent: false,
+        topBorder: false,
       };
     case 'mono':
       return {
         headerBg: '#ffffff',
-        headerText: '#1f2937',
-        accentColor: '#6b7280',
-        invoiceBadgeBg: '#f3f4f6',
-        invoiceBadgeText: '#374151',
-        tableHeaderBg: '#f9fafb',
-        borderColor: '#e5e7eb',
-        totalBg: '#f9fafb',
-        totalText: '#1f2937',
+        headerText: '#111827',
+        accentColor: '#111827',
+        invoiceBadgeBg: '#ffffff',
+        invoiceBadgeText: '#111827',
+        tableHeaderBg: '#ffffff',
+        tableHeaderText: '#9ca3af',
+        borderColor: '#d1d5db',
+        totalBg: '#ffffff',
+        totalText: '#111827',
+        rowStriped: false,
+        leftAccent: false,
+        topBorder: true,
       };
     case 'modern':
       return {
         headerBg: '#ffffff',
         headerText: '#1f2937',
-        accentColor: '#3b82f6',
-        invoiceBadgeBg: '#3b82f6',
+        accentColor: '#6366f1',
+        invoiceBadgeBg: '#6366f1',
         invoiceBadgeText: '#ffffff',
-        tableHeaderBg: '#eff6ff',
-        borderColor: '#dbeafe',
-        totalBg: '#3b82f6',
+        tableHeaderBg: '#f5f3ff',
+        tableHeaderText: '#6366f1',
+        borderColor: '#e5e7eb',
+        totalBg: '#6366f1',
         totalText: '#ffffff',
+        rowStriped: true,
+        leftAccent: true,
+        topBorder: false,
       };
     default: // regular
       return {
@@ -119,9 +131,13 @@ const getTemplateStyles = (templateId) => {
         invoiceBadgeBg: '#3b82f6',
         invoiceBadgeText: '#ffffff',
         tableHeaderBg: '#f8fafc',
+        tableHeaderText: '#64748b',
         borderColor: '#e2e8f0',
         totalBg: '#f8fafc',
         totalText: '#1f2937',
+        rowStriped: false,
+        leftAccent: false,
+        topBorder: false,
       };
   }
 };
@@ -676,33 +692,40 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
       }
       if (selectedTemplate === 'bold') {
         return `
-.header{background:#1a1a2e;color:white;padding:24px;margin:-30px -40px 30px;border-radius:0}
+.header{background:#0f172a;color:white;padding:28px 32px;margin:-30px -40px 30px;border-radius:0}
 .business-name{font-size:22px;font-weight:700;color:white;margin-bottom:6px;white-space:nowrap}
-.business-details{color:rgba(255,255,255,0.7)}
+.business-details{color:rgba(255,255,255,0.65);font-size:13px}
 .logo-img{filter:brightness(0) invert(1)}
 .invoice-badge{display:inline-block;padding:8px 20px;background:#10b981;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
-.invoice-meta-label{color:rgba(255,255,255,0.6)}
+.invoice-meta-label{color:rgba(255,255,255,0.5)}
 .invoice-meta-value{color:white}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#1a1a2e;color:white;padding:10px;border-radius:4px}
+.items-table th{background:#0f172a;color:#ffffff;border-color:#1e293b}
+.items-table td{border-color:#f1f5f9}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#0f172a;color:white;padding:10px;border-radius:4px}
 `;
       }
       if (selectedTemplate === 'mono') {
         return `
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
-.business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
-.invoice-badge{display:inline-block;padding:8px 20px;background:#f3f4f6;color:#374151;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
-.invoice-meta-label{color:#6b7280}
-.items-table th{background:#f9fafb}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#f9fafb;color:#1f2937;padding:10px;border-radius:4px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px;padding-bottom:24px;border-bottom:2px solid #111827}
+.business-name{font-size:24px;font-weight:800;color:#111827;margin-bottom:6px;white-space:nowrap;letter-spacing:-0.5px}
+.invoice-badge{display:inline-block;padding:6px 16px;border:2px solid #111827;background:transparent;color:#111827;border-radius:0;font-size:16px;font-weight:800;margin-bottom:12px;letter-spacing:2px}
+.invoice-meta-label{color:#9ca3af;text-transform:uppercase;font-size:11px;letter-spacing:1px}
+.items-table th{background:transparent;color:#9ca3af;border-top:none;border-bottom:1px solid #d1d5db;text-transform:uppercase;font-size:11px;letter-spacing:1px;font-weight:500}
+.items-table td{border-color:#f3f4f6}
+.totals-row.total{font-weight:800;font-size:18px;margin-top:6px;border-bottom:none;border-top:2px solid #111827;background:transparent;color:#111827;padding:10px 0;border-radius:0}
 `;
       }
       // modern
       return `
+body{border-left:4px solid #6366f1}
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 .business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
-.invoice-badge{display:inline-block;padding:8px 20px;background:#3b82f6;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
-.items-table th{background:#eff6ff;border-color:#dbeafe}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#3b82f6;color:white;padding:10px;border-radius:4px}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#6366f1;color:white;border-radius:6px;font-size:18px;font-weight:700;margin-bottom:12px}
+.invoice-meta-label{color:#6366f1;font-weight:500}
+.items-table th{background:#f5f3ff;border-color:#e5e7eb;color:#6366f1}
+.items-table tr:nth-child(even) td{background:#faf5ff}
+.items-table td{border-color:#f3f4f6}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#6366f1;color:white;padding:10px;border-radius:6px}
 `;
     };
 
@@ -2463,22 +2486,31 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             
             {/* White preview area */}
             <div style={{ padding: '20px', background: colors.bgInput }}>
-              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '24px' : '32px', minHeight: isMobile ? '400px' : '520px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <div style={{ 
+                background: 'white', 
+                borderRadius: '6px', 
+                padding: isMobile ? '24px' : '32px', 
+                minHeight: isMobile ? '400px' : '520px', 
+                color: '#1f2937', 
+                overflowX: 'auto', 
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                borderLeft: selectedTemplate === 'modern' ? '4px solid #6366f1' : 'none',
+              }}>
                 {/* Header - Bold template has dark header */}
                 {selectedTemplate === 'bold' && (
-                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
+                  <div style={{ background: '#0f172a', margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ minWidth: '140px', flex: '1' }}>
                         {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
-                        <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: templateStyles.headerText, marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
+                        <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', lineHeight: '1.5' }}>
                           {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                           {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                           {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right', minWidth: '130px' }}>
-                        <div style={{ display: 'inline-block', padding: '6px 16px', background: templateStyles.invoiceBadgeBg, color: templateStyles.invoiceBadgeText, borderRadius: '4px', fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
+                        <div style={{ display: 'inline-block', padding: '6px 16px', background: '#10b981', color: '#ffffff', borderRadius: '4px', fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
                         <div style={{ fontSize: '11px', lineHeight: '1.7', color: 'rgba(255,255,255,0.8)' }}>
                           <div>{t.invoiceNumber} {invoice.invoiceNumber}</div>
                           <div>{t.issueDate}: {inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</div>
@@ -2489,8 +2521,31 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   </div>
                 )}
 
-                {/* Header - Other templates (regular, mono, modern) */}
-                {selectedTemplate !== 'bold' && (
+                {/* Header - Mono template - heavy typography with bottom border */}
+                {selectedTemplate === 'mono' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px', paddingBottom: '20px', borderBottom: '2px solid #111827' }}>
+                  <div style={{ minWidth: '140px', flex: '1' }}>
+                    {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
+                    <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '800', color: '#111827', marginBottom: '4px', letterSpacing: '-0.5px' }}>{invoice.businessName || 'Your Company'}</div>
+                    <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.5' }}>
+                      {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
+                      {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
+                      {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', minWidth: '130px' }}>
+                    <div style={{ display: 'inline-block', padding: '6px 14px', border: '2px solid #111827', background: 'transparent', color: '#111827', borderRadius: '0', fontSize: isMobile ? '13px' : '14px', fontWeight: '800', marginBottom: '10px', letterSpacing: '2px' }}>{t.invoice}</div>
+                    <div style={{ fontSize: '11px', lineHeight: '1.7' }}>
+                      <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.invoiceNumber}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{invoice.invoiceNumber}</span></div>
+                      <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.issueDate}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</span></div>
+                      {invoice.dueDate && <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.dueDate}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{inDashboard ? formatDateWithFormat(invoice.dueDate, dateFormat) : formatDate(invoice.dueDate)}</span></div>}
+                    </div>
+                  </div>
+                </div>
+                )}
+
+                {/* Header - Regular & Modern templates */}
+                {selectedTemplate !== 'bold' && selectedTemplate !== 'mono' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                   <div style={{ minWidth: '140px', flex: '1' }}>
                     {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
@@ -2529,31 +2584,31 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '280px', fontSize: '11px' }}>
                     <thead>
                       <tr style={{ background: templateStyles.tableHeaderBg }}>
-                        <th style={{ textAlign: 'left', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}` }}>
+                        <th style={{ textAlign: 'left', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
                           {invoice.invoiceMode === 'hours' ? t.service : t.product}
                         </th>
-                        <th style={{ textAlign: 'center', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '40px' }}>
+                        <th style={{ textAlign: 'center', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '40px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
                           {invoice.invoiceMode === 'hours' ? t.hrs : t.qty}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '55px' }}>
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '55px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
                           {invoice.invoiceMode === 'hours' ? t.rate : t.price}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '60px' }}>{t.amount}</th>
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '60px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>{t.amount}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {invoice.items.map(item => (
+                      {invoice.items.map((item, idx) => (
                         <tr key={item.id}>
-                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, fontWeight: '500', color: '#374151', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
                             {item.description || (invoice.invoiceMode === 'hours' ? 'Service' : 'Product')}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'center', color: '#64748b', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
                             {invoice.invoiceMode === 'hours' ? item.hours : item.quantity}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'right', color: '#64748b', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
                             {formatCurrency(invoice.invoiceMode === 'hours' ? item.rate : item.price)}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'right', color: '#374151', fontWeight: '500', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
                             {formatCurrency(getItemTotal(item))}
                           </td>
                         </tr>
@@ -2587,7 +2642,18 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         <span style={{ color: '#374151' }}>{formatCurrency(shippingAmount)}</span>
                       </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', fontWeight: '700', fontSize: '14px', background: templateStyles.totalBg, color: templateStyles.totalText, borderRadius: '4px', marginTop: '4px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      padding: selectedTemplate === 'mono' ? '8px 0' : '8px 10px', 
+                      fontWeight: selectedTemplate === 'mono' ? '800' : '700', 
+                      fontSize: '14px', 
+                      background: selectedTemplate === 'mono' ? 'transparent' : templateStyles.totalBg, 
+                      color: templateStyles.totalText, 
+                      borderRadius: selectedTemplate === 'modern' ? '6px' : selectedTemplate === 'mono' ? '0' : '4px', 
+                      marginTop: '4px',
+                      borderTop: selectedTemplate === 'mono' ? '2px solid #111827' : 'none',
+                    }}>
                       <span>{t.total}:</span>
                       <span>{formatCurrency(total)}</span>
                     </div>
@@ -3187,89 +3253,94 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                       padding: '20px',
                       display: 'flex',
                       justifyContent: 'center',
-                      minHeight: '280px',
+                      minHeight: '300px',
                     }}>
                       <div style={{
                         width: '220px',
                         background: '#ffffff',
                         borderRadius: '4px',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                        padding: '16px',
+                        padding: tpl.id === 'bold' ? '0' : '16px',
                         fontSize: '7px',
                         color: '#333',
                         lineHeight: 1.4,
+                        borderLeft: tpl.id === 'modern' ? '3px solid #6366f1' : 'none',
+                        overflow: 'hidden',
                       }}>
-                        {/* Mini header */}
-                        <div style={{
-                          background: tplStyles.headerBg,
-                          margin: '-16px -16px 10px -16px',
-                          padding: '12px 16px',
-                          borderRadius: '4px 4px 0 0',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                        }}>
-                          <div>
-                            <div style={{ fontSize: '9px', fontWeight: '700', color: tplStyles.headerText, marginBottom: '2px' }}>
-                              {tpl.id === 'bold' ? '' : ''}Your Company
+                        {/* Mini header - Bold gets dark bg */}
+                        {tpl.id === 'bold' ? (
+                          <div style={{ background: '#0f172a', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ fontSize: '9px', fontWeight: '700', color: '#fff', marginBottom: '2px' }}>Your Company</div>
+                              <div style={{ fontSize: '6px', color: 'rgba(255,255,255,0.6)' }}>123 Main St<br/>email@co.com</div>
                             </div>
-                            <div style={{ fontSize: '6px', color: tplStyles.headerText, opacity: 0.7 }}>123 Main St<br/>email@co.com</div>
+                            <div style={{ background: '#10b981', color: '#fff', padding: '2px 6px', borderRadius: '2px', fontSize: '7px', fontWeight: '700' }}>INVOICE</div>
                           </div>
-                          <div style={{
-                            background: tplStyles.invoiceBadgeBg,
-                            color: tplStyles.invoiceBadgeText,
-                            padding: '2px 6px',
-                            borderRadius: '2px',
-                            fontSize: '7px',
-                            fontWeight: '700',
-                          }}>INVOICE</div>
-                        </div>
+                        ) : tpl.id === 'mono' ? (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '8px', borderBottom: '2px solid #111827', marginBottom: '8px' }}>
+                            <div>
+                              <div style={{ fontSize: '10px', fontWeight: '800', color: '#111827', letterSpacing: '-0.3px' }}>Your Company</div>
+                              <div style={{ fontSize: '6px', color: '#6b7280' }}>123 Main St<br/>email@co.com</div>
+                            </div>
+                            <div style={{ border: '1.5px solid #111827', color: '#111827', padding: '2px 5px', fontSize: '6px', fontWeight: '800', letterSpacing: '1.5px' }}>INVOICE</div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                            <div>
+                              <div style={{ fontSize: '9px', fontWeight: '700', color: tplStyles.headerText, marginBottom: '2px' }}>Your Company</div>
+                              <div style={{ fontSize: '6px', color: '#6b7280' }}>123 Main St<br/>email@co.com</div>
+                            </div>
+                            <div style={{ background: tplStyles.invoiceBadgeBg, color: tplStyles.invoiceBadgeText, padding: '2px 6px', borderRadius: tpl.id === 'modern' ? '3px' : '2px', fontSize: '7px', fontWeight: '700' }}>INVOICE</div>
+                          </div>
+                        )}
 
-                        {/* Invoice info */}
-                        <div style={{ fontSize: '6px', color: '#666', marginBottom: '6px' }}>
+                        {/* Invoice meta & issued to */}
+                        <div style={{ padding: tpl.id === 'bold' ? '12px 16px 0' : '0', fontSize: '6px', color: '#666', marginBottom: '6px' }}>
                           <div>Invoice #: INV-2026-001</div>
                           <div>Date: Feb 9, 2026</div>
                         </div>
-
-                        {/* Issued to */}
-                        <div style={{ fontSize: '6px', marginBottom: '8px' }}>
+                        <div style={{ padding: tpl.id === 'bold' ? '0 16px' : '0', fontSize: '6px', marginBottom: '8px' }}>
                           <div style={{ fontWeight: '600', marginBottom: '2px' }}>Issued To:</div>
                           <div style={{ color: '#666' }}>John Doe<br/>456 Oak Ave</div>
                         </div>
 
-                        {/* Table */}
-                        <div style={{ marginBottom: '8px' }}>
+                        {/* Mini table */}
+                        <div style={{ padding: tpl.id === 'bold' ? '0 16px' : '0', marginBottom: '8px' }}>
                           <div style={{
                             display: 'grid',
                             gridTemplateColumns: '2fr 1fr 1fr 1fr',
                             background: tplStyles.tableHeaderBg,
                             padding: '3px 4px',
-                            fontWeight: '600',
-                            fontSize: '6px',
+                            fontWeight: tpl.id === 'mono' ? '500' : '600',
+                            fontSize: tpl.id === 'mono' ? '5px' : '6px',
+                            color: tplStyles.tableHeaderText || '#64748b',
                             borderBottom: `1px solid ${tplStyles.borderColor}`,
+                            textTransform: tpl.id === 'mono' ? 'uppercase' : 'none',
+                            letterSpacing: tpl.id === 'mono' ? '0.5px' : 'normal',
                           }}>
                             <div>Product</div><div>Qty</div><div>Price</div><div>Amount</div>
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}` }}>
                             <div>Website Redesign</div><div>1</div><div>$400</div><div>$400.00</div>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}` }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}`, background: tpl.id === 'modern' ? '#faf5ff' : 'transparent' }}>
                             <div>Logo Design</div><div>2</div><div>$50</div><div>$100.00</div>
                           </div>
                         </div>
 
-                        {/* Totals */}
-                        <div style={{ textAlign: 'right', fontSize: '6px' }}>
+                        {/* Mini totals */}
+                        <div style={{ padding: tpl.id === 'bold' ? '0 16px 12px' : '0', textAlign: 'right', fontSize: '6px' }}>
                           <div style={{ marginBottom: '2px' }}>Subtotal: $500.00</div>
                           <div style={{ marginBottom: '2px' }}>Tax: $45.00</div>
                           <div style={{
-                            fontWeight: '700',
+                            fontWeight: tpl.id === 'mono' ? '800' : '700',
                             fontSize: '8px',
-                            background: tplStyles.totalBg,
+                            background: tpl.id === 'mono' ? 'transparent' : tplStyles.totalBg,
                             color: tplStyles.totalText,
-                            padding: '3px 6px',
-                            borderRadius: '2px',
+                            padding: tpl.id === 'mono' ? '3px 0' : '3px 6px',
+                            borderRadius: tpl.id === 'modern' ? '3px' : tpl.id === 'mono' ? '0' : '2px',
                             display: 'inline-block',
+                            borderTop: tpl.id === 'mono' ? '1.5px solid #111827' : 'none',
                           }}>Total: $545.00</div>
                         </div>
                       </div>
