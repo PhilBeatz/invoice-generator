@@ -269,6 +269,10 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
           parsed.items?.some(item => item.description || item.price > 0 || item.rate > 0);
         if (hasData) {
           setInvoice(prev => ({ ...prev, ...parsed }));
+          if (savedLogo) {
+            setLogoPreview(savedLogo);
+          }
+          return; // Skip org auto-populate if we restored form state
         }
       } catch (e) {
         console.error('Failed to restore form state:', e);
@@ -276,6 +280,27 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     }
     if (savedLogo) {
       setLogoPreview(savedLogo);
+    }
+
+    // Auto-populate business info from organization data (only for new invoices)
+    const orgData = localStorage.getItem('dayonetools_organization');
+    if (orgData) {
+      try {
+        const org = JSON.parse(orgData);
+        const orgFields = {};
+        if (org.companyName) orgFields.businessName = org.companyName;
+        if (org.email) orgFields.businessEmail = org.email;
+        if (org.phone) orgFields.businessPhone = org.phone;
+        if (org.address) orgFields.businessAddress = org.address;
+        if (Object.keys(orgFields).length > 0) {
+          setInvoice(prev => ({ ...prev, ...orgFields }));
+        }
+        if (org.logo) {
+          setLogoPreview(org.logo);
+        }
+      } catch (e) {
+        console.error('Failed to load organization data:', e);
+      }
     }
   }, []);
 
