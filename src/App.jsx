@@ -10,6 +10,7 @@ import DashboardLayout from './components/DashboardLayout';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import ForgotPassword from './components/ForgotPassword';
+import SharedInvoiceView from './components/SharedInvoiceView';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -46,33 +47,39 @@ export default function App() {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column',
-      background: darkMode ? '#1a1a2e' : '#f1f5f9' 
-    }}>
-      <Header darkMode={darkMode} user={user} supabase={supabase} />
-      <div style={{ flex: 1 }}>
-        <Routes>
-          <Route path="/" element={<LandingPage darkMode={darkMode} />} />
-          <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
-          <Route path="/contact" element={<Contact darkMode={darkMode} />} />
-          <Route path="/login" element={
-            user ? <Navigate to="/dashboard" replace /> : <Login darkMode={darkMode} />
-          } />
-          <Route path="/signup" element={
-            user ? <Navigate to="/dashboard" replace /> : <SignUp darkMode={darkMode} />
-          } />
-          <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
-          <Route path="/dashboard/*" element={
-            <ProtectedRoute>
-              <DashboardLayout darkMode={darkMode} user={user} />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </div>
-      <Footer darkMode={darkMode} setDarkMode={setDarkMode} />
-    </div>
+    <Routes>
+      {/* Public share route - completely standalone, no header/footer/auth */}
+      <Route path="/share/invoice/:token" element={<SharedInvoiceView />} />
+      <Route path="*" element={
+        <div style={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          flexDirection: 'column',
+          background: darkMode ? '#1a1a2e' : '#f1f5f9' 
+        }}>
+          <Header darkMode={darkMode} user={user} supabase={supabase} />
+          <div style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/" element={<LandingPage darkMode={darkMode} />} />
+              <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
+              <Route path="/contact" element={<Contact darkMode={darkMode} />} />
+              <Route path="/login" element={
+                user ? <Navigate to="/dashboard" replace /> : <Login darkMode={darkMode} />
+              } />
+              <Route path="/signup" element={
+                user ? <Navigate to="/dashboard" replace /> : <SignUp darkMode={darkMode} />
+              } />
+              <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
+              <Route path="/dashboard/*" element={
+                <ProtectedRoute>
+                  <DashboardLayout darkMode={darkMode} user={user} />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </div>
+          <Footer darkMode={darkMode} setDarkMode={setDarkMode} />
+        </div>
+      } />
+    </Routes>
   );
 }
