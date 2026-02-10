@@ -695,7 +695,6 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
 .header{background:#0f172a;color:white;padding:28px 32px;margin:-30px -40px 30px;border-radius:0}
 .business-name{font-size:22px;font-weight:700;color:white;margin-bottom:6px;white-space:nowrap}
 .business-details{color:rgba(255,255,255,0.65);font-size:13px}
-.logo-img{filter:brightness(0) invert(1)}
 .invoice-badge{display:inline-block;padding:8px 20px;background:#10b981;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
 .invoice-meta-label{color:rgba(255,255,255,0.5)}
 .invoice-meta-value{color:white}
@@ -2501,7 +2500,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   <div style={{ background: '#0f172a', margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ minWidth: '140px', flex: '1' }}>
-                        {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
+                        {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
                         <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
                         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', lineHeight: '1.5' }}>
                           {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
