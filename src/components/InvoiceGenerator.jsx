@@ -172,11 +172,13 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   const [livePreviewEnabled, setLivePreviewEnabled] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState('regular');
   const [invoiceLanguage, setInvoiceLanguage] = useState('english');
-  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
+  const [dateFormat, setDateFormat] = useState('Month DD, YYYY');
   const [showTemplateSubmenu, setShowTemplateSubmenu] = useState(false);
   const [showLanguageSubmenu, setShowLanguageSubmenu] = useState(false);
   const [showDateSubmenu, setShowDateSubmenu] = useState(false);
   const [templatePreviewModal, setTemplatePreviewModal] = useState(null);
+  const [showAppearance, setShowAppearance] = useState(false);
+  const [showTemplateChooser, setShowTemplateChooser] = useState(false);
   
   // Customer Manager state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -1810,6 +1812,138 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     </div>
                   </div>
 
+                  {/* Appearance & Formatting Accordion */}
+                  <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', overflow: 'hidden' }}>
+                    <button
+                      onClick={() => setShowAppearance(!showAppearance)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        padding: '12px 16px',
+                        background: colors.bgInput,
+                        border: 'none',
+                        color: colors.text,
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>⚙️</span> Appearance & Formatting
+                      </span>
+                      <span style={{ transform: showAppearance ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', fontSize: '12px', color: colors.textMuted }}>▼</span>
+                    </button>
+                    
+                    {showAppearance && (
+                      <div style={{ padding: '16px', borderTop: `1px solid ${colors.border}`, display: 'grid', gap: '16px' }}>
+                        {/* Template */}
+                        <div>
+                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            🎨 Template
+                          </label>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <select
+                              value={selectedTemplate}
+                              onChange={(e) => setSelectedTemplate(e.target.value)}
+                              style={{ ...inputStyle, flex: 1 }}
+                            >
+                              {templates.map(tpl => (
+                                <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => setShowTemplateChooser(true)}
+                              style={{
+                                padding: '10px 14px',
+                                background: colors.bgInput,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: '6px',
+                                color: colors.textMuted,
+                                fontSize: '13px',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Preview All
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Invoice Language */}
+                        <div>
+                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            🌐 Invoice Language
+                          </label>
+                          <select
+                            value={invoiceLanguage}
+                            onChange={(e) => setInvoiceLanguage(e.target.value)}
+                            style={inputStyle}
+                          >
+                            {languages.map(lang => (
+                              <option key={lang.code} value={lang.code}>{lang.name} — {lang.native}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Date Format */}
+                        <div>
+                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            📅 Date Format
+                          </label>
+                          <select
+                            value={dateFormat}
+                            onChange={(e) => setDateFormat(e.target.value)}
+                            style={inputStyle}
+                          >
+                            {dateFormats.map(df => (
+                              <option key={df.id} value={df.id}>{df.label} — {df.example}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Issue Date / Due Date */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Issue Date</label>
+                      <input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Due Date (Optional)</label>
+                      <input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Currency */}
+                  <div>
+                    <label style={labelStyle}>Currency</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>{currencySymbol}</span>
+                      <select style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>
+                        {currencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.code === 'USD' ? 'US Dollar' : c.code === 'EUR' ? 'Euro' : c.code === 'GBP' ? 'British Pound' : c.code === 'CAD' ? 'Canadian Dollar' : c.code === 'AUD' ? 'Australian Dollar' : c.code === 'JPY' ? 'Japanese Yen' : 'Indian Rupee'}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* End Message */}
+                  <div>
+                    <label style={labelStyle}>End Message (Optional)</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '14px', color: colors.textMuted }}>📝</span>
+                      <textarea 
+                        style={{ ...inputStyle, paddingLeft: '40px', minHeight: '80px', resize: 'vertical' }} 
+                        placeholder="Optional" 
+                        value={invoice.endMessage} 
+                        onChange={(e) => updateField('endMessage', e.target.value)} 
+                      />
+                    </div>
+                  </div>
+
                   {/* Terms of Payment */}
                   <div>
                     <label style={labelStyle}>Terms of Payment</label>
@@ -1863,43 +1997,6 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         ))}
                       </div>
                     )}
-                  </div>
-
-                  {/* Issue Date / Due Date */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={labelStyle}>Issue Date</label>
-                      <input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Due Date (Optional)</label>
-                      <input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} />
-                    </div>
-                  </div>
-
-                  {/* Currency */}
-                  <div>
-                    <label style={labelStyle}>Currency</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>{currencySymbol}</span>
-                      <select style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>
-                        {currencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.code === 'USD' ? 'US Dollar' : c.code === 'EUR' ? 'Euro' : c.code === 'GBP' ? 'British Pound' : c.code === 'CAD' ? 'Canadian Dollar' : c.code === 'AUD' ? 'Australian Dollar' : c.code === 'JPY' ? 'Japanese Yen' : 'Indian Rupee'}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* End Message */}
-                  <div>
-                    <label style={labelStyle}>End Message (Optional)</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '14px', color: colors.textMuted }}>📝</span>
-                      <textarea 
-                        style={{ ...inputStyle, paddingLeft: '40px', minHeight: '80px', resize: 'vertical' }} 
-                        placeholder="Optional" 
-                        value={invoice.endMessage} 
-                        onChange={(e) => updateField('endMessage', e.target.value)} 
-                      />
-                    </div>
                   </div>
                 </div>
               )}
@@ -2993,6 +3090,193 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
               >
                 + Add Selected ({selectedCatalogProducts.length})
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Chooser Modal */}
+      {showTemplateChooser && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '40px 20px',
+          overflowY: 'auto',
+        }}
+        onClick={() => setShowTemplateChooser(false)}
+        >
+          <div style={{
+            background: colors.bgCard,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '900px',
+            overflow: 'hidden',
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px 24px',
+              borderBottom: `1px solid ${colors.border}`,
+            }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>Choose an Invoice Template</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Pick a template style for your invoices</p>
+              </div>
+              <button
+                onClick={() => setShowTemplateChooser(false)}
+                style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '22px', cursor: 'pointer', padding: '4px' }}
+              >✕</button>
+            </div>
+
+            {/* Template Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '20px',
+              padding: '24px',
+            }}>
+              {templates.map((tpl) => {
+                const isSelected = selectedTemplate === tpl.id;
+                const tplStyles = getTemplateStyles(tpl.id);
+                return (
+                  <div
+                    key={tpl.id}
+                    onClick={() => { setSelectedTemplate(tpl.id); setShowTemplateChooser(false); }}
+                    style={{
+                      border: `2px solid ${isSelected ? colors.green : colors.border}`,
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s',
+                      background: colors.bg,
+                    }}
+                  >
+                    {/* Template Label */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 14px',
+                      borderBottom: `1px solid ${colors.border}`,
+                    }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>{tpl.name}</span>
+                      {isSelected && (
+                        <span style={{
+                          padding: '2px 8px',
+                          background: `${colors.green}20`,
+                          color: colors.green,
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: '600',
+                        }}>Selected</span>
+                      )}
+                    </div>
+
+                    {/* Template Preview - Mini Invoice */}
+                    <div style={{
+                      padding: '20px',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      minHeight: '280px',
+                    }}>
+                      <div style={{
+                        width: '220px',
+                        background: '#ffffff',
+                        borderRadius: '4px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        padding: '16px',
+                        fontSize: '7px',
+                        color: '#333',
+                        lineHeight: 1.4,
+                      }}>
+                        {/* Mini header */}
+                        <div style={{
+                          background: tplStyles.headerBg,
+                          margin: '-16px -16px 10px -16px',
+                          padding: '12px 16px',
+                          borderRadius: '4px 4px 0 0',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '9px', fontWeight: '700', color: tplStyles.headerText, marginBottom: '2px' }}>
+                              {tpl.id === 'bold' ? '' : ''}Your Company
+                            </div>
+                            <div style={{ fontSize: '6px', color: tplStyles.headerText, opacity: 0.7 }}>123 Main St<br/>email@co.com</div>
+                          </div>
+                          <div style={{
+                            background: tplStyles.invoiceBadgeBg,
+                            color: tplStyles.invoiceBadgeText,
+                            padding: '2px 6px',
+                            borderRadius: '2px',
+                            fontSize: '7px',
+                            fontWeight: '700',
+                          }}>INVOICE</div>
+                        </div>
+
+                        {/* Invoice info */}
+                        <div style={{ fontSize: '6px', color: '#666', marginBottom: '6px' }}>
+                          <div>Invoice #: INV-2026-001</div>
+                          <div>Date: Feb 9, 2026</div>
+                        </div>
+
+                        {/* Issued to */}
+                        <div style={{ fontSize: '6px', marginBottom: '8px' }}>
+                          <div style={{ fontWeight: '600', marginBottom: '2px' }}>Issued To:</div>
+                          <div style={{ color: '#666' }}>John Doe<br/>456 Oak Ave</div>
+                        </div>
+
+                        {/* Table */}
+                        <div style={{ marginBottom: '8px' }}>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                            background: tplStyles.tableHeaderBg,
+                            padding: '3px 4px',
+                            fontWeight: '600',
+                            fontSize: '6px',
+                            borderBottom: `1px solid ${tplStyles.borderColor}`,
+                          }}>
+                            <div>Product</div><div>Qty</div><div>Price</div><div>Amount</div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}` }}>
+                            <div>Website Redesign</div><div>1</div><div>$400</div><div>$400.00</div>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}` }}>
+                            <div>Logo Design</div><div>2</div><div>$50</div><div>$100.00</div>
+                          </div>
+                        </div>
+
+                        {/* Totals */}
+                        <div style={{ textAlign: 'right', fontSize: '6px' }}>
+                          <div style={{ marginBottom: '2px' }}>Subtotal: $500.00</div>
+                          <div style={{ marginBottom: '2px' }}>Tax: $45.00</div>
+                          <div style={{
+                            fontWeight: '700',
+                            fontSize: '8px',
+                            background: tplStyles.totalBg,
+                            color: tplStyles.totalText,
+                            padding: '3px 6px',
+                            borderRadius: '2px',
+                            display: 'inline-block',
+                          }}>Total: $545.00</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
