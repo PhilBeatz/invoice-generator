@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchInvoices, updateInvoice as updateInvoiceDb, deleteInvoice as deleteInvoiceDb } from '../supabaseService';
 
-export default function DashboardInvoices({ darkMode = true }) {
+export default function DashboardInvoices({ darkMode = true, user }) {
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,7 +25,7 @@ export default function DashboardInvoices({ darkMode = true }) {
   const [bulkStatusConfirm, setBulkStatusConfirm] = useState(null);
 
   const colors = darkMode ? {
-    bg: '#0d1117', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
+    bg: '#0f1419', bgCard: '#161b22', bgCard2: '#1c2128', bgInput: '#21262d',
     text: '#e6edf3', textMuted: '#8b949e', border: '#30363d',
     accent: '#3b82f6', green: '#10b981', yellow: '#f59e0b', red: '#ef4444', orange: '#f97316',
   } : {
@@ -43,7 +44,10 @@ export default function DashboardInvoices({ darkMode = true }) {
   const sOpts = Object.entries(sCfg).map(([v, c]) => ({ value: v, ...c }));
 
   // Load
-  useEffect(() => { const s = localStorage.getItem('dayonetools_invoices'); if (s) setInvoices(JSON.parse(s)); }, []);
+  useEffect(() => {
+    if (!user) return;
+    fetchInvoices().then(data => setInvoices(data)).catch(e => console.error('Error loading invoices:', e));
+  }, [user]);
 
   // Close dropdowns
   useEffect(() => {
@@ -51,33 +55,50 @@ export default function DashboardInvoices({ darkMode = true }) {
     document.addEventListener('click', h); return () => document.removeEventListener('click', h);
   }, []);
 
-  const save = (u) => { setInvoices(u); localStorage.setItem('dayonetools_invoices', JSON.stringify(u)); };
+  const save = (u) => { setInvoices(u); };
 
   // Status change with paidDate logic
-  const chgStatus = (id, ns) => {
-    save(invoices.map(inv => {
-      if (inv.id !== id) return inv;
-      const c = { status: ns, updatedAt: new Date().toISOString() };
-      if (ns === 'paid') c.paidDate = new Date().toISOString();
-      else if (inv.status === 'paid') c.paidDate = null;
-      return { ...inv, ...c };
-    }));
+  const chgStatus = async (id, ns) => {
+    try {
+      const updates = { status: ns };
+      if (ns === 'paid') updates.paidDate = new Date().toISOString();
+      await updateInvoiceDb(id, updates);
+      setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates, updatedAt: new Date().toISOString() } : inv));
+    } catch (e) { console.error('Error updating status:', e); }
     setStatusDropdown(null);
   };
 
-  const bulkChgStatus = (ns) => {
-    save(invoices.map(inv => {
-      if (!selectedInvoices.includes(inv.id)) return inv;
-      const c = { status: ns, updatedAt: new Date().toISOString() };
-      if (ns === 'paid') c.paidDate = new Date().toISOString();
-      else if (inv.status === 'paid') c.paidDate = null;
-      return { ...inv, ...c };
-    }));
+  const bulkChgStatus = async (ns) => {
+    try {
+      for (const id of selectedInvoices) {
+        const updates = { status: ns };
+        if (ns === 'paid') updates.paidDate = new Date().toISOString();
+        await updateInvoiceDb(id, updates);
+      }
+      setInvoices(prev => prev.map(inv => {
+        if (!selectedInvoices.includes(inv.id)) return inv;
+        const c = { status: ns, updatedAt: new Date().toISOString() };
+        if (ns === 'paid') c.paidDate = new Date().toISOString();
+        return { ...inv, ...c };
+      }));
+    } catch (e) { console.error('Error bulk updating:', e); }
     setSelectedInvoices([]); setBulkStatusConfirm(null); setShowBulkStatus(false);
   };
 
-  const delInv = (id) => { save(invoices.filter(i => i.id !== id)); setDeleteModal(null); setShowActionsMenu(null); };
-  const bulkDel = () => { save(invoices.filter(i => !selectedInvoices.includes(i.id))); setSelectedInvoices([]); setDeleteModal(null); };
+  const delInv = async (id) => {
+    try {
+      await deleteInvoiceDb(id);
+      setInvoices(prev => prev.filter(i => i.id !== id));
+    } catch (e) { console.error('Error deleting invoice:', e); }
+    setDeleteModal(null); setShowActionsMenu(null);
+  };
+  const bulkDel = async () => {
+    try {
+      for (const id of selectedInvoices) await deleteInvoiceDb(id);
+      setInvoices(prev => prev.filter(i => !selectedInvoices.includes(i.id)));
+    } catch (e) { console.error('Error bulk deleting:', e); }
+    setSelectedInvoices([]); setDeleteModal(null);
+  };
 
   // Filtering
   const hasFilters = searchQuery || statusFilters.length > 0 || dateRange;
@@ -323,7 +344,7 @@ export default function DashboardInvoices({ darkMode = true }) {
                 style={{padding:'4px 8px',background:'transparent',border:'none',color:colors.textMuted,fontSize:'18px',cursor:'pointer',borderRadius:'4px',letterSpacing:'2px',lineHeight:1}}>···</button>
               {showActionsMenu===inv.id&&(
                 <div style={{position:'absolute',right:0,top:'100%',marginTop:'4px',background:colors.bgCard,border:`1px solid ${colors.border}`,borderRadius:'8px',boxShadow:'0 4px 20px rgba(0,0,0,0.3)',zIndex:1000,minWidth:'150px',padding:'4px 0'}}>
-                  {[{l:'👁 View',a:()=>{navigate(`/dashboard/invoices/${inv.id}`);setShowActionsMenu(null);}},{l:'✏️ Edit',a:()=>{localStorage.setItem('dayonetools_edit_invoice',JSON.stringify(inv));navigate('/dashboard/create');setShowActionsMenu(null);}},{l:'📥 Download',a:()=>setShowActionsMenu(null)}].map((x,i)=>(
+                  {[{l:'👁 View',a:()=>{navigate(`/dashboard/invoices/${inv.id}`);setShowActionsMenu(null);}},{l:'✏️ Edit',a:()=>{navigate(`/dashboard/create?edit=${inv.id}`);setShowActionsMenu(null);}},{l:'📥 Download',a:()=>setShowActionsMenu(null)}].map((x,i)=>(
                     <button key={i} onClick={x.a} style={{display:'block',width:'100%',padding:'9px 16px',background:'transparent',border:'none',color:colors.text,fontSize:'13px',textAlign:'left',cursor:'pointer',fontFamily:"'Inter',sans-serif"}}
                       onMouseEnter={e=>e.currentTarget.style.background=colors.bgInput} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>{x.l}</button>
                   ))}

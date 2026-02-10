@@ -11,7 +11,6 @@ import DashboardOrganization from './DashboardOrganization';
 import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import DashboardConfiguration from './DashboardConfiguration';
-import DashboardEmployees from './DashboardEmployees';
 import InvoiceGenerator from './InvoiceGenerator';
 
 export default function DashboardLayout({ darkMode = true, user }) {
@@ -95,7 +94,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
         {/* Dashboard Routes */}
         <Routes>
           <Route index element={<DashboardOverview darkMode={darkMode} />} />
-          <Route path="create" element={<InvoiceGenerator darkMode={darkMode} inDashboard={true} />} />
+          <Route path="create" element={<InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} />} />
           <Route path="analytics" element={
             <DashboardPlaceholder darkMode={darkMode} title="Analytics" icon="📈" description="Track your revenue, invoice trends, and business growth with interactive charts and reports." />
           } />
@@ -103,10 +102,10 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." />
           } />
           <Route path="invoices" element={
-            <DashboardInvoices darkMode={darkMode} />
+            <DashboardInvoices darkMode={darkMode} user={user} />
           } />
           <Route path="invoices/:invoiceId" element={
-            <InvoiceDetail darkMode={darkMode} />
+            <InvoiceDetail darkMode={darkMode} user={user} />
           } />
           <Route path="customers" element={
             <DashboardCustomers darkMode={darkMode} />
@@ -130,7 +129,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardOrganization darkMode={darkMode} />
           } />
           <Route path="employees" element={
-            <DashboardEmployees darkMode={darkMode} />
+            <DashboardPlaceholder darkMode={darkMode} title="Employees" icon="👤" description="Manage team members, roles, and permissions for your organization." />
           } />
           <Route path="settings" element={
             <DashboardSettings darkMode={darkMode} />

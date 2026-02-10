@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  fetchInvoiceById, updateInvoice as updateInvoiceDb,
+  fetchSharesForInvoice, createShare, deleteShare as deleteShareDb,
+  fetchEmailsForInvoice, sendInvoiceEmail,
+} from '../supabaseService';
 
-export default function InvoiceDetail({ darkMode = true }) {
+export default function InvoiceDetail({ darkMode = true, user }) {
   const { invoiceId } = useParams();
   const navigate = useNavigate();
   const [invoice, setInvoice] = useState(null);
@@ -9,6 +14,28 @@ export default function InvoiceDetail({ darkMode = true }) {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionText, setDescriptionText] = useState('');
+
+  // Share modal
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
+  const [sharePassword, setSharePassword] = useState('');
+  const [showSharePassword, setShowSharePassword] = useState(false);
+  const [shareExpirationEnabled, setShareExpirationEnabled] = useState(false);
+  const [shareExpiration, setShareExpiration] = useState('');
+  const [shareLimitViewsEnabled, setShareLimitViewsEnabled] = useState(false);
+  const [shareLimitViews, setShareLimitViews] = useState(100);
+  // Manage shares
+  const [showManageShares, setShowManageShares] = useState(false);
+  const [shares, setShares] = useState([]);
+  const [copiedShareId, setCopiedShareId] = useState(null);
+  const [confirmDeleteShareId, setConfirmDeleteShareId] = useState(null);
+  // Send email
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailTo, setEmailTo] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailHistory, setEmailHistory] = useState([]);
+  // More actions
+  const [showMoreDropdown, setShowMoreDropdown] = useState(false);
 
   const colors = darkMode ? {
     bg: '#0d1117',
@@ -35,37 +62,42 @@ export default function InvoiceDetail({ darkMode = true }) {
   };
 
   useEffect(() => {
-    // Load invoice from localStorage
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    if (savedInvoices) {
-      const invoices = JSON.parse(savedInvoices);
-      const found = invoices.find(inv => inv.id === invoiceId);
-      setInvoice(found);
-      if (found) {
-        setDescriptionText(found.description || `Invoice for ${found.customerName || 'Customer'}`);
+    const loadData = async () => {
+      try {
+        const inv = await fetchInvoiceById(invoiceId);
+        setInvoice(inv);
+        setDescriptionText(inv.description || `Invoice for ${inv.customerName || 'Customer'}`);
+        setEmailTo(inv.customerEmail || '');
+
+        const shareData = await fetchSharesForInvoice(invoiceId);
+        setShares(shareData);
+
+        const emailData = await fetchEmailsForInvoice(invoiceId);
+        setEmailHistory(emailData);
+      } catch (e) {
+        console.error('Error loading invoice:', e);
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    loadData();
   }, [invoiceId]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setShowStatusDropdown(false);
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.status-dropdown-container')) setShowStatusDropdown(false);
+      if (!e.target.closest('.more-dropdown-container')) setShowMoreDropdown(false);
+    };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Update invoice in localStorage
-  const updateInvoice = (updates) => {
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    if (savedInvoices) {
-      const invoices = JSON.parse(savedInvoices);
-      const index = invoices.findIndex(inv => inv.id === invoiceId);
-      if (index !== -1) {
-        invoices[index] = { ...invoices[index], ...updates, updatedAt: new Date().toISOString() };
-        localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
-        setInvoice(invoices[index]);
-      }
+  // Update invoice in Supabase
+  const updateInvoice = async (updates) => {
+    try {
+      const updated = await updateInvoiceDb(invoiceId, updates);
+      setInvoice(updated);
+    } catch (e) {
+      console.error('Error updating invoice:', e);
     }
   };
 
@@ -77,6 +109,77 @@ export default function InvoiceDetail({ darkMode = true }) {
   const handleSaveDescription = () => {
     updateInvoice({ description: descriptionText });
     setEditingDescription(false);
+  };
+
+  // Share functions
+  const handleCreateShareLink = async () => {
+    try {
+      if (!user) return;
+      const newShare = await createShare(invoiceId, user.id, {
+        createdBy: 'You',
+        passwordProtected: sharePasswordEnabled,
+        password: sharePasswordEnabled ? sharePassword : null,
+        expiresAt: shareExpirationEnabled && shareExpiration ? new Date(shareExpiration).toISOString() : null,
+        viewLimit: shareLimitViewsEnabled ? shareLimitViews : null,
+      });
+      setShares(prev => [newShare, ...prev]);
+      setSharePasswordEnabled(false); setSharePassword(''); setShareExpirationEnabled(false); setShareExpiration('');
+      setShareLimitViewsEnabled(false); setShareLimitViews(100); setShowShareModal(false); setShowManageShares(true);
+    } catch (e) {
+      console.error('Error creating share:', e);
+    }
+  };
+
+  const handleDeleteShare = async (shareId) => {
+    try {
+      await deleteShareDb(shareId);
+      setShares(prev => prev.filter(s => s.id !== shareId));
+      setConfirmDeleteShareId(null);
+    } catch (e) {
+      console.error('Error deleting share:', e);
+    }
+  };
+
+  const getShareStatus = (share) => {
+    if (share.status === 'revoked') return { label: 'Revoked', color: colors.red };
+    if (share.expiresAt && new Date(share.expiresAt) < new Date()) return { label: 'Expired', color: colors.yellow };
+    if (share.viewLimit && share.viewCount >= share.viewLimit) return { label: 'View Limit Reached', color: colors.yellow };
+    return { label: 'Active', color: colors.green };
+  };
+
+  const getShareUrl = (share) => `${window.location.origin}/share/invoice/${share.token}`;
+
+  const handleCopyShareLink = (share) => {
+    navigator.clipboard.writeText(getShareUrl(share)).then(() => { setCopiedShareId(share.id); setTimeout(() => setCopiedShareId(null), 2000); });
+  };
+
+  // Email functions
+  const handleSendEmail = async () => {
+    if (!emailTo.trim()) return;
+    try {
+      if (!user) return;
+      const emailRecord = await sendInvoiceEmail(invoiceId, user.id, {
+        to: emailTo,
+        message: emailMessage,
+        sentBy: 'You',
+      });
+      setEmailHistory(prev => [emailRecord, ...prev]);
+      setShowEmailModal(false); setEmailMessage('');
+    } catch (e) {
+      console.error('Error sending email:', e);
+      alert('Failed to send email. Please try again.');
+    }
+  };
+
+  const formatRelativeTime = (dateStr) => {
+    if (!dateStr) return 'Never';
+    const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `about ${hrs} hour${hrs > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
   const getStatusBadge = (status) => {
@@ -140,8 +243,7 @@ export default function InvoiceDetail({ darkMode = true }) {
   };
 
   const handleEdit = () => {
-    localStorage.setItem('dayonetools_edit_invoice', JSON.stringify(invoice));
-    navigate('/dashboard/create');
+    navigate(`/dashboard/create?edit=${invoiceId}`);
   };
 
   if (loading) {
@@ -231,46 +333,27 @@ export default function InvoiceDetail({ darkMode = true }) {
             Invoice #{invoice.invoiceNumber}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button
-            onClick={() => alert('Share PDF feature coming soon!')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 12px',
-              background: 'transparent',
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}
-          >
-            📤 Share PDF
-          </button>
+            onClick={() => setShowShareModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', background: 'transparent', color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}
+          >📤 Share PDF</button>
           <button
             onClick={handleEdit}
             disabled={invoice.status === 'cancelled'}
             title={invoice.status === 'cancelled' ? 'Cannot edit cancelled invoices' : 'Edit invoice'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 12px',
-              background: 'transparent',
-              color: invoice.status === 'cancelled' ? colors.textMuted : colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: invoice.status === 'cancelled' ? 'not-allowed' : 'pointer',
-              opacity: invoice.status === 'cancelled' ? 0.5 : 1,
-            }}
-          >
-            ✏️ Edit
-          </button>
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 12px', background: 'transparent', color: invoice.status === 'cancelled' ? colors.textMuted : colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontSize: '12px', fontWeight: '500', cursor: invoice.status === 'cancelled' ? 'not-allowed' : 'pointer', opacity: invoice.status === 'cancelled' ? 0.5 : 1 }}
+          >✏️ Edit</button>
+          <div className="more-dropdown-container" style={{ position: 'relative' }}>
+            <button onClick={(e) => { e.stopPropagation(); setShowMoreDropdown(!showMoreDropdown); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '34px', height: '34px', background: 'transparent', color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontSize: '14px', cursor: 'pointer' }}>▾</button>
+            {showMoreDropdown && (
+              <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', zIndex: 200, minWidth: '180px', overflow: 'hidden', padding: '4px 0' }}>
+                <button onClick={() => { setShowMoreDropdown(false); handleDownloadPDF(); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>👁️ View PDF</button>
+                <button onClick={() => { setShowMoreDropdown(false); setShowManageShares(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>📋 Manage Shares</button>
+                <button onClick={() => { setShowMoreDropdown(false); setShowEmailModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>✉️ Send via Email</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -748,20 +831,201 @@ export default function InvoiceDetail({ darkMode = true }) {
 
           {/* Email History Card */}
           <div style={cardStyle}>
-            <h3 style={{ 
-              fontSize: '14px', 
-              fontWeight: '500', 
-              color: colors.text, 
-              marginBottom: '8px',
-            }}>
-              Email History
-            </h3>
-            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>
-              No emails have been sent for this invoice yet.
-            </p>
+            <h3 style={{ fontSize: '14px', fontWeight: '500', color: colors.text, marginBottom: '8px' }}>Email History</h3>
+            {emailHistory.length === 0 ? (
+              <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>No emails have been sent for this invoice yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{ fontSize: '12px', color: colors.textMuted, margin: 0 }}>{emailHistory.length} email{emailHistory.length > 1 ? 's' : ''} sent for this invoice</p>
+                {emailHistory.map(email => (
+                  <div key={email.id} style={{ padding: '10px', background: colors.bgInput, borderRadius: '6px', border: `1px solid ${colors.border}` }}>
+                    <div style={{ fontSize: '13px', color: colors.text, fontWeight: '500', marginBottom: '4px' }}>✉️ {email.to}</div>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', background: `${colors.green}20`, color: colors.green, borderRadius: '4px', fontSize: '11px', fontWeight: '500', marginBottom: '4px' }}>{email.type}</span>
+                    <div style={{ fontSize: '11px', color: colors.textMuted }}>📅 {formatRelativeTime(email.sentAt)} &nbsp; 👤 {email.sentBy}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* ===== SHARE INVOICE MODAL ===== */}
+      {showShareModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowShareModal(false)}>
+          <div style={{ background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${colors.border}` }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>🔗 Share Invoice</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Create a secure share link for <strong style={{ color: colors.text }}>Invoice #{invoice.invoiceNumber}</strong></p>
+              </div>
+              <button onClick={() => setShowShareModal(false)} style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Password Protection */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                <input type="checkbox" checked={sharePasswordEnabled} onChange={(e) => setSharePasswordEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: colors.green }} />
+                🔒 Password Protection
+              </label>
+              {sharePasswordEnabled && (
+                <div style={{ marginLeft: '28px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showSharePassword ? 'text' : 'password'} value={sharePassword} onChange={(e) => setSharePassword(e.target.value)} placeholder="Enter password (min 4 characters)" style={{ width: '100%', padding: '10px 40px 10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+                    <button onClick={() => setShowSharePassword(!showSharePassword)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '16px' }}>{showSharePassword ? '👁️' : '👁️‍🗨️'}</button>
+                  </div>
+                  <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '4px' }}>Recipients will need this password to access the invoice</p>
+                </div>
+              )}
+              {/* Set Expiration */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                <input type="checkbox" checked={shareExpirationEnabled} onChange={(e) => setShareExpirationEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: colors.green }} />
+                ⏳ Set Expiration
+              </label>
+              {shareExpirationEnabled && (
+                <div style={{ marginLeft: '28px' }}>
+                  <input type="datetime-local" value={shareExpiration} onChange={(e) => setShareExpiration(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+                  <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '4px' }}>Link will expire and become inaccessible after this date.</p>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    {[{ label: '1 hour', h: 1 }, { label: '1 day', h: 24 }, { label: '1 week', h: 168 }].map(opt => (
+                      <button key={opt.label} onClick={() => setShareExpiration(new Date(Date.now() + opt.h * 3600000).toISOString().slice(0, 16))} style={{ padding: '6px 12px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '12px', cursor: 'pointer' }}>{opt.label}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Permanent warning */}
+              {!shareExpirationEnabled && (
+                <div style={{ padding: '12px 16px', background: `${colors.yellow}15`, border: `1px solid ${colors.yellow}40`, borderRadius: '8px' }}>
+                  <p style={{ fontSize: '13px', color: colors.yellow, margin: 0 }}><strong>Permanent Share:</strong> This invoice will be always publicly accessible to anyone with the link.</p>
+                </div>
+              )}
+              {/* Limit Views */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                <input type="checkbox" checked={shareLimitViewsEnabled} onChange={(e) => setShareLimitViewsEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: colors.green }} />
+                👥 Limit Views
+              </label>
+              {shareLimitViewsEnabled && (
+                <div style={{ marginLeft: '28px' }}>
+                  <input type="number" min={1} max={10000} value={shareLimitViews} onChange={(e) => setShareLimitViews(Number(e.target.value))} style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+                  <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '4px' }}>Link will become inaccessible after this many downloads/views</p>
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => setShowShareModal(false)} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleCreateShareLink} disabled={sharePasswordEnabled && sharePassword.length < 4} style={{ padding: '10px 20px', background: sharePasswordEnabled && sharePassword.length < 4 ? colors.bgInput : colors.green, border: 'none', borderRadius: '6px', color: sharePasswordEnabled && sharePassword.length < 4 ? colors.textMuted : '#fff', fontSize: '14px', fontWeight: '500', cursor: sharePasswordEnabled && sharePassword.length < 4 ? 'not-allowed' : 'pointer' }}>Create Share Link</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MANAGE SHARES MODAL ===== */}
+      {showManageShares && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => { setShowManageShares(false); setConfirmDeleteShareId(null); }}>
+          <div style={{ background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', width: '100%', maxWidth: '620px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${colors.border}` }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>🔗 Manage Shares</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Manage existing share links for <strong style={{ color: colors.text }}>Invoice #{invoice.invoiceNumber}</strong></p>
+              </div>
+              <button onClick={() => { setShowManageShares(false); setConfirmDeleteShareId(null); }} style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 24px', maxHeight: '60vh', overflowY: 'auto' }}>
+              {shares.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.3 }}>🔗</div>
+                  <p style={{ color: colors.textMuted, fontSize: '14px' }}>No share links created yet</p>
+                  <button onClick={() => { setShowManageShares(false); setShowShareModal(true); }} style={{ marginTop: '12px', padding: '10px 20px', background: colors.green, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>+ Create Share Link</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {shares.map(share => {
+                    const ss = getShareStatus(share);
+                    return (
+                      <div key={share.id} style={{ padding: '16px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ display: 'inline-block', padding: '3px 8px', background: `${ss.color}20`, color: ss.color, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>{ss.label}</span>
+                            {!share.expiresAt && <span style={{ display: 'inline-block', padding: '3px 8px', background: `${colors.accent}20`, color: colors.accent, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>Public</span>}
+                            {share.passwordProtected && <span style={{ display: 'inline-block', padding: '3px 8px', background: `${colors.yellow}20`, color: colors.yellow, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>🔒 Protected</span>}
+                          </div>
+                          {confirmDeleteShareId === share.id ? (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button onClick={() => setConfirmDeleteShareId(null)} style={{ padding: '4px 10px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '4px', color: colors.text, fontSize: '11px', cursor: 'pointer' }}>Cancel</button>
+                              <button onClick={() => handleDeleteShare(share.id)} style={{ padding: '4px 10px', background: colors.red, border: 'none', borderRadius: '4px', color: '#fff', fontSize: '11px', cursor: 'pointer' }}>Delete</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setConfirmDeleteShareId(share.id)} style={{ padding: '4px 8px', background: `${colors.red}20`, border: 'none', borderRadius: '4px', color: colors.red, fontSize: '14px', cursor: 'pointer' }}>🗑</button>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '10px' }}>Created {formatRelativeTime(share.createdAt)} by {share.createdBy}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px', marginBottom: '10px' }}>
+                          <div><span style={{ color: colors.textMuted }}>⏳ Expires: </span><span style={{ color: colors.text }}>{share.expiresAt ? formatDateTime(share.expiresAt) : 'Never'}</span></div>
+                          <div><span style={{ color: colors.textMuted }}>👥 Views: </span><span style={{ color: colors.text }}>{share.viewCount}{share.viewLimit ? ` / ${share.viewLimit}` : ' (unlimited)'}</span></div>
+                          <div><span style={{ color: colors.textMuted }}>👁️ Last viewed: </span><span style={{ color: colors.text }}>{share.lastViewedAt ? formatRelativeTime(share.lastViewedAt) : 'Never'}</span></div>
+                          <div><span style={{ color: colors.textMuted }}>📅 Created: </span><span style={{ color: colors.text }}>{formatDate(share.createdAt)}</span></div>
+                        </div>
+                        {ss.label === 'Active' && (
+                          <div>
+                            <div style={{ fontSize: '11px', color: colors.textMuted, marginBottom: '4px' }}>Share URL:</div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input readOnly value={getShareUrl(share)} style={{ flex: 1, padding: '8px 10px', background: colors.bg, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '12px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+                              <button onClick={() => handleCopyShareLink(share)} style={{ padding: '8px 12px', background: copiedShareId === share.id ? colors.green : colors.bgInput, border: `1px solid ${copiedShareId === share.id ? colors.green : colors.border}`, borderRadius: '6px', color: copiedShareId === share.id ? '#fff' : colors.text, fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                {copiedShareId === share.id ? '✓ Copied' : '📋 Copy'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'center' }}>
+              <button onClick={() => { setShowManageShares(false); setConfirmDeleteShareId(null); }} style={{ padding: '12px 0', background: colors.green, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: 'pointer', width: '100%' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== SEND VIA EMAIL MODAL ===== */}
+      {showEmailModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowEmailModal(false)}>
+          <div style={{ background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: `1px solid ${colors.border}` }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>Send Invoice via Email</h2>
+                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Send invoice {invoice.invoiceNumber} to your customer via email with PDF attachment.</p>
+              </div>
+              <button onClick={() => setShowEmailModal(false)} style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Recipient Email</label>
+                <input type="email" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} placeholder="customer@example.com" style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Custom Message (Optional)</label>
+                <textarea value={emailMessage} onChange={(e) => setEmailMessage(e.target.value.slice(0, 500))} placeholder="Thanks for your order." style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box', minHeight: '80px', resize: 'vertical' }} />
+                <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '4px' }}>{emailMessage.length}/500 characters</div>
+              </div>
+              <div style={{ padding: '12px 16px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '8px' }}>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>What will be sent:</p>
+                <ul style={{ fontSize: '12px', color: colors.textMuted, margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
+                  <li>Professional email with invoice details</li>
+                  <li>PDF attachment of the invoice</li>
+                  <li>Secure link to view invoice online</li>
+                  {emailMessage && <li>Your custom message (if provided)</li>}
+                </ul>
+              </div>
+            </div>
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => setShowEmailModal(false)} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSendEmail} disabled={!emailTo.trim()} style={{ padding: '10px 20px', background: !emailTo.trim() ? colors.bgInput : colors.accent, border: 'none', borderRadius: '6px', color: !emailTo.trim() ? colors.textMuted : '#fff', fontSize: '14px', fontWeight: '500', cursor: !emailTo.trim() ? 'not-allowed' : 'pointer' }}>Send Email</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

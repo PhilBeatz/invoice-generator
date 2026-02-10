@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft } from '../supabaseService';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
@@ -28,9 +29,9 @@ const currencies = [
 // Invoice Templates
 const templates = [
   { id: 'regular', name: 'Regular', description: 'Balanced default design' },
-  { id: 'bold', name: 'Bold Professional', description: 'Dark header with emerald accents' },
-  { id: 'mono', name: 'Mono', description: 'Ultra-minimal, typography-first' },
-  { id: 'modern', name: 'Startup Modern', description: 'Indigo accent with striped rows' },
+  { id: 'bold', name: 'Bold Professional', description: 'Strong dark header style' },
+  { id: 'mono', name: 'Mono', description: 'Clean and minimal style' },
+  { id: 'modern', name: 'Startup Modern', description: 'Modern and sleek style' },
 ];
 
 // Invoice Languages
@@ -77,51 +78,39 @@ const getTemplateStyles = (templateId) => {
   switch (templateId) {
     case 'bold':
       return {
-        headerBg: '#0f172a',
+        headerBg: '#1a1a2e',
         headerText: '#ffffff',
         accentColor: '#10b981',
         invoiceBadgeBg: '#10b981',
         invoiceBadgeText: '#ffffff',
-        tableHeaderBg: '#0f172a',
-        tableHeaderText: '#ffffff',
+        tableHeaderBg: '#f1f5f9',
         borderColor: '#e2e8f0',
-        totalBg: '#0f172a',
+        totalBg: '#1a1a2e',
         totalText: '#ffffff',
-        rowStriped: false,
-        leftAccent: false,
-        topBorder: false,
       };
     case 'mono':
       return {
         headerBg: '#ffffff',
-        headerText: '#111827',
-        accentColor: '#111827',
-        invoiceBadgeBg: '#ffffff',
-        invoiceBadgeText: '#111827',
-        tableHeaderBg: '#ffffff',
-        tableHeaderText: '#9ca3af',
-        borderColor: '#d1d5db',
-        totalBg: '#ffffff',
-        totalText: '#111827',
-        rowStriped: false,
-        leftAccent: false,
-        topBorder: true,
+        headerText: '#1f2937',
+        accentColor: '#6b7280',
+        invoiceBadgeBg: '#f3f4f6',
+        invoiceBadgeText: '#374151',
+        tableHeaderBg: '#f9fafb',
+        borderColor: '#e5e7eb',
+        totalBg: '#f9fafb',
+        totalText: '#1f2937',
       };
     case 'modern':
       return {
         headerBg: '#ffffff',
         headerText: '#1f2937',
-        accentColor: '#6366f1',
-        invoiceBadgeBg: '#6366f1',
+        accentColor: '#3b82f6',
+        invoiceBadgeBg: '#3b82f6',
         invoiceBadgeText: '#ffffff',
-        tableHeaderBg: '#f5f3ff',
-        tableHeaderText: '#6366f1',
-        borderColor: '#e5e7eb',
-        totalBg: '#6366f1',
+        tableHeaderBg: '#eff6ff',
+        borderColor: '#dbeafe',
+        totalBg: '#3b82f6',
         totalText: '#ffffff',
-        rowStriped: true,
-        leftAccent: true,
-        topBorder: false,
       };
     default: // regular
       return {
@@ -131,13 +120,9 @@ const getTemplateStyles = (templateId) => {
         invoiceBadgeBg: '#3b82f6',
         invoiceBadgeText: '#ffffff',
         tableHeaderBg: '#f8fafc',
-        tableHeaderText: '#64748b',
         borderColor: '#e2e8f0',
         totalBg: '#f8fafc',
         totalText: '#1f2937',
-        rowStriped: false,
-        leftAccent: false,
-        topBorder: false,
       };
   }
 };
@@ -174,8 +159,9 @@ const formatDateWithFormat = (dateStr, format) => {
   }
 };
 
-export default function InvoiceGenerator({ darkMode = true, inDashboard = false }) {
+export default function InvoiceGenerator({ darkMode = true, inDashboard = false, user }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [invoice, setInvoice] = useState(defaultInvoice);
   const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('business');
@@ -188,13 +174,11 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
   const [livePreviewEnabled, setLivePreviewEnabled] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState('regular');
   const [invoiceLanguage, setInvoiceLanguage] = useState('english');
-  const [dateFormat, setDateFormat] = useState('Month DD, YYYY');
+  const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
   const [showTemplateSubmenu, setShowTemplateSubmenu] = useState(false);
   const [showLanguageSubmenu, setShowLanguageSubmenu] = useState(false);
   const [showDateSubmenu, setShowDateSubmenu] = useState(false);
   const [templatePreviewModal, setTemplatePreviewModal] = useState(null);
-  const [showAppearance, setShowAppearance] = useState(false);
-  const [showTemplateChooser, setShowTemplateChooser] = useState(false);
   
   // Customer Manager state
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -235,27 +219,21 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     }
   }, [showProductSelectorModal]);
 
-  // Load invoice for editing (when coming from Edit button)
+  // Load invoice for editing (from URL param ?edit=invoiceId)
   useEffect(() => {
-    const editInvoice = localStorage.getItem('dayonetools_edit_invoice');
-    if (editInvoice) {
-      try {
-        const parsed = JSON.parse(editInvoice);
-        setInvoice(prev => ({ 
-          ...prev, 
-          ...parsed,
-          // Map items properly
-          items: parsed.items || [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
-        }));
-        setIsEditMode(true);
-        setEditingInvoiceId(parsed.id);
-        // Clear the edit data after loading
-        localStorage.removeItem('dayonetools_edit_invoice');
-      } catch (e) {
-        console.error('Failed to load invoice for editing:', e);
-      }
-    }
-  }, []);
+    const editId = searchParams.get('edit');
+    if (!editId) return;
+    fetchInvoiceById(editId).then(parsed => {
+      setInvoice(prev => ({
+        ...prev,
+        ...parsed,
+        items: parsed.items || [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
+      }));
+      if (parsed.logoPreview) setLogoPreview(parsed.logoPreview);
+      setIsEditMode(true);
+      setEditingInvoiceId(parsed.id);
+    }).catch(e => console.error('Failed to load invoice for editing:', e));
+  }, [searchParams]);
 
   // Persist invoice form data to survive tab switches, minimizes, and HMR in dev
   // Save form state on every change
@@ -287,10 +265,6 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
           parsed.items?.some(item => item.description || item.price > 0 || item.rate > 0);
         if (hasData) {
           setInvoice(prev => ({ ...prev, ...parsed }));
-          if (savedLogo) {
-            setLogoPreview(savedLogo);
-          }
-          return; // Skip org auto-populate if we restored form state
         }
       } catch (e) {
         console.error('Failed to restore form state:', e);
@@ -298,27 +272,6 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
     }
     if (savedLogo) {
       setLogoPreview(savedLogo);
-    }
-
-    // Auto-populate business info from organization data (only for new invoices)
-    const orgData = localStorage.getItem('dayonetools_organization');
-    if (orgData) {
-      try {
-        const org = JSON.parse(orgData);
-        const orgFields = {};
-        if (org.companyName) orgFields.businessName = org.companyName;
-        if (org.email) orgFields.businessEmail = org.email;
-        if (org.phone) orgFields.businessPhone = org.phone;
-        if (org.address) orgFields.businessAddress = org.address;
-        if (Object.keys(orgFields).length > 0) {
-          setInvoice(prev => ({ ...prev, ...orgFields }));
-        }
-        if (org.logo) {
-          setLogoPreview(org.logo);
-        }
-      } catch (e) {
-        console.error('Failed to load organization data:', e);
-      }
     }
   }, []);
 
@@ -355,16 +308,14 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
 
   // Auto-save as draft when user starts editing (dashboard only)
   useEffect(() => {
-    if (!inDashboard || isEditMode) return;
+    if (!inDashboard || isEditMode || !user) return;
     
-    // Check if invoice has any meaningful data entered
     const hasData = invoice.businessName || invoice.customerName || 
       invoice.items.some(item => item.description || item.price > 0 || item.rate > 0);
     
     if (!hasData) return;
 
-    const timer = setTimeout(() => {
-      // Calculate totals
+    const timer = setTimeout(async () => {
       const subtotal = invoice.items.reduce((sum, item) => {
         const amount = invoice.invoiceMode === 'products' 
           ? (item.quantity || 0) * (item.price || 0)
@@ -381,45 +332,25 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
       }
       const total = subtotal + shipping - discount + taxAmount;
 
-      const savedInvoices = localStorage.getItem('dayonetools_invoices');
-      let invoicesList = savedInvoices ? JSON.parse(savedInvoices) : [];
-
-      // Check if we already have an auto-draft for this invoice number
-      const existingDraftIndex = invoicesList.findIndex(
-        inv => inv.invoiceNumber === invoice.invoiceNumber && inv.status === 'draft' && inv.autoDraft === true
-      );
-
-      const draftData = {
-        ...invoice,
-        id: existingDraftIndex >= 0 ? invoicesList[existingDraftIndex].id : `draft_${Date.now().toString()}`,
-        subtotal,
-        shipping,
-        discount,
-        tax: taxAmount,
-        total,
-        status: 'draft',
-        autoDraft: true,
-        createdAt: existingDraftIndex >= 0 ? invoicesList[existingDraftIndex].createdAt : new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        items: invoice.items.map(item => ({
-          ...item,
-          amount: invoice.invoiceMode === 'products' 
-            ? (item.quantity || 0) * (item.price || 0)
-            : (item.hours || 0) * (item.rate || 0),
-        })),
-      };
-
-      if (existingDraftIndex >= 0) {
-        invoicesList[existingDraftIndex] = draftData;
-      } else {
-        invoicesList.push(draftData);
+      try {
+        await upsertAutoDraft({
+          ...invoice,
+          subtotal, shippingAmount: shipping, discount, taxAmount, total,
+          logoPreview,
+          items: invoice.items.map(item => ({
+            ...item,
+            amount: invoice.invoiceMode === 'products' 
+              ? (item.quantity || 0) * (item.price || 0)
+              : (item.hours || 0) * (item.rate || 0),
+          })),
+        }, user.id);
+      } catch (e) {
+        console.error('Auto-draft save error:', e);
       }
-
-      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoicesList));
-    }, 2000); // 2 second debounce
+    }, 3000); // 3 second debounce
 
     return () => clearTimeout(timer);
-  }, [invoice, inDashboard, isEditMode]);
+  }, [invoice, inDashboard, isEditMode, user]);
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -692,39 +623,33 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false 
       }
       if (selectedTemplate === 'bold') {
         return `
-.header{background:#0f172a;color:white;padding:28px 32px;margin:-30px -40px 30px;border-radius:0}
+.header{background:#1a1a2e;color:white;padding:24px;margin:-30px -40px 30px;border-radius:0}
 .business-name{font-size:22px;font-weight:700;color:white;margin-bottom:6px;white-space:nowrap}
-.business-details{color:rgba(255,255,255,0.65);font-size:13px}
+.business-details{color:rgba(255,255,255,0.7)}
+.logo-img{filter:brightness(0) invert(1)}
 .invoice-badge{display:inline-block;padding:8px 20px;background:#10b981;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
-.invoice-meta-label{color:rgba(255,255,255,0.5)}
+.invoice-meta-label{color:rgba(255,255,255,0.6)}
 .invoice-meta-value{color:white}
-.items-table th{background:#0f172a;color:#ffffff;border-color:#1e293b}
-.items-table td{border-color:#f1f5f9}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#0f172a;color:white;padding:10px;border-radius:4px}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#1a1a2e;color:white;padding:10px;border-radius:4px}
 `;
       }
       if (selectedTemplate === 'mono') {
         return `
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px;padding-bottom:24px;border-bottom:2px solid #111827}
-.business-name{font-size:24px;font-weight:800;color:#111827;margin-bottom:6px;white-space:nowrap;letter-spacing:-0.5px}
-.invoice-badge{display:inline-block;padding:6px 16px;border:2px solid #111827;background:transparent;color:#111827;border-radius:0;font-size:16px;font-weight:800;margin-bottom:12px;letter-spacing:2px}
-.invoice-meta-label{color:#9ca3af;text-transform:uppercase;font-size:11px;letter-spacing:1px}
-.items-table th{background:transparent;color:#9ca3af;border-top:none;border-bottom:1px solid #d1d5db;text-transform:uppercase;font-size:11px;letter-spacing:1px;font-weight:500}
-.items-table td{border-color:#f3f4f6}
-.totals-row.total{font-weight:800;font-size:18px;margin-top:6px;border-bottom:none;border-top:2px solid #111827;background:transparent;color:#111827;padding:10px 0;border-radius:0}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
+.business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#f3f4f6;color:#374151;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.invoice-meta-label{color:#6b7280}
+.items-table th{background:#f9fafb}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#f9fafb;color:#1f2937;padding:10px;border-radius:4px}
 `;
       }
       // modern
       return `
-body{border-left:4px solid #6366f1}
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px}
 .business-name{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:6px;white-space:nowrap}
-.invoice-badge{display:inline-block;padding:8px 20px;background:#6366f1;color:white;border-radius:6px;font-size:18px;font-weight:700;margin-bottom:12px}
-.invoice-meta-label{color:#6366f1;font-weight:500}
-.items-table th{background:#f5f3ff;border-color:#e5e7eb;color:#6366f1}
-.items-table tr:nth-child(even) td{background:#faf5ff}
-.items-table td{border-color:#f3f4f6}
-.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#6366f1;color:white;padding:10px;border-radius:6px}
+.invoice-badge{display:inline-block;padding:8px 20px;background:#3b82f6;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px}
+.items-table th{background:#eff6ff;border-color:#dbeafe}
+.totals-row.total{font-weight:700;font-size:18px;margin-top:6px;border-bottom:none;background:#3b82f6;color:white;padding:10px;border-radius:4px}
 `;
     };
 
@@ -933,12 +858,17 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
     letterSpacing: '0.5px',
   };
 
-  // Save invoice to localStorage and navigate to detail page (for dashboard)
-  const saveInvoiceAndNavigate = () => {
+  // Save invoice to Supabase and navigate to detail page (for dashboard)
+  const saveInvoiceAndNavigate = async () => {
     // Validate before saving
     const errors = validateInvoice();
     if (errors.length > 0) {
       alert('Please complete the following:\n\n• ' + errors.join('\n• '));
+      return;
+    }
+
+    if (!user) {
+      alert('You must be logged in to save invoices.');
       return;
     }
 
@@ -962,75 +892,28 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
     
     const total = subtotal + shipping - discount + taxAmount;
 
-    // Load existing invoices
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    let invoices = savedInvoices ? JSON.parse(savedInvoices) : [];
+    const invoiceData = {
+      ...invoice,
+      logoPreview,
+      subtotal,
+      shippingAmount: shipping,
+      discount,
+      taxAmount,
+      total,
+      status: 'draft',
+      items: invoice.items.map(item => ({
+        ...item,
+        amount: invoice.invoiceMode === 'products' 
+          ? (item.quantity || 0) * (item.price || 0)
+          : (item.hours || 0) * (item.rate || 0),
+      })),
+    };
 
-    if (isEditMode && editingInvoiceId) {
-      // UPDATE existing invoice
-      const invoiceIndex = invoices.findIndex(inv => inv.id === editingInvoiceId);
-      if (invoiceIndex !== -1) {
-        invoices[invoiceIndex] = {
-          ...invoices[invoiceIndex],
-          ...invoice,
-          subtotal: subtotal,
-          shipping: shipping,
-          discount: discount,
-          tax: taxAmount,
-          total: total,
-          updatedAt: new Date().toISOString(),
-          items: invoice.items.map(item => ({
-            ...item,
-            amount: invoice.invoiceMode === 'products' 
-              ? (item.quantity || 0) * (item.price || 0)
-              : (item.hours || 0) * (item.rate || 0),
-          })),
-        };
-      }
-      
-      // Save back to localStorage
-      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
-      
-      // Navigate back to invoice detail page
-      clearFormState();
-      navigate(`/dashboard/invoices/${editingInvoiceId}`);
-    } else {
-      // CREATE new invoice
-      const invoiceToSave = {
-        id: Date.now().toString(),
-        ...invoice,
-        customerName: invoice.customerName,
-        customerEmail: invoice.customerEmail,
-        customerPhone: invoice.customerPhone,
-        customerAddress: invoice.customerAddress,
-        subtotal: subtotal,
-        shipping: shipping,
-        discount: discount,
-        tax: taxAmount,
-        total: total,
-        status: 'draft',
-        autoDraft: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        items: invoice.items.map(item => ({
-          ...item,
-          amount: invoice.invoiceMode === 'products' 
-            ? (item.quantity || 0) * (item.price || 0)
-            : (item.hours || 0) * (item.rate || 0),
-        })),
-      };
+    try {
+      const saved = await finalizeInvoice(invoiceData, user.id, isEditMode ? editingInvoiceId : null);
 
-      // Remove any auto-draft for this invoice number, then add the finalized one
-      invoices = invoices.filter(
-        inv => !(inv.invoiceNumber === invoice.invoiceNumber && inv.autoDraft === true)
-      );
-      invoices.push(invoiceToSave);
-      
-      // Save back to localStorage
-      localStorage.setItem('dayonetools_invoices', JSON.stringify(invoices));
-
-      // Update customer invoice count
-      if (invoice.customerName) {
+      // Update customer invoice count in localStorage (customers still in localStorage for now)
+      if (!isEditMode && invoice.customerName) {
         const savedCustomers = localStorage.getItem('dayonetools_customers');
         if (savedCustomers) {
           const customers = JSON.parse(savedCustomers);
@@ -1042,9 +925,11 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         }
       }
 
-      // Navigate to invoice detail page
       clearFormState();
-      navigate(`/dashboard/invoices/${invoiceToSave.id}`);
+      navigate(`/dashboard/invoices/${saved.id}`);
+    } catch (e) {
+      console.error('Error saving invoice:', e);
+      alert('Failed to save invoice. Please try again.');
     }
   };
 
@@ -1834,138 +1719,6 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                     </div>
                   </div>
 
-                  {/* Appearance & Formatting Accordion */}
-                  <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', overflow: 'hidden' }}>
-                    <button
-                      onClick={() => setShowAppearance(!showAppearance)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: colors.bgInput,
-                        border: 'none',
-                        color: colors.text,
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>⚙️</span> Appearance & Formatting
-                      </span>
-                      <span style={{ transform: showAppearance ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', fontSize: '12px', color: colors.textMuted }}>▼</span>
-                    </button>
-                    
-                    {showAppearance && (
-                      <div style={{ padding: '16px', borderTop: `1px solid ${colors.border}`, display: 'grid', gap: '16px' }}>
-                        {/* Template */}
-                        <div>
-                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            🎨 Template
-                          </label>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <select
-                              value={selectedTemplate}
-                              onChange={(e) => setSelectedTemplate(e.target.value)}
-                              style={{ ...inputStyle, flex: 1 }}
-                            >
-                              {templates.map(tpl => (
-                                <option key={tpl.id} value={tpl.id}>{tpl.name}</option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => setShowTemplateChooser(true)}
-                              style={{
-                                padding: '10px 14px',
-                                background: colors.bgInput,
-                                border: `1px solid ${colors.border}`,
-                                borderRadius: '6px',
-                                color: colors.textMuted,
-                                fontSize: '13px',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              Preview All
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Invoice Language */}
-                        <div>
-                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            🌐 Invoice Language
-                          </label>
-                          <select
-                            value={invoiceLanguage}
-                            onChange={(e) => setInvoiceLanguage(e.target.value)}
-                            style={inputStyle}
-                          >
-                            {languages.map(lang => (
-                              <option key={lang.code} value={lang.code}>{lang.name} — {lang.native}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Date Format */}
-                        <div>
-                          <label style={{ fontSize: '13px', fontWeight: '500', color: colors.text, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            📅 Date Format
-                          </label>
-                          <select
-                            value={dateFormat}
-                            onChange={(e) => setDateFormat(e.target.value)}
-                            style={inputStyle}
-                          >
-                            {dateFormats.map(df => (
-                              <option key={df.id} value={df.id}>{df.label} — {df.example}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Issue Date / Due Date */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={labelStyle}>Issue Date</label>
-                      <input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Due Date (Optional)</label>
-                      <input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} />
-                    </div>
-                  </div>
-
-                  {/* Currency */}
-                  <div>
-                    <label style={labelStyle}>Currency</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>{currencySymbol}</span>
-                      <select style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>
-                        {currencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.code === 'USD' ? 'US Dollar' : c.code === 'EUR' ? 'Euro' : c.code === 'GBP' ? 'British Pound' : c.code === 'CAD' ? 'Canadian Dollar' : c.code === 'AUD' ? 'Australian Dollar' : c.code === 'JPY' ? 'Japanese Yen' : 'Indian Rupee'}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* End Message */}
-                  <div>
-                    <label style={labelStyle}>End Message (Optional)</label>
-                    <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '14px', color: colors.textMuted }}>📝</span>
-                      <textarea 
-                        style={{ ...inputStyle, paddingLeft: '40px', minHeight: '80px', resize: 'vertical' }} 
-                        placeholder="Optional" 
-                        value={invoice.endMessage} 
-                        onChange={(e) => updateField('endMessage', e.target.value)} 
-                      />
-                    </div>
-                  </div>
-
                   {/* Terms of Payment */}
                   <div>
                     <label style={labelStyle}>Terms of Payment</label>
@@ -2019,6 +1772,43 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         ))}
                       </div>
                     )}
+                  </div>
+
+                  {/* Issue Date / Due Date */}
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={labelStyle}>Issue Date</label>
+                      <input type="date" style={inputStyle} value={invoice.issueDate} onChange={(e) => updateField('issueDate', e.target.value)} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Due Date (Optional)</label>
+                      <input type="date" style={inputStyle} value={invoice.dueDate} onChange={(e) => updateField('dueDate', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* Currency */}
+                  <div>
+                    <label style={labelStyle}>Currency</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted }}>{currencySymbol}</span>
+                      <select style={{ ...inputStyle, paddingLeft: '40px' }} value={invoice.currency} onChange={(e) => updateField('currency', e.target.value)}>
+                        {currencies.map(c => <option key={c.code} value={c.code}>{c.code} - {c.code === 'USD' ? 'US Dollar' : c.code === 'EUR' ? 'Euro' : c.code === 'GBP' ? 'British Pound' : c.code === 'CAD' ? 'Canadian Dollar' : c.code === 'AUD' ? 'Australian Dollar' : c.code === 'JPY' ? 'Japanese Yen' : 'Indian Rupee'}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* End Message */}
+                  <div>
+                    <label style={labelStyle}>End Message (Optional)</label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{ position: 'absolute', left: '12px', top: '14px', color: colors.textMuted }}>📝</span>
+                      <textarea 
+                        style={{ ...inputStyle, paddingLeft: '40px', minHeight: '80px', resize: 'vertical' }} 
+                        placeholder="Optional" 
+                        value={invoice.endMessage} 
+                        onChange={(e) => updateField('endMessage', e.target.value)} 
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -2485,31 +2275,22 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
             
             {/* White preview area */}
             <div style={{ padding: '20px', background: colors.bgInput }}>
-              <div style={{ 
-                background: 'white', 
-                borderRadius: '6px', 
-                padding: isMobile ? '24px' : '32px', 
-                minHeight: isMobile ? '400px' : '520px', 
-                color: '#1f2937', 
-                overflowX: 'auto', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                borderLeft: selectedTemplate === 'modern' ? '4px solid #6366f1' : 'none',
-              }}>
+              <div style={{ background: 'white', borderRadius: '6px', padding: isMobile ? '24px' : '32px', minHeight: isMobile ? '400px' : '520px', color: '#1f2937', overflowX: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                 {/* Header - Bold template has dark header */}
                 {selectedTemplate === 'bold' && (
-                  <div style={{ background: '#0f172a', margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
+                  <div style={{ background: templateStyles.headerBg, margin: isMobile ? '-24px -24px 24px' : '-32px -32px 28px', padding: isMobile ? '24px' : '28px', borderRadius: '6px 6px 0 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                       <div style={{ minWidth: '140px', flex: '1' }}>
-                        {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
-                        <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', lineHeight: '1.5' }}>
+                        {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px', filter: 'brightness(0) invert(1)' }} />}
+                        <div style={{ fontSize: isMobile ? '16px' : '18px', fontWeight: '700', color: templateStyles.headerText, marginBottom: '4px' }}>{invoice.businessName || 'Your Company'}</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
                           {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
                           {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
                           {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right', minWidth: '130px' }}>
-                        <div style={{ display: 'inline-block', padding: '6px 16px', background: '#10b981', color: '#ffffff', borderRadius: '4px', fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
+                        <div style={{ display: 'inline-block', padding: '6px 16px', background: templateStyles.invoiceBadgeBg, color: templateStyles.invoiceBadgeText, borderRadius: '4px', fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>{t.invoice}</div>
                         <div style={{ fontSize: '11px', lineHeight: '1.7', color: 'rgba(255,255,255,0.8)' }}>
                           <div>{t.invoiceNumber} {invoice.invoiceNumber}</div>
                           <div>{t.issueDate}: {inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</div>
@@ -2520,31 +2301,8 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   </div>
                 )}
 
-                {/* Header - Mono template - heavy typography with bottom border */}
-                {selectedTemplate === 'mono' && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px', paddingBottom: '20px', borderBottom: '2px solid #111827' }}>
-                  <div style={{ minWidth: '140px', flex: '1' }}>
-                    {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
-                    <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '800', color: '#111827', marginBottom: '4px', letterSpacing: '-0.5px' }}>{invoice.businessName || 'Your Company'}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.5' }}>
-                      {invoice.businessAddress && <div>{invoice.businessAddress}</div>}
-                      {invoice.businessEmail && <div>{invoice.businessEmail}</div>}
-                      {invoice.businessPhone && <div>{invoice.businessPhone}</div>}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right', minWidth: '130px' }}>
-                    <div style={{ display: 'inline-block', padding: '6px 14px', border: '2px solid #111827', background: 'transparent', color: '#111827', borderRadius: '0', fontSize: isMobile ? '13px' : '14px', fontWeight: '800', marginBottom: '10px', letterSpacing: '2px' }}>{t.invoice}</div>
-                    <div style={{ fontSize: '11px', lineHeight: '1.7' }}>
-                      <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.invoiceNumber}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{invoice.invoiceNumber}</span></div>
-                      <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.issueDate}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{inDashboard ? formatDateWithFormat(invoice.issueDate, dateFormat) : formatDate(invoice.issueDate)}</span></div>
-                      {invoice.dueDate && <div><span style={{ color: '#9ca3af', textTransform: 'uppercase', fontSize: '10px', letterSpacing: '1px' }}>{t.dueDate}</span> <span style={{ color: '#111827', fontWeight: '600' }}>{inDashboard ? formatDateWithFormat(invoice.dueDate, dateFormat) : formatDate(invoice.dueDate)}</span></div>}
-                    </div>
-                  </div>
-                </div>
-                )}
-
-                {/* Header - Regular & Modern templates */}
-                {selectedTemplate !== 'bold' && selectedTemplate !== 'mono' && (
+                {/* Header - Other templates (regular, mono, modern) */}
+                {selectedTemplate !== 'bold' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                   <div style={{ minWidth: '140px', flex: '1' }}>
                     {logoPreview && <img src={logoPreview} alt="Logo" style={{ maxWidth: '100px', maxHeight: '40px', marginBottom: '8px' }} />}
@@ -2583,31 +2341,31 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '280px', fontSize: '11px' }}>
                     <thead>
                       <tr style={{ background: templateStyles.tableHeaderBg }}>
-                        <th style={{ textAlign: 'left', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}` }}>
                           {invoice.invoiceMode === 'hours' ? t.service : t.product}
                         </th>
-                        <th style={{ textAlign: 'center', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '40px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
+                        <th style={{ textAlign: 'center', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '40px' }}>
                           {invoice.invoiceMode === 'hours' ? t.hrs : t.qty}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '55px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '55px' }}>
                           {invoice.invoiceMode === 'hours' ? t.rate : t.price}
                         </th>
-                        <th style={{ textAlign: 'right', padding: '8px 6px', color: templateStyles.tableHeaderText || '#64748b', fontWeight: '600', borderBottom: selectedTemplate === 'mono' ? `1px solid #d1d5db` : `2px solid ${templateStyles.borderColor}`, width: '60px', textTransform: selectedTemplate === 'mono' ? 'uppercase' : 'none', fontSize: selectedTemplate === 'mono' ? '9px' : '11px', letterSpacing: selectedTemplate === 'mono' ? '1px' : 'normal' }}>{t.amount}</th>
+                        <th style={{ textAlign: 'right', padding: '8px 6px', color: '#64748b', fontWeight: '600', borderBottom: `2px solid ${templateStyles.borderColor}`, width: '60px' }}>{t.amount}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {invoice.items.map((item, idx) => (
+                      {invoice.items.map(item => (
                         <tr key={item.id}>
-                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, fontWeight: '500', color: '#374151', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#374151' }}>
                             {item.description || (invoice.invoiceMode === 'hours' ? 'Service' : 'Product')}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'center', color: '#64748b', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'center', color: '#64748b' }}>
                             {invoice.invoiceMode === 'hours' ? item.hours : item.quantity}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'right', color: '#64748b', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#64748b' }}>
                             {formatCurrency(invoice.invoiceMode === 'hours' ? item.rate : item.price)}
                           </td>
-                          <td style={{ padding: '8px 6px', borderBottom: `1px solid ${templateStyles.borderColor || '#f1f5f9'}`, textAlign: 'right', color: '#374151', fontWeight: '500', background: selectedTemplate === 'modern' && idx % 2 === 1 ? '#faf5ff' : 'transparent' }}>
+                          <td style={{ padding: '8px 6px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#374151', fontWeight: '500' }}>
                             {formatCurrency(getItemTotal(item))}
                           </td>
                         </tr>
@@ -2641,18 +2399,7 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                         <span style={{ color: '#374151' }}>{formatCurrency(shippingAmount)}</span>
                       </div>
                     )}
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      padding: selectedTemplate === 'mono' ? '8px 0' : '8px 10px', 
-                      fontWeight: selectedTemplate === 'mono' ? '800' : '700', 
-                      fontSize: '14px', 
-                      background: selectedTemplate === 'mono' ? 'transparent' : templateStyles.totalBg, 
-                      color: templateStyles.totalText, 
-                      borderRadius: selectedTemplate === 'modern' ? '6px' : selectedTemplate === 'mono' ? '0' : '4px', 
-                      marginTop: '4px',
-                      borderTop: selectedTemplate === 'mono' ? '2px solid #111827' : 'none',
-                    }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', fontWeight: '700', fontSize: '14px', background: templateStyles.totalBg, color: templateStyles.totalText, borderRadius: '4px', marginTop: '4px' }}>
                       <span>{t.total}:</span>
                       <span>{formatCurrency(total)}</span>
                     </div>
@@ -3155,198 +2902,6 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
               >
                 + Add Selected ({selectedCatalogProducts.length})
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Template Chooser Modal */}
-      {showTemplateChooser && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '40px 20px',
-          overflowY: 'auto',
-        }}
-        onClick={() => setShowTemplateChooser(false)}
-        >
-          <div style={{
-            background: colors.bgCard,
-            border: `1px solid ${colors.border}`,
-            borderRadius: '12px',
-            width: '100%',
-            maxWidth: '900px',
-            overflow: 'hidden',
-          }}
-          onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '20px 24px',
-              borderBottom: `1px solid ${colors.border}`,
-            }}>
-              <div>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>Choose an Invoice Template</h2>
-                <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>Pick a template style for your invoices</p>
-              </div>
-              <button
-                onClick={() => setShowTemplateChooser(false)}
-                style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '22px', cursor: 'pointer', padding: '4px' }}
-              >✕</button>
-            </div>
-
-            {/* Template Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '20px',
-              padding: '24px',
-            }}>
-              {templates.map((tpl) => {
-                const isSelected = selectedTemplate === tpl.id;
-                const tplStyles = getTemplateStyles(tpl.id);
-                return (
-                  <div
-                    key={tpl.id}
-                    onClick={() => { setSelectedTemplate(tpl.id); setShowTemplateChooser(false); }}
-                    style={{
-                      border: `2px solid ${isSelected ? colors.green : colors.border}`,
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      transition: 'border-color 0.15s',
-                      background: colors.bg,
-                    }}
-                  >
-                    {/* Template Label */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '10px 14px',
-                      borderBottom: `1px solid ${colors.border}`,
-                    }}>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>{tpl.name}</span>
-                      {isSelected && (
-                        <span style={{
-                          padding: '2px 8px',
-                          background: `${colors.green}20`,
-                          color: colors.green,
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                        }}>Selected</span>
-                      )}
-                    </div>
-
-                    {/* Template Preview - Mini Invoice */}
-                    <div style={{
-                      padding: '20px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      minHeight: '300px',
-                    }}>
-                      <div style={{
-                        width: '220px',
-                        background: '#ffffff',
-                        borderRadius: '4px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                        padding: tpl.id === 'bold' ? '0' : '16px',
-                        fontSize: '7px',
-                        color: '#333',
-                        lineHeight: 1.4,
-                        borderLeft: tpl.id === 'modern' ? '3px solid #6366f1' : 'none',
-                        overflow: 'hidden',
-                      }}>
-                        {/* Mini header - Bold gets dark bg */}
-                        {tpl.id === 'bold' ? (
-                          <div style={{ background: '#0f172a', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div>
-                              <div style={{ fontSize: '9px', fontWeight: '700', color: '#fff', marginBottom: '2px' }}>Your Company</div>
-                              <div style={{ fontSize: '6px', color: 'rgba(255,255,255,0.6)' }}>123 Main St<br/>email@co.com</div>
-                            </div>
-                            <div style={{ background: '#10b981', color: '#fff', padding: '2px 6px', borderRadius: '2px', fontSize: '7px', fontWeight: '700' }}>INVOICE</div>
-                          </div>
-                        ) : tpl.id === 'mono' ? (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '8px', borderBottom: '2px solid #111827', marginBottom: '8px' }}>
-                            <div>
-                              <div style={{ fontSize: '10px', fontWeight: '800', color: '#111827', letterSpacing: '-0.3px' }}>Your Company</div>
-                              <div style={{ fontSize: '6px', color: '#6b7280' }}>123 Main St<br/>email@co.com</div>
-                            </div>
-                            <div style={{ border: '1.5px solid #111827', color: '#111827', padding: '2px 5px', fontSize: '6px', fontWeight: '800', letterSpacing: '1.5px' }}>INVOICE</div>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                            <div>
-                              <div style={{ fontSize: '9px', fontWeight: '700', color: tplStyles.headerText, marginBottom: '2px' }}>Your Company</div>
-                              <div style={{ fontSize: '6px', color: '#6b7280' }}>123 Main St<br/>email@co.com</div>
-                            </div>
-                            <div style={{ background: tplStyles.invoiceBadgeBg, color: tplStyles.invoiceBadgeText, padding: '2px 6px', borderRadius: tpl.id === 'modern' ? '3px' : '2px', fontSize: '7px', fontWeight: '700' }}>INVOICE</div>
-                          </div>
-                        )}
-
-                        {/* Invoice meta & issued to */}
-                        <div style={{ padding: tpl.id === 'bold' ? '12px 16px 0' : '0', fontSize: '6px', color: '#666', marginBottom: '6px' }}>
-                          <div>Invoice #: INV-2026-001</div>
-                          <div>Date: Feb 9, 2026</div>
-                        </div>
-                        <div style={{ padding: tpl.id === 'bold' ? '0 16px' : '0', fontSize: '6px', marginBottom: '8px' }}>
-                          <div style={{ fontWeight: '600', marginBottom: '2px' }}>Issued To:</div>
-                          <div style={{ color: '#666' }}>John Doe<br/>456 Oak Ave</div>
-                        </div>
-
-                        {/* Mini table */}
-                        <div style={{ padding: tpl.id === 'bold' ? '0 16px' : '0', marginBottom: '8px' }}>
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                            background: tplStyles.tableHeaderBg,
-                            padding: '3px 4px',
-                            fontWeight: tpl.id === 'mono' ? '500' : '600',
-                            fontSize: tpl.id === 'mono' ? '5px' : '6px',
-                            color: tplStyles.tableHeaderText || '#64748b',
-                            borderBottom: `1px solid ${tplStyles.borderColor}`,
-                            textTransform: tpl.id === 'mono' ? 'uppercase' : 'none',
-                            letterSpacing: tpl.id === 'mono' ? '0.5px' : 'normal',
-                          }}>
-                            <div>Product</div><div>Qty</div><div>Price</div><div>Amount</div>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}` }}>
-                            <div>Website Redesign</div><div>1</div><div>$400</div><div>$400.00</div>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '3px 4px', fontSize: '6px', borderBottom: `1px solid ${tplStyles.borderColor}`, background: tpl.id === 'modern' ? '#faf5ff' : 'transparent' }}>
-                            <div>Logo Design</div><div>2</div><div>$50</div><div>$100.00</div>
-                          </div>
-                        </div>
-
-                        {/* Mini totals */}
-                        <div style={{ padding: tpl.id === 'bold' ? '0 16px 12px' : '0', textAlign: 'right', fontSize: '6px' }}>
-                          <div style={{ marginBottom: '2px' }}>Subtotal: $500.00</div>
-                          <div style={{ marginBottom: '2px' }}>Tax: $45.00</div>
-                          <div style={{
-                            fontWeight: tpl.id === 'mono' ? '800' : '700',
-                            fontSize: '8px',
-                            background: tpl.id === 'mono' ? 'transparent' : tplStyles.totalBg,
-                            color: tplStyles.totalText,
-                            padding: tpl.id === 'mono' ? '3px 0' : '3px 6px',
-                            borderRadius: tpl.id === 'modern' ? '3px' : tpl.id === 'mono' ? '0' : '2px',
-                            display: 'inline-block',
-                            borderTop: tpl.id === 'mono' ? '1.5px solid #111827' : 'none',
-                          }}>Total: $545.00</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
