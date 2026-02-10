@@ -140,6 +140,7 @@ export default function DashboardProducts({ darkMode = true }) {
     fontSize: '14px',
     fontFamily: "'Inter', sans-serif",
     outline: 'none',
+    boxSizing: 'border-box',
   };
 
   const selectStyle = {
@@ -151,6 +152,7 @@ export default function DashboardProducts({ darkMode = true }) {
     backgroundPosition: 'right 12px center',
     backgroundSize: '16px',
     paddingRight: '40px',
+    boxSizing: 'border-box',
   };
 
   const getStatusBadge = (status) => {
@@ -239,7 +241,7 @@ export default function DashboardProducts({ darkMode = true }) {
         </div>
 
         {/* Category Filter */}
-        <div>
+        <div style={{ flexShrink: 0 }}>
           <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Category</label>
           <select
             value={categoryFilter}
@@ -254,7 +256,7 @@ export default function DashboardProducts({ darkMode = true }) {
         </div>
 
         {/* Sort By */}
-        <div>
+        <div style={{ flexShrink: 0 }}>
           <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Sort by</label>
           <select
             value={sortBy}
@@ -268,7 +270,7 @@ export default function DashboardProducts({ darkMode = true }) {
         </div>
 
         {/* Sort Order */}
-        <div>
+        <div style={{ flexShrink: 0 }}>
           <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Order</label>
           <select
             value={sortOrder}
@@ -281,7 +283,7 @@ export default function DashboardProducts({ darkMode = true }) {
         </div>
 
         {/* Per Page */}
-        <div>
+        <div style={{ flexShrink: 0 }}>
           <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Show</label>
           <select
             value={perPage}
