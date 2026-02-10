@@ -23,7 +23,18 @@ export default function DashboardLayout({ darkMode = true, user }) {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+import { migrateLocalInvoices } from '../supabaseService';
 
+// Inside the component, add:
+useEffect(() => {
+  if (user && !localStorage.getItem('dayonetools_invoices_migrated')) {
+    migrateLocalInvoices(user.id).then(result => {
+      if (result.migrated > 0) {
+        console.log(`Migrated ${result.migrated} invoices to Supabase`);
+      }
+    });
+  }
+}, [user]);
   const colors = darkMode ? {
     bg: '#0d1117',
     text: '#e6edf3',
