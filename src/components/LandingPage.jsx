@@ -69,6 +69,48 @@ const DashboardMockup = () => (
             ))}
           </div>
         </div>
+        {/* Recent Invoices + Recent Customers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '8px', marginTop: '8px' }}>
+          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Invoices</div>
+            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Your latest invoices</div>
+            {[
+              { num: 'INV-001', status: 'Paid', statusColor: '#10b981', amount: '$2,400.00', date: '2 days ago' },
+              { num: 'INV-002', status: 'Sent', statusColor: '#3b82f6', amount: '$800.00', date: 'Today' },
+              { num: 'INV-003', status: 'Draft', statusColor: '#8b949e', amount: '$1,550.00', date: 'Today' },
+            ].map((inv, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.num}</span>
+                    <span style={{ padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', color: '#fff', background: inv.statusColor }}>{inv.status}</span>
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '2px' }}>• {inv.date}</div>
+                </div>
+                <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.amount}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Invoices →</div>
+          </div>
+          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Customers</div>
+            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Newly added customers</div>
+            {[
+              { name: 'Acme Corp Inc.', email: 'billing@acme.com', count: '3 invoices' },
+              { name: 'Greenfield Design', email: 'ap@greenfield.co', count: '1 invoice' },
+              { name: 'Summit Analytics', email: 'pay@summit.io', count: '2 invoices' },
+            ].map((c, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{c.name}</div>
+                  <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '1px' }}>{c.email}</div>
+                </div>
+                <span style={{ fontSize: '10px', color: '#8b949e' }}>{c.count}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Customers →</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
