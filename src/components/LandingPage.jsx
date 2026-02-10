@@ -237,6 +237,11 @@ export default function LandingPage({ darkMode = true }) {
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)'; }}>
             Get Started <span style={{ fontSize: '16px' }}>›</span>
           </Link>
+          <Link to="/invoicegenerator" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', background: 'transparent', color: colors.accent, fontSize: '15px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', border: `1.5px solid ${colors.accent}`, transition: 'all 0.2s' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; e.currentTarget.style.transform = 'translateY(0)'; }}>
+            Try Free Invoice Generator
+          </Link>
           <Link to="/contact" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 4px', color: colors.accent, fontSize: '15px', fontWeight: '500', textDecoration: 'none', transition: 'gap 0.2s' }}
             onMouseEnter={(e) => { e.currentTarget.style.gap = '12px'; }}
             onMouseLeave={(e) => { e.currentTarget.style.gap = '8px'; }}>
@@ -245,9 +250,9 @@ export default function LandingPage({ darkMode = true }) {
         </div>
 
         {/* Dashboard mockup - wide, prominent, immediately visible */}
-        <div style={{ width: '100%', maxWidth: '1100px', marginTop: '36px', position: 'relative' }}>
+        <div style={{ width: '100%', maxWidth: '1100px', marginTop: '36px', padding: '0 20px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-          <div style={{ position: 'relative', zIndex: 1, borderRadius: '12px 12px 0 0', overflow: 'hidden', boxShadow: '0 -4px 40px rgba(0,0,0,0.3)' }}>
+          <div style={{ position: 'relative', zIndex: 1, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 40px rgba(0,0,0,0.3)', marginBottom: isMobile ? '40px' : '60px' }}>
             {isMobile ? (
               <div style={{ overflowX: 'auto' }}>
                 <div style={{ minWidth: '700px' }}><DashboardMockup /></div>
