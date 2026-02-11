@@ -201,6 +201,9 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
             <Link to="/dashboard/employees" style={subItemStyle('/dashboard/employees')} onClick={onClose}>
               👤 Employees
             </Link>
+            <Link to="/dashboard/subscription" style={subItemStyle('/dashboard/subscription')} onClick={onClose}>
+              💎 Subscription
+            </Link>
             <Link to="/dashboard/settings" style={subItemStyle('/dashboard/settings')} onClick={onClose}>
               ⚙️ Settings
             </Link>
