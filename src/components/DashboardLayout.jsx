@@ -4,6 +4,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardAnalytics from './DashboardAnalytics';
+import DashboardEmployees from './DashboardEmployees';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
@@ -130,7 +131,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardOrganization darkMode={darkMode} />
           } />
           <Route path="employees" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Employees" icon="👤" description="Manage team members, roles, and permissions for your organization." />
+            <DashboardEmployees darkMode={darkMode} />
           } />
           <Route path="settings" element={
             <DashboardSettings darkMode={darkMode} />

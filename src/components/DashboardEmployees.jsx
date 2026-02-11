@@ -1,1261 +1,306 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-export default function DashboardEmployees({ darkMode = true }) {
-  const [employees, setEmployees] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
-  const [showModal, setShowModal] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [showActionsMenu, setShowActionsMenu] = useState(null);
-  const [viewingEmployee, setViewingEmployee] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+function nextEmployeeId(employees) {
+  var ids = employees.map(function(e) { var m = (e.employeeId || '').match(/(\d+)/); return m ? parseInt(m[1]) : 0; });
+  var max = ids.length > 0 ? Math.max.apply(null, ids) : 0;
+  return 'EMP' + String(max + 1).padStart(3, '0');
+}
 
-  const colors = darkMode ? {
-    bg: '#0d1117',
-    bgCard: '#161b22',
-    bgInput: '#21262d',
-    text: '#e6edf3',
-    textMuted: '#8b949e',
-    border: '#30363d',
-    accent: '#3b82f6',
-    green: '#10b981',
-    yellow: '#f59e0b',
-    red: '#ef4444',
-  } : {
-    bg: '#f1f5f9',
-    bgCard: '#ffffff',
-    bgInput: '#f8fafc',
-    text: '#1f2937',
-    textMuted: '#6b7280',
-    border: '#e5e7eb',
-    accent: '#3b82f6',
-    green: '#10b981',
-    yellow: '#f59e0b',
-    red: '#ef4444',
-  };
-
-  // Load employees and invoices from localStorage
-  useEffect(() => {
-    const savedEmployees = localStorage.getItem('dayonetools_employees');
-    if (savedEmployees) {
-      setEmployees(JSON.parse(savedEmployees));
-    }
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    if (savedInvoices) {
-      setInvoices(JSON.parse(savedInvoices));
-    }
-  }, []);
-
-  // Save employees to localStorage
-  const saveEmployees = (newEmployees) => {
-    setEmployees(newEmployees);
-    localStorage.setItem('dayonetools_employees', JSON.stringify(newEmployees));
-  };
-
-  // Get unique departments
-  const departments = [...new Set(employees.map(e => e.department).filter(Boolean))];
-
-  // Get invoice count for an employee
-  const getInvoiceCount = (employeeId) => {
-    return invoices.filter(inv => inv.employeeId === employeeId).length;
-  };
-
-  // Filter & sort employees
-  const filteredEmployees = employees
-    .filter(emp => {
-      const matchesSearch = !searchQuery || 
-        emp.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.employeeId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.position?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesDept = departmentFilter === 'all' || emp.department === departmentFilter;
-      const matchesStatus = statusFilter === 'all' || emp.status === statusFilter;
-      return matchesSearch && matchesDept && matchesStatus;
-    })
-    .sort((a, b) => {
-      let valA, valB;
-      switch (sortBy) {
-        case 'name': valA = a.name || ''; valB = b.name || ''; break;
-        case 'employeeId': valA = a.employeeId || ''; valB = b.employeeId || ''; break;
-        case 'department': valA = a.department || ''; valB = b.department || ''; break;
-        case 'created': valA = a.createdAt || ''; valB = b.createdAt || ''; break;
-        default: valA = a.name || ''; valB = b.name || '';
-      }
-      if (sortOrder === 'asc') return valA.localeCompare(valB);
-      return valB.localeCompare(valA);
-    });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredEmployees.length / perPage);
-  const paginatedEmployees = filteredEmployees.slice(
-    (currentPage - 1) * perPage,
-    currentPage * perPage
+function Modal({ open, onClose, children, title, subtitle }) {
+  if (!open) return null;
+  return React.createElement('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', padding: '16px' }, onClick: onClose },
+    React.createElement('div', { style: { background: '#161b22', borderRadius: '10px', border: '1px solid #30363d', width: '100%', maxWidth: '580px', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }, onClick: function(e) { e.stopPropagation(); } },
+      React.createElement('div', { style: { padding: '20px 24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+        React.createElement('div', null,
+          React.createElement('h2', { style: { fontSize: '18px', fontWeight: '700', color: '#e6edf3', margin: 0 } }, title),
+          subtitle && React.createElement('p', { style: { fontSize: '13px', color: '#8b949e', marginTop: '4px' } }, subtitle)
+        ),
+        React.createElement('button', { onClick: onClose, style: { background: 'none', border: 'none', color: '#8b949e', fontSize: '20px', cursor: 'pointer', padding: '4px', lineHeight: 1 } }, '\u2715')
+      ),
+      React.createElement('div', { style: { padding: '16px 24px 24px' } }, children)
+    )
   );
+}
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel, confirmColor }) {
+  if (!open) return null;
+  return React.createElement('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', padding: '16px' }, onClick: onClose },
+    React.createElement('div', { style: { background: '#161b22', borderRadius: '10px', border: '1px solid #30363d', padding: '24px', maxWidth: '420px', width: '100%' }, onClick: function(e) { e.stopPropagation(); } },
+      React.createElement('h3', { style: { fontSize: '16px', fontWeight: '700', color: '#e6edf3', margin: '0 0 8px' } }, title),
+      React.createElement('p', { style: { fontSize: '14px', color: '#8b949e', marginBottom: '20px', lineHeight: 1.5 } }, message),
+      React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
+        React.createElement('button', { onClick: onClose, style: { padding: '8px 16px', background: '#21262d', border: '1px solid #30363d', borderRadius: '6px', color: '#e6edf3', fontSize: '13px', fontWeight: '500', cursor: 'pointer' } }, 'Cancel'),
+        React.createElement('button', { onClick: onConfirm, style: { padding: '8px 16px', background: confirmColor || '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' } }, confirmLabel || 'Delete')
+      )
+    )
+  );
+}
+
+var STORAGE_KEY = 'dayonetools_employees';
+var INVOICES_KEY = 'dayonetools_invoices';
+var PER_PAGE = 10;
+var DEFAULT_DEPTS = ['Sales', 'Marketing', 'Engineering', 'Design', 'Finance', 'Support', 'Human Resources', 'Product'];
+
+export default function DashboardEmployees({ darkMode }) {
+  var [employees, setEmployees] = useState([]);
+  var [invoices, setInvoices] = useState([]);
+  var [search, setSearch] = useState('');
+  var [filterDept, setFilterDept] = useState('all');
+  var [filterStatus, setFilterStatus] = useState('all');
+  var [sortBy, setSortBy] = useState('name');
+  var [sortOrder, setSortOrder] = useState('asc');
+  var [page, setPage] = useState(1);
+  var [isMobile, setIsMobile] = useState(false);
+  var [showModal, setShowModal] = useState(false);
+  var [editingEmp, setEditingEmp] = useState(null);
+  var [showDetail, setShowDetail] = useState(null);
+  var [delConfirm, setDelConfirm] = useState(null);
+  var [form, setForm] = useState({ employeeId: '', fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' });
+  var [errors, setErrors] = useState({});
+
+  useEffect(function() { var ck = function() { setIsMobile(window.innerWidth <= 768); }; ck(); window.addEventListener('resize', ck); return function() { window.removeEventListener('resize', ck); }; }, []);
+
+  var loadData = useCallback(function() {
+    try { var s = localStorage.getItem(STORAGE_KEY); if (s) setEmployees(JSON.parse(s)); } catch(e) {}
+    try { var i = localStorage.getItem(INVOICES_KEY); if (i) setInvoices(JSON.parse(i)); } catch(e) {}
+  }, []);
+  useEffect(function() { loadData(); }, [loadData]);
+
+  var save = function(data) { setEmployees(data); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); };
+  var allDepts = Array.from(new Set(DEFAULT_DEPTS.concat(employees.map(function(e) { return e.department; }).filter(Boolean)))).sort();
+  var invCount = function(id) { return invoices.filter(function(i) { return i.employeeId === id || i.assignedEmployee === id; }).length; };
+
+  var filtered = employees.filter(function(e) {
+    if (search) { var q = search.toLowerCase(); if (![e.fullName, e.employeeId, e.email, e.phone, e.position, e.department].some(function(f) { return (f||'').toLowerCase().includes(q); })) return false; }
+    if (filterDept !== 'all' && e.department !== filterDept) return false;
+    if (filterStatus !== 'all' && e.status !== filterStatus) return false;
+    return true;
+  }).sort(function(a, b) {
+    var f = { name: 'fullName', id: 'employeeId', department: 'department', position: 'position', hireDate: 'hireDate' }[sortBy] || 'fullName';
+    var vA = (a[f]||'').toLowerCase(), vB = (b[f]||'').toLowerCase();
+    return vA < vB ? (sortOrder==='asc'?-1:1) : vA > vB ? (sortOrder==='asc'?1:-1) : 0;
+  });
+
+  var totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  var paged = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+  useEffect(function() { setPage(1); }, [search, filterDept, filterStatus, sortBy, sortOrder]);
+
+  var openCreate = function() { setEditingEmp(null); setForm({ employeeId: nextEmployeeId(employees), fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' }); setErrors({}); setShowModal(true); };
+  var openEdit = function(emp) {
+    setEditingEmp(emp);
+    var isCust = emp.department && !DEFAULT_DEPTS.includes(emp.department);
+    setForm({ employeeId: emp.employeeId||'', fullName: emp.fullName||'', email: emp.email||'', phone: emp.phone||'', position: emp.position||'', department: isCust ? '__custom__' : (emp.department||''), customDept: isCust ? emp.department : '', hireDate: emp.hireDate||'', status: emp.status||'active' });
+    setErrors({}); setShowModal(true);
   };
 
-  const handleCreate = () => {
-    setEditingEmployee(null);
-    setShowModal(true);
+  var validate = function() {
+    var er = {};
+    if (!form.employeeId.trim()) er.employeeId = 'Employee ID is required';
+    else if (!editingEmp && employees.some(function(e) { return e.employeeId === form.employeeId.trim(); })) er.employeeId = 'Employee ID already exists';
+    if (!form.fullName.trim()) er.fullName = 'Full name is required';
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = 'Invalid email';
+    setErrors(er); return Object.keys(er).length === 0;
   };
 
-  const handleEdit = (employee) => {
-    setEditingEmployee(employee);
-    setShowModal(true);
-    setShowActionsMenu(null);
+  var handleSave = function() {
+    if (!validate()) return;
+    var dept = form.department === '__custom__' ? form.customDept.trim() : form.department;
+    var d = { employeeId: form.employeeId.trim(), fullName: form.fullName.trim(), email: form.email.trim(), phone: form.phone.trim(), position: form.position.trim(), department: dept, hireDate: form.hireDate, status: form.status, updatedAt: new Date().toISOString() };
+    var up;
+    if (editingEmp) { up = employees.map(function(e) { return e.id === editingEmp.id ? Object.assign({}, e, d) : e; }); }
+    else { d.id = 'emp_' + Date.now() + '_' + Math.random().toString(36).substr(2,6); d.createdAt = new Date().toISOString(); up = employees.concat([d]); }
+    save(up); setShowModal(false);
+    if (showDetail && editingEmp && showDetail.id === editingEmp.id) setShowDetail(Object.assign({}, showDetail, d));
   };
 
-  const handleDelete = (employee) => {
-    setShowDeleteConfirm(employee);
-    setShowActionsMenu(null);
+  var handleDel = function(emp) { setDelConfirm({ employee: emp, hasInv: invCount(emp.employeeId) > 0 }); };
+  var confirmDel = function() {
+    if (!delConfirm) return;
+    var up;
+    if (delConfirm.hasInv) { up = employees.map(function(e) { return e.id === delConfirm.employee.id ? Object.assign({}, e, { status: 'inactive', updatedAt: new Date().toISOString() }) : e; }); }
+    else { up = employees.filter(function(e) { return e.id !== delConfirm.employee.id; }); }
+    save(up); setDelConfirm(null);
+    if (showDetail && showDetail.id === delConfirm.employee.id) { if (delConfirm.hasInv) setShowDetail(Object.assign({}, showDetail, { status: 'inactive' })); else setShowDetail(null); }
   };
 
-  const confirmDelete = () => {
-    const employee = showDeleteConfirm;
-    const invoiceCount = getInvoiceCount(employee.id);
-    
-    if (invoiceCount > 0) {
-      // Deactivate instead of delete
-      saveEmployees(employees.map(e => 
-        e.id === employee.id ? { ...e, status: 'inactive', updatedAt: new Date().toISOString() } : e
-      ));
-    } else {
-      // Permanently delete
-      saveEmployees(employees.filter(e => e.id !== employee.id));
-    }
-    setShowDeleteConfirm(null);
-  };
+  var C = { bg: '#0d1117', bgCard: '#161b22', bgIn: '#0d1117', text: '#e6edf3', tm: '#8b949e', bdr: '#30363d', acc: '#3b82f6', grn: '#10b981', red: '#ef4444', yel: '#f59e0b' };
+  var inpS = { width: '100%', padding: '9px 12px', background: C.bgIn, border: '1px solid '+C.bdr, borderRadius: '6px', color: C.text, fontSize: '13px', fontFamily: "'Inter',sans-serif", outline: 'none', boxSizing: 'border-box' };
+  var selS = Object.assign({}, inpS, { cursor: 'pointer', appearance: 'none', backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center', backgroundSize: '14px', paddingRight: '32px' });
+  var lblS = { fontSize: '12px', fontWeight: '600', color: C.tm, marginBottom: '4px', display: 'block' };
 
-  const handleView = (employee) => {
-    setViewingEmployee(employee);
-    setShowActionsMenu(null);
-  };
-
-  const handleSave = (employeeData) => {
-    if (editingEmployee) {
-      saveEmployees(employees.map(e => 
-        e.id === editingEmployee.id ? { ...e, ...employeeData, updatedAt: new Date().toISOString() } : e
-      ));
-    } else {
-      const newEmployee = {
-        ...employeeData,
-        id: `emp_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        status: 'active',
-      };
-      saveEmployees([...employees, newEmployee]);
-    }
-    setShowModal(false);
-    setEditingEmployee(null);
-  };
-
-  const getStatusBadge = (status) => {
-    const styles = {
-      active: { bg: `${colors.green}20`, color: colors.green, label: 'Active' },
-      inactive: { bg: `${colors.textMuted}20`, color: colors.textMuted, label: 'Inactive' },
-    };
-    const style = styles[status] || styles.active;
-    return (
-      <span style={{
-        display: 'inline-block',
-        padding: '4px 10px',
-        background: style.bg,
-        color: style.color,
-        borderRadius: '4px',
-        fontSize: '12px',
-        fontWeight: '500',
-      }}>
-        {style.label}
-      </span>
+  var renderForm = function() {
+    return React.createElement('div', null,
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '# Employee ID *'), React.createElement('input', { style: Object.assign({}, inpS, errors.employeeId ? {borderColor:C.red} : {}), value: form.employeeId, onChange: function(e){setForm(Object.assign({},form,{employeeId:e.target.value}));}, placeholder: 'EMP001', maxLength: 50 }), errors.employeeId && React.createElement('span', { style: { fontSize: '11px', color: C.red } }, errors.employeeId)),
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\uD83D\uDC64 Full Name *'), React.createElement('input', { style: Object.assign({}, inpS, errors.fullName ? {borderColor:C.red} : {}), value: form.fullName, onChange: function(e){setForm(Object.assign({},form,{fullName:e.target.value}));}, placeholder: 'John Doe', maxLength: 100 }), errors.fullName && React.createElement('span', { style: { fontSize: '11px', color: C.red } }, errors.fullName))
+      ),
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\u2709 Email'), React.createElement('input', { style: Object.assign({}, inpS, errors.email ? {borderColor:C.red} : {}), value: form.email, onChange: function(e){setForm(Object.assign({},form,{email:e.target.value}));}, placeholder: 'john@company.com', type: 'email' }), errors.email && React.createElement('span', { style: { fontSize: '11px', color: C.red } }, errors.email)),
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\uD83D\uDCDE Phone'), React.createElement('input', { style: inpS, value: form.phone, onChange: function(e){setForm(Object.assign({},form,{phone:e.target.value}));}, placeholder: '+1 (555) 123-4567', maxLength: 50 }))
+      ),
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' } },
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\uD83C\uDFE2 Position'), React.createElement('input', { style: inpS, value: form.position, onChange: function(e){setForm(Object.assign({},form,{position:e.target.value}));}, placeholder: 'e.g., Sales Manager', maxLength: 100 })),
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\uD83C\uDFDB Department'),
+          React.createElement('select', { style: selS, value: form.department, onChange: function(e){setForm(Object.assign({},form,{department:e.target.value}));} },
+            React.createElement('option', { value: '' }, 'Select department'),
+            allDepts.map(function(d){ return React.createElement('option', { key: d, value: d }, d); }),
+            React.createElement('option', { value: '__custom__' }, 'Custom Department...')
+          ),
+          form.department === '__custom__' && React.createElement('input', { style: Object.assign({}, inpS, {marginTop:'6px'}), value: form.customDept, onChange: function(e){setForm(Object.assign({},form,{customDept:e.target.value}));}, placeholder: 'Enter department name' })
+        )
+      ),
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' } },
+        React.createElement('div', null, React.createElement('label', { style: lblS }, '\uD83D\uDCC5 Hire Date'), React.createElement('input', { type: 'date', style: inpS, value: form.hireDate, onChange: function(e){setForm(Object.assign({},form,{hireDate:e.target.value}));} })),
+        editingEmp && React.createElement('div', null, React.createElement('label', { style: lblS }, 'Status'), React.createElement('select', { style: selS, value: form.status, onChange: function(e){setForm(Object.assign({},form,{status:e.target.value}));} }, React.createElement('option', {value:'active'}, 'Active'), React.createElement('option', {value:'inactive'}, 'Inactive')))
+      ),
+      React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+        React.createElement('button', { onClick: handleSave, style: { padding: '9px 20px', background: C.grn, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' } }, editingEmp ? 'Save Changes' : 'Save Employee')
+      )
     );
   };
 
-  const selectStyle = {
-    padding: '9px 32px 9px 12px',
-    background: colors.bgInput,
-    border: `1px solid ${colors.border}`,
-    borderRadius: '6px',
-    color: colors.text,
-    fontSize: '13px',
-    fontFamily: "'Inter', sans-serif",
-    outline: 'none',
-    cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 8px center',
-    backgroundSize: '14px',
-  };
+  // Detail View
+  if (showDetail) {
+    var emp = showDetail;
+    var eInv = invoices.filter(function(i){ return i.employeeId===emp.employeeId||i.assignedEmployee===emp.employeeId; });
+    var totRev = eInv.reduce(function(s,i){ return s+(parseFloat(i.total)||0); }, 0);
+    var paidInv = eInv.filter(function(i){ return i.status==='paid'; });
+    var paidRev = paidInv.reduce(function(s,i){ return s+(parseFloat(i.total)||0); }, 0);
+    var now = new Date();
+    var curMo = now.toLocaleString('default',{month:'long',year:'numeric'});
+    var moInv = eInv.filter(function(i){ var d=new Date(i.createdAt||i.issueDate); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); });
 
-  // If viewing employee detail
-  if (viewingEmployee) {
-    return (
-      <EmployeeDetail
-        employee={viewingEmployee}
-        invoices={invoices.filter(inv => inv.employeeId === viewingEmployee.id)}
-        darkMode={darkMode}
-        colors={colors}
-        onBack={() => setViewingEmployee(null)}
-        onEdit={() => { setEditingEmployee(viewingEmployee); setShowModal(true); }}
-        onDelete={() => handleDelete(viewingEmployee)}
-        formatDate={formatDate}
-      />
+    return React.createElement('div', { style: { padding: isMobile?'16px':'24px', fontFamily: "'Inter',sans-serif" } },
+      React.createElement('div', { style: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px', flexWrap:'wrap', gap:'10px' } },
+        React.createElement('div', { style: { display:'flex', alignItems:'center', gap:'12px' } },
+          React.createElement('button', { onClick: function(){ setShowDetail(null); }, style: { background:'none', border:'none', color:C.acc, fontSize:'13px', fontWeight:'500', cursor:'pointer', padding:0 } }, '\u2190 Back'),
+          React.createElement('h1', { style: { fontSize:'20px', fontWeight:'700', color:C.text, margin:0 } }, emp.fullName)
+        ),
+        React.createElement('div', { style: { display:'flex', gap:'8px' } },
+          React.createElement('button', { onClick: function(){ openEdit(emp); }, style: { padding:'7px 14px', background:C.acc, border:'none', borderRadius:'6px', color:'#fff', fontSize:'12px', fontWeight:'600', cursor:'pointer' } }, '\u270E Edit'),
+          React.createElement('button', { onClick: function(){ handleDel(emp); }, style: { padding:'7px 14px', background:C.red, border:'none', borderRadius:'6px', color:'#fff', fontSize:'12px', fontWeight:'600', cursor:'pointer' } }, '\uD83D\uDDD1 Delete')
+        )
+      ),
+      React.createElement('div', { style: { display:'grid', gridTemplateColumns: isMobile?'1fr':'1fr 280px', gap:'16px' } },
+        React.createElement('div', null,
+          React.createElement('div', { style: { background:C.bgCard, borderRadius:'8px', border:'1px solid '+C.bdr, padding:'20px', marginBottom:'16px' } },
+            React.createElement('h3', { style: { fontSize:'14px', fontWeight:'600', color:C.text, margin:'0 0 16px' } }, '\uD83D\uDC64 Employee Details'),
+            React.createElement('div', { style: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' } },
+              [{l:'Name',v:emp.fullName},{l:'Employee ID',v:'# '+emp.employeeId},{l:'Email',v:emp.email||'\u2014'},{l:'Phone',v:emp.phone||'\u2014'},{l:'Position',v:emp.position||'\u2014'},{l:'Department',v:emp.department||'\u2014'},{l:'Status',v:emp.status==='active'?'Active':'Inactive',s:true},{l:'Created',v:emp.createdAt?new Date(emp.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}):'\u2014'}].map(function(f,i){
+                return React.createElement('div', { key: i },
+                  React.createElement('div', { style: { fontSize:'11px', color:C.tm, fontWeight:'600', marginBottom:'4px' } }, f.l),
+                  f.s ? React.createElement('span', { style: { padding:'2px 8px', borderRadius:'4px', fontSize:'12px', fontWeight:'600', color: emp.status==='active'?C.grn:C.tm, background: emp.status==='active'?C.grn+'18':C.tm+'18' } }, f.v) : React.createElement('div', { style: { fontSize:'14px', color:C.text } }, f.v)
+                );
+              })
+            )
+          ),
+          React.createElement('div', { style: { background:C.bgCard, borderRadius:'8px', border:'1px solid '+C.bdr, padding:'20px' } },
+            React.createElement('h3', { style: { fontSize:'14px', fontWeight:'600', color:C.text, margin:'0 0 12px' } }, '\uD83D\uDCC4 Assigned Invoices'),
+            React.createElement('div', { style: { fontSize:'12px', color:C.tm, marginBottom:'12px' } }, 'Showing '+eInv.length+' invoices'),
+            eInv.length > 0 ?
+              React.createElement('div', { style: { overflowX:'auto' } },
+                React.createElement('table', { style: { width:'100%', borderCollapse:'collapse', fontSize:'12px' } },
+                  React.createElement('thead', null, React.createElement('tr', { style: { borderBottom:'1px solid '+C.bdr } },
+                    ['Invoice #','Customer','Amount','Status','Issued'].map(function(h){ return React.createElement('th', { key:h, style: { padding:'8px 10px', textAlign:'left', color:C.tm, fontWeight:'600', whiteSpace:'nowrap' } }, h); })
+                  )),
+                  React.createElement('tbody', null, eInv.slice(0,10).map(function(inv,i){
+                    var sc = inv.status==='paid'?C.grn:inv.status==='sent'?C.acc:inv.status==='overdue'?C.red:C.tm;
+                    return React.createElement('tr', { key:i, style:{borderBottom:'1px solid '+C.bdr} },
+                      React.createElement('td', { style:{padding:'8px 10px',color:C.text,fontWeight:'500'} }, inv.invoiceNumber||inv.id),
+                      React.createElement('td', { style:{padding:'8px 10px',color:C.text} }, inv.customerName||'\u2014'),
+                      React.createElement('td', { style:{padding:'8px 10px',color:C.text,fontWeight:'500'} }, '$'+(parseFloat(inv.total)||0).toFixed(2)),
+                      React.createElement('td', { style:{padding:'8px 10px'} }, React.createElement('span', { style:{padding:'2px 8px',borderRadius:'4px',fontSize:'11px',fontWeight:'600',color:'#fff',background:sc} }, (inv.status||'draft').charAt(0).toUpperCase()+(inv.status||'draft').slice(1))),
+                      React.createElement('td', { style:{padding:'8px 10px',color:C.tm} }, inv.issueDate?new Date(inv.issueDate).toLocaleDateString():'\u2014')
+                    );
+                  }))
+                )
+              )
+            : React.createElement('div', { style:{textAlign:'center',padding:'32px 0',color:C.tm} }, React.createElement('div', {style:{fontSize:'32px',marginBottom:'8px'}}, '\uD83D\uDCCB'), React.createElement('div', {style:{fontSize:'13px'}}, 'No invoices assigned'))
+          )
+        ),
+        React.createElement('div', { style: { display:'flex', flexDirection:'column', gap:'12px' } },
+          React.createElement('div', { style: { background:C.bgCard, borderRadius:'8px', border:'1px solid '+C.bdr, padding:'16px' } },
+            React.createElement('h4', { style:{fontSize:'13px',fontWeight:'600',color:C.text,margin:'0 0 12px'} }, '\uD83D\uDCC5 Current Month - '+curMo),
+            React.createElement('div', {style:{marginBottom:'10px'}}, React.createElement('div', {style:{fontSize:'11px',color:C.tm,marginBottom:'2px'}}, '\uD83D\uDCC4 Total Invoices'), React.createElement('div', {style:{fontSize:'22px',fontWeight:'700',color:C.text}}, moInv.length)),
+            React.createElement('div', null, React.createElement('div', {style:{fontSize:'11px',color:C.tm,marginBottom:'2px'}}, '\uD83D\uDCB0 Sales'), moInv.length>0 ? React.createElement('div', {style:{fontSize:'14px',fontWeight:'600',color:C.grn}}, '$'+moInv.reduce(function(s,i){return s+(parseFloat(i.total)||0);},0).toFixed(2)) : React.createElement('div', {style:{fontSize:'13px',color:C.tm}}, 'No invoices this month'))
+          ),
+          React.createElement('div', { style: { background:C.bgCard, borderRadius:'8px', border:'1px solid '+C.bdr, padding:'16px' } },
+            React.createElement('h4', { style:{fontSize:'13px',fontWeight:'600',color:C.text,margin:'0 0 12px'} }, '\uD83D\uDD50 Timeline'),
+            [{l:'Created',d:emp.createdAt,c:C.grn}].concat(emp.hireDate?[{l:'Hired',d:emp.hireDate,c:C.acc}]:[]).concat(emp.updatedAt?[{l:'Last Updated',d:emp.updatedAt,c:C.yel}]:[]).map(function(it,i){
+              return React.createElement('div', { key:i, style:{display:'flex',alignItems:'flex-start',gap:'10px',marginBottom:'10px'} },
+                React.createElement('div', { style:{width:'8px',height:'8px',borderRadius:'50%',background:it.c,marginTop:'4px',flexShrink:0} }),
+                React.createElement('div', null, React.createElement('div', {style:{fontSize:'12px',fontWeight:'600',color:C.text}}, it.l), React.createElement('div', {style:{fontSize:'11px',color:C.tm}}, it.d?new Date(it.d).toLocaleString('en-US',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'))
+              );
+            })
+          ),
+          React.createElement('div', { style: { background:C.bgCard, borderRadius:'8px', border:'1px solid '+C.bdr, padding:'16px' } },
+            React.createElement('h4', { style:{fontSize:'13px',fontWeight:'600',color:C.text,margin:'0 0 12px'} }, '\uD83D\uDCCA All-Time Stats'),
+            [{l:'Total Invoices',v:eInv.length},{l:'Total Revenue',v:'$'+totRev.toFixed(2)},{l:'Paid Revenue',v:'$'+paidRev.toFixed(2)},{l:'Paid Invoices',v:paidInv.length}].map(function(s,i){
+              return React.createElement('div', { key:i, style:{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:i<3?'1px solid '+C.bdr:'none'} },
+                React.createElement('span', {style:{fontSize:'12px',color:C.tm}}, s.l), React.createElement('span', {style:{fontSize:'12px',fontWeight:'600',color:C.text}}, s.v)
+              );
+            })
+          )
+        )
+      ),
+      React.createElement(Modal, { open:showModal, onClose:function(){setShowModal(false);}, title:editingEmp?'Edit Employee':'Create New Employee', subtitle:editingEmp?'Update employee details.':'Add a new employee to your organization.' }, renderForm()),
+      React.createElement(ConfirmDialog, { open:!!delConfirm, onClose:function(){setDelConfirm(null);}, onConfirm:confirmDel, title:'Delete Employee', message:delConfirm&&delConfirm.hasInv?'This employee has invoices and will be deactivated instead.':'Are you sure? This cannot be undone.', confirmLabel:delConfirm&&delConfirm.hasInv?'Deactivate':'Delete', confirmColor:delConfirm&&delConfirm.hasInv?C.yel:C.red })
     );
   }
 
-  return (
-    <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start', 
-        marginBottom: '24px',
-        flexWrap: 'wrap',
-        gap: '16px',
-      }}>
-        <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, margin: 0 }}>
-            Employees
-          </h1>
-          <p style={{ fontSize: '14px', color: colors.textMuted, marginTop: '4px' }}>
-            Manage your organization employees
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            background: colors.green,
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          + Add Employee
-        </button>
-      </div>
-
-      {/* Filters Bar */}
-      <div style={{
-        display: 'flex',
-        gap: '12px',
-        marginBottom: '16px',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-      }}>
-        {/* Search */}
-        <div style={{ position: 'relative', flex: '1 1 240px', maxWidth: '360px' }}>
-          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '14px' }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search employees..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            style={{
-              width: '100%',
-              padding: '9px 12px 9px 36px',
-              background: colors.bgInput,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '6px',
-              color: colors.text,
-              fontSize: '13px',
-              fontFamily: "'Inter', sans-serif",
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        {/* Department Filter */}
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Department</label>
-          <select
-            value={departmentFilter}
-            onChange={(e) => { setDepartmentFilter(e.target.value); setCurrentPage(1); }}
-            style={selectStyle}
-          >
-            <option value="all">All departments</option>
-            {departments.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Status Filter */}
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Status</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            style={selectStyle}
-          >
-            <option value="all">All status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-
-        {/* Sort By */}
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Sort by</label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={selectStyle}
-          >
-            <option value="name">Name</option>
-            <option value="employeeId">Employee ID</option>
-            <option value="department">Department</option>
-            <option value="created">Date Created</option>
-          </select>
-        </div>
-
-        {/* Order */}
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: '500', color: colors.textMuted, display: 'block', marginBottom: '4px' }}>Order</label>
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            style={selectStyle}
-          >
-            <option value="asc">A-Z</option>
-            <option value="desc">Z-A</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Results count & pagination info */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: '13px', color: colors.textMuted }}>
-          Showing {paginatedEmployees.length} of {filteredEmployees.length} employees
-        </span>
-        {totalPages > 1 && (
-          <span style={{ fontSize: '13px', color: colors.textMuted }}>
-            Page {currentPage} of {totalPages}
-          </span>
-        )}
-      </div>
-
-      {/* Employees Table */}
-      <div style={{
-        background: colors.bgCard,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '8px',
-        overflow: 'hidden',
-      }}>
-        {/* Table Header */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.2fr 0.8fr 1.2fr 1fr 1.5fr 1fr 0.7fr 0.6fr 60px',
-          gap: '8px',
-          padding: '12px 16px',
-          borderBottom: `1px solid ${colors.border}`,
-          background: darkMode ? '#0d1117' : '#f8fafc',
-        }}>
-          {[
-            { icon: '👤', label: 'Name' },
-            { icon: '#', label: 'Employee ID' },
-            { icon: '💼', label: 'Position' },
-            { icon: '🏢', label: 'Department' },
-            { icon: '✉️', label: 'Email' },
-            { icon: '📞', label: 'Phone' },
-            { icon: '⚡', label: 'Status' },
-            { icon: '📄', label: 'Invoices' },
-            { icon: '', label: '' },
-          ].map((col, i) => (
-            <div key={i} style={{ fontSize: '12px', fontWeight: '600', color: colors.textMuted, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {col.icon && <span style={{ fontSize: '11px' }}>{col.icon}</span>}
-              {col.label}
-            </div>
-          ))}
-        </div>
-
-        {/* Table Body */}
-        {paginatedEmployees.length === 0 ? (
-          <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.5 }}>👥</div>
-            <h3 style={{ fontSize: '16px', fontWeight: '500', color: colors.text, marginBottom: '8px' }}>
-              {employees.length === 0 ? 'No employees yet' : 'No employees match your filters'}
-            </h3>
-            <p style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '20px' }}>
-              {employees.length === 0 
-                ? 'Add your first employee to start tracking invoice performance.'
-                : 'Try adjusting your search or filters.'}
-            </p>
-            {employees.length === 0 && (
-              <button
-                onClick={handleCreate}
-                style={{
-                  padding: '10px 20px',
-                  background: colors.green,
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                }}
-              >
-                + Add Employee
-              </button>
-            )}
-          </div>
-        ) : (
-          paginatedEmployees.map((emp) => (
-            <div
-              key={emp.id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1.2fr 0.8fr 1.2fr 1fr 1.5fr 1fr 0.7fr 0.6fr 60px',
-                gap: '8px',
-                padding: '14px 16px',
-                borderBottom: `1px solid ${colors.border}`,
-                cursor: 'pointer',
-                transition: 'background 0.15s',
-              }}
-              onClick={() => handleView(emp)}
-              onMouseEnter={(e) => e.currentTarget.style.background = darkMode ? '#1c2128' : '#f1f5f9'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              {/* Name */}
-              <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.name}
-              </div>
-
-              {/* Employee ID */}
-              <div style={{ fontSize: '13px', color: colors.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.employeeId}
-              </div>
-
-              {/* Position */}
-              <div style={{ fontSize: '13px', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.position || '—'}
-              </div>
-
-              {/* Department */}
-              <div style={{ fontSize: '13px', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.department || '—'}
-              </div>
-
-              {/* Email */}
-              <div style={{ fontSize: '13px', color: colors.accent, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.email || '—'}
-              </div>
-
-              {/* Phone */}
-              <div style={{ fontSize: '13px', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {emp.phone || '—'}
-              </div>
-
-              {/* Status */}
-              <div>{getStatusBadge(emp.status)}</div>
-
-              {/* Invoice Count */}
-              <div style={{ fontSize: '13px', color: colors.text, textAlign: 'center' }}>
-                {getInvoiceCount(emp.id)}
-              </div>
-
-              {/* Actions */}
-              <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => setShowActionsMenu(showActionsMenu === emp.id ? null : emp.id)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: colors.textMuted,
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  ⋯
-                </button>
-
-                {showActionsMenu === emp.id && (
-                  <div style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: '100%',
-                    background: colors.bgCard,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                    zIndex: 1100,
-                    minWidth: '150px',
-                    overflow: 'hidden',
-                  }}>
-                    <button
-                      onClick={() => handleView(emp)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                        padding: '10px 14px', background: 'transparent', border: 'none',
-                        color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                      }}
-                    >
-                      👁️ View
-                    </button>
-                    <button
-                      onClick={() => handleEdit(emp)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                        padding: '10px 14px', background: 'transparent', border: 'none',
-                        color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                      }}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(emp)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
-                        padding: '10px 14px', background: 'transparent', border: 'none',
-                        color: colors.red, fontSize: '13px', cursor: 'pointer', textAlign: 'left',
-                      }}
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '20px' }}>
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            style={{
-              padding: '8px 14px',
-              background: 'transparent',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '6px',
-              color: currentPage === 1 ? colors.textMuted : colors.text,
-              fontSize: '13px',
-              cursor: currentPage === 1 ? 'default' : 'pointer',
-              opacity: currentPage === 1 ? 0.5 : 1,
-            }}
-          >
-            ‹ Previous
-          </button>
-          
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              style={{
-                padding: '8px 12px',
-                background: page === currentPage ? colors.accent : 'transparent',
-                border: page === currentPage ? 'none' : `1px solid ${colors.border}`,
-                borderRadius: '6px',
-                color: page === currentPage ? '#ffffff' : colors.text,
-                fontSize: '13px',
-                fontWeight: page === currentPage ? '600' : '400',
-                cursor: 'pointer',
-              }}
-            >
-              {page}
-            </button>
-          ))}
-          
-          <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            style={{
-              padding: '8px 14px',
-              background: 'transparent',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '6px',
-              color: currentPage === totalPages ? colors.textMuted : colors.text,
-              fontSize: '13px',
-              cursor: currentPage === totalPages ? 'default' : 'pointer',
-              opacity: currentPage === totalPages ? 0.5 : 1,
-            }}
-          >
-            Next ›
-          </button>
-        </div>
-      )}
-
-      {/* Employee Create/Edit Modal */}
-      {showModal && (
-        <EmployeeModal
-          darkMode={darkMode}
-          colors={colors}
-          employee={editingEmployee}
-          existingIds={employees.filter(e => e.id !== editingEmployee?.id).map(e => e.employeeId)}
-          departments={departments}
-          onSave={handleSave}
-          onClose={() => { setShowModal(false); setEditingEmployee(null); }}
-        />
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 2000, padding: '20px',
-        }}>
-          <div style={{
-            background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`,
-            width: '100%', maxWidth: '440px', padding: '24px',
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: '0 0 12px' }}>
-              Delete Employee
-            </h3>
-            <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', margin: '0 0 8px' }}>
-              Are you sure you want to delete <strong style={{ color: colors.text }}>{showDeleteConfirm.name}</strong>?
-            </p>
-            {getInvoiceCount(showDeleteConfirm.id) > 0 ? (
-              <p style={{ fontSize: '13px', color: colors.yellow, background: `${colors.yellow}15`, padding: '10px 14px', borderRadius: '6px', margin: '12px 0 20px' }}>
-                ⚠️ This employee has {getInvoiceCount(showDeleteConfirm.id)} assigned invoice(s). They will be deactivated instead of deleted.
-              </p>
-            ) : (
-              <p style={{ fontSize: '13px', color: colors.red, margin: '4px 0 20px' }}>
-                This action cannot be undone and will permanently remove all employee data.
-              </p>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                style={{
-                  padding: '10px 20px', background: 'transparent', border: `1px solid ${colors.border}`,
-                  borderRadius: '6px', color: colors.text, fontSize: '14px', fontWeight: '500', cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                style={{
-                  padding: '10px 20px', background: colors.red, border: 'none',
-                  borderRadius: '6px', color: '#ffffff', fontSize: '14px', fontWeight: '500', cursor: 'pointer',
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Click outside to close actions menus */}
-      {showActionsMenu && (
-        <div 
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
-          onClick={() => setShowActionsMenu(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-
-// ============================================
-// Employee Create/Edit Modal
-// ============================================
-function EmployeeModal({ darkMode, colors, employee, existingIds, departments, onSave, onClose }) {
-  const [formData, setFormData] = useState({
-    employeeId: employee?.employeeId || '',
-    name: employee?.name || '',
-    email: employee?.email || '',
-    phone: employee?.phone || '',
-    position: employee?.position || '',
-    department: employee?.department || '',
-    hireDate: employee?.hireDate || '',
-    linkedUser: employee?.linkedUser || '',
-    status: employee?.status || 'active',
-  });
-  const [customDepartment, setCustomDepartment] = useState(false);
-  const [errors, setErrors] = useState({});
-
-  const inputStyle = {
-    width: '100%',
-    padding: '11px 14px',
-    background: colors.bgInput,
-    border: `1px solid ${colors.border}`,
-    borderRadius: '6px',
-    color: colors.text,
-    fontSize: '14px',
-    fontFamily: "'Inter', sans-serif",
-    outline: 'none',
-    boxSizing: 'border-box',
-  };
-
-  const labelStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    fontSize: '13px',
-    fontWeight: '500',
-    color: colors.text,
-    marginBottom: '6px',
-  };
-
-  const selectStyle = {
-    ...inputStyle,
-    cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    backgroundSize: '16px',
-    paddingRight: '40px',
-  };
-
-  const validate = () => {
-    const errs = {};
-    if (!formData.employeeId.trim()) errs.employeeId = 'Employee ID is required';
-    else if (existingIds.includes(formData.employeeId.trim())) errs.employeeId = 'Employee ID already exists';
-    if (!formData.name.trim()) errs.name = 'Full name is required';
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = 'Invalid email address';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    onSave({
-      ...formData,
-      employeeId: formData.employeeId.trim(),
-      name: formData.name.trim(),
-    });
-  };
-
-  const handleDepartmentChange = (value) => {
-    if (value === '__custom__') {
-      setCustomDepartment(true);
-      setFormData({ ...formData, department: '' });
-    } else {
-      setCustomDepartment(false);
-      setFormData({ ...formData, department: value });
-    }
-  };
-
-  return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', zIndex: 2000, padding: '20px',
-    }}>
-      <div style={{
-        background: colors.bgCard, borderRadius: '12px', border: `1px solid ${colors.border}`,
-        width: '100%', maxWidth: '620px', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '20px 24px', borderBottom: `1px solid ${colors.border}`,
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0,
-        }}>
-          <div>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: 0 }}>
-              {employee ? 'Edit Employee' : 'Create New Employee'}
-            </h2>
-            <p style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px' }}>
-              {employee ? 'Update employee details below.' : 'Add a new employee to your organization. Fill in the details below.'}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: colors.textMuted, fontSize: '20px', cursor: 'pointer', padding: '4px' }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ padding: '24px', overflowY: 'auto' }}>
-          <div style={{ display: 'grid', gap: '20px' }}>
-            {/* Row 1: Employee ID & Full Name */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>#</span> Employee ID <span style={{ color: colors.red }}>*</span>
-                </label>
-                <input
-                  style={{ ...inputStyle, borderColor: errors.employeeId ? colors.red : colors.border }}
-                  placeholder="EMP001"
-                  maxLength={50}
-                  value={formData.employeeId}
-                  onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                />
-                {errors.employeeId && <p style={{ fontSize: '12px', color: colors.red, marginTop: '4px' }}>{errors.employeeId}</p>}
-              </div>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>👤</span> Full Name <span style={{ color: colors.red }}>*</span>
-                </label>
-                <input
-                  style={{ ...inputStyle, borderColor: errors.name ? colors.red : colors.border }}
-                  placeholder="John Doe"
-                  maxLength={100}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-                {errors.name && <p style={{ fontSize: '12px', color: colors.red, marginTop: '4px' }}>{errors.name}</p>}
-              </div>
-            </div>
-
-            {/* Row 2: Email & Phone */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>✉️</span> Email
-                </label>
-                <input
-                  type="email"
-                  style={{ ...inputStyle, borderColor: errors.email ? colors.red : colors.border }}
-                  placeholder="john.doe@company.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-                {errors.email && <p style={{ fontSize: '12px', color: colors.red, marginTop: '4px' }}>{errors.email}</p>}
-              </div>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>📞</span> Phone
-                </label>
-                <input
-                  type="tel"
-                  style={inputStyle}
-                  placeholder="+1 (555) 123-4567"
-                  maxLength={50}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {/* Row 3: Position & Department */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>💼</span> Position
-                </label>
-                <input
-                  style={inputStyle}
-                  placeholder="e.g., Sales Manager"
-                  maxLength={100}
-                  value={formData.position}
-                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>🏢</span> Department
-                </label>
-                {customDepartment ? (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input
-                      style={{ ...inputStyle, flex: 1 }}
-                      placeholder="Enter department name"
-                      maxLength={100}
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { setCustomDepartment(false); setFormData({ ...formData, department: '' }); }}
-                      style={{
-                        padding: '8px 12px', background: 'transparent', border: `1px solid ${colors.border}`,
-                        borderRadius: '6px', color: colors.textMuted, cursor: 'pointer', fontSize: '12px', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <select
-                    style={selectStyle}
-                    value={formData.department}
-                    onChange={(e) => handleDepartmentChange(e.target.value)}
-                  >
-                    <option value="">Select department</option>
-                    {departments.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                    <option value="__custom__">+ Custom Department</option>
-                  </select>
-                )}
-              </div>
-            </div>
-
-            {/* Row 4: Hire Date & Link to User */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>📅</span> Hire Date
-                </label>
-                <input
-                  type="date"
-                  style={{ ...inputStyle, colorScheme: darkMode ? 'dark' : 'light' }}
-                  value={formData.hireDate}
-                  onChange={(e) => setFormData({ ...formData, hireDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>
-                  <span style={{ fontSize: '12px' }}>🔗</span> Link to User Account
-                </label>
-                <select
-                  style={selectStyle}
-                  value={formData.linkedUser}
-                  onChange={(e) => setFormData({ ...formData, linkedUser: e.target.value })}
-                >
-                  <option value="">No user linked</option>
-                </select>
-                <p style={{ fontSize: '11px', color: colors.textMuted, marginTop: '4px' }}>
-                  Connect to an organization member account
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px', paddingTop: '20px', borderTop: `1px solid ${colors.border}` }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: '10px 20px', background: 'transparent', border: `1px solid ${colors.border}`,
-                borderRadius: '6px', color: colors.text, fontSize: '14px', fontWeight: '500', cursor: 'pointer',
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{
-                padding: '10px 24px', background: colors.green, border: 'none',
-                borderRadius: '6px', color: '#ffffff', fontSize: '14px', fontWeight: '500', cursor: 'pointer',
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              {employee ? 'Save Changes' : 'Save Employee'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-
-// ============================================
-// Employee Detail View
-// ============================================
-function EmployeeDetail({ employee, invoices, darkMode, colors, onBack, onEdit, onDelete, formatDate }) {
-  const [searchInvoices, setSearchInvoices] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-
-  // Current month stats
-  const now = new Date();
-  const currentMonthInvoices = invoices.filter(inv => {
-    const d = new Date(inv.createdAt || inv.issueDate);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-
-  const totalRevenue = currentMonthInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-
-  const filteredInvoices = invoices
-    .filter(inv => {
-      const matchesSearch = !searchInvoices ||
-        inv.invoiceNumber?.toLowerCase().includes(searchInvoices.toLowerCase()) ||
-        inv.customerName?.toLowerCase().includes(searchInvoices.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-
-  const getInvoiceStatusBadge = (status) => {
-    const map = {
-      paid: { bg: `${colors.green}20`, color: colors.green, label: 'Paid' },
-      draft: { bg: `${colors.textMuted}20`, color: colors.textMuted, label: 'Draft' },
-      sent: { bg: `${colors.accent}20`, color: colors.accent, label: 'Sent' },
-      overdue: { bg: `${colors.red}20`, color: colors.red, label: 'Overdue' },
-      pending: { bg: `${colors.yellow}20`, color: colors.yellow, label: 'Pending' },
-    };
-    const style = map[status] || map.draft;
-    return (
-      <span style={{ display: 'inline-block', padding: '3px 8px', background: style.bg, color: style.color, borderRadius: '4px', fontSize: '11px', fontWeight: '500' }}>
-        {style.label}
-      </span>
-    );
-  };
-
-  return (
-    <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
-      {/* Top Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={onBack}
-            style={{
-              background: 'transparent', border: 'none', color: colors.accent,
-              fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
-            }}
-          >
-            ← Back
-          </button>
-          <h1 style={{ fontSize: '22px', fontWeight: '600', color: colors.text, margin: 0 }}>{employee.name}</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            onClick={onEdit}
-            style={{
-              padding: '8px 16px', background: colors.accent, border: 'none',
-              borderRadius: '6px', color: '#ffffff', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '6px',
-            }}
-          >
-            ✏️ Edit
-          </button>
-          <button
-            onClick={onDelete}
-            style={{
-              padding: '8px 16px', background: colors.red, border: 'none',
-              borderRadius: '6px', color: '#ffffff', fontSize: '13px', fontWeight: '500', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '6px',
-            }}
-          >
-            🗑️ Delete
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px' }}>
-        {/* Left Column */}
-        <div>
-          {/* Employee Details Card */}
-          <div style={{
-            background: colors.bgCard, border: `1px solid ${colors.border}`,
-            borderRadius: '8px', padding: '24px', marginBottom: '24px',
-          }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '600', color: colors.text, margin: '0 0 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              👤 Employee Details
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Name</div>
-                <div style={{ fontSize: '15px', fontWeight: '500', color: colors.text }}>{employee.name}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Employee ID</div>
-                <div style={{ fontSize: '15px', color: colors.text }}># {employee.employeeId}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Email</div>
-                <div style={{ fontSize: '15px', color: colors.accent }}>{employee.email || '—'}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Phone</div>
-                <div style={{ fontSize: '15px', color: colors.text }}>{employee.phone || '—'}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Position</div>
-                <div style={{ fontSize: '15px', color: colors.text }}>{employee.position || '—'}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Department</div>
-                <div style={{ fontSize: '15px', color: colors.text }}>{employee.department || '—'}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Status</div>
-                <div style={{ fontSize: '15px', color: employee.status === 'active' ? colors.green : colors.textMuted }}>
-                  ● {employee.status === 'active' ? 'Active' : 'Inactive'}
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>Created</div>
-                <div style={{ fontSize: '15px', color: colors.text }}>📅 {formatDate(employee.createdAt)}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Assigned Invoices */}
-          <div style={{
-            background: colors.bgCard, border: `1px solid ${colors.border}`,
-            borderRadius: '8px', overflow: 'hidden',
-          }}>
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: '600', color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                📄 Assigned Invoices
-              </h3>
-              <span style={{ fontSize: '13px', color: colors.textMuted }}>
-                Showing {filteredInvoices.length} of {invoices.length} invoices
-              </span>
-            </div>
-
-            {/* Invoice Filters */}
-            <div style={{ padding: '12px 24px', display: 'flex', gap: '12px', borderBottom: `1px solid ${colors.border}` }}>
-              <div style={{ position: 'relative', flex: 1 }}>
-                <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: '13px' }}>🔍</span>
-                <input
-                  placeholder="Search invoices..."
-                  value={searchInvoices}
-                  onChange={(e) => setSearchInvoices(e.target.value)}
-                  style={{
-                    width: '100%', padding: '8px 10px 8px 32px', background: colors.bgInput,
-                    border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text,
-                    fontSize: '13px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                style={{
-                  padding: '8px 28px 8px 10px', background: colors.bgInput,
-                  border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text,
-                  fontSize: '13px', outline: 'none', cursor: 'pointer', appearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238b949e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '14px',
-                }}
-              >
-                <option value="all">Status</option>
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="paid">Paid</option>
-                <option value="overdue">Overdue</option>
-              </select>
-            </div>
-
-            {/* Invoice Table */}
-            {filteredInvoices.length === 0 ? (
-              <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-                <p style={{ fontSize: '14px', color: colors.textMuted }}>No invoices assigned to this employee.</p>
-              </div>
-            ) : (
-              <div>
-                {/* Invoice Header */}
-                <div style={{
-                  display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 0.8fr 0.7fr 0.8fr',
-                  gap: '8px', padding: '10px 24px', borderBottom: `1px solid ${colors.border}`,
-                  background: darkMode ? '#0d1117' : '#f8fafc',
-                }}>
-                  {['Invoice #', 'Customer', 'Items', 'Amount', 'Status', 'Issued'].map(h => (
-                    <div key={h} style={{ fontSize: '11px', fontWeight: '600', color: colors.textMuted }}>{h}</div>
-                  ))}
-                </div>
-                {filteredInvoices.map(inv => (
-                  <div key={inv.id || inv.invoiceNumber} style={{
-                    display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.8fr 0.8fr 0.7fr 0.8fr',
-                    gap: '8px', padding: '12px 24px', borderBottom: `1px solid ${colors.border}`,
-                  }}>
-                    <div style={{ fontSize: '13px', color: colors.accent, fontWeight: '500' }}>{inv.invoiceNumber}</div>
-                    <div style={{ fontSize: '13px', color: colors.text }}>{inv.customerName || '—'}</div>
-                    <div style={{ fontSize: '13px', color: colors.textMuted }}>{inv.items?.length || 0} items</div>
-                    <div style={{ fontSize: '13px', color: colors.text, fontWeight: '500' }}>${(inv.total || 0).toFixed(2)}</div>
-                    <div>{getInvoiceStatusBadge(inv.status)}</div>
-                    <div style={{ fontSize: '13px', color: colors.textMuted }}>{formatDate(inv.issueDate)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column - Stats & Timeline */}
-        <div>
-          {/* Current Month Stats */}
-          <div style={{
-            background: colors.bgCard, border: `1px solid ${colors.border}`,
-            borderRadius: '8px', padding: '20px', marginBottom: '16px',
-          }}>
-            <h4 style={{ fontSize: '13px', fontWeight: '600', color: colors.text, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              📅 Current Month - {now.toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </h4>
-
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>📄 Total Invoices</div>
-              <div style={{ fontSize: '28px', fontWeight: '700', color: colors.text }}>{currentMonthInvoices.length}</div>
-            </div>
-
-            <div>
-              <div style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>💰 Sales by Currency</div>
-              {currentMonthInvoices.length > 0 ? (
-                <div style={{ fontSize: '16px', fontWeight: '600', color: colors.green }}>
-                  ${totalRevenue.toFixed(2)}
-                </div>
-              ) : (
-                <div style={{ fontSize: '13px', color: colors.textMuted }}>No invoices this month</div>
-              )}
-            </div>
-          </div>
-
-          {/* Timeline */}
-          <div style={{
-            background: colors.bgCard, border: `1px solid ${colors.border}`,
-            borderRadius: '8px', padding: '20px',
-          }}>
-            <h4 style={{ fontSize: '13px', fontWeight: '600', color: colors.text, margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🕐 Timeline
-            </h4>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Created */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: colors.green, marginTop: '4px', flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '500', color: colors.text }}>Created</div>
-                  <div style={{ fontSize: '12px', color: colors.textMuted }}>
-                    {employee.createdAt ? new Date(employee.createdAt).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '—'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Hired */}
-              {employee.hireDate && (
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: colors.accent, marginTop: '4px', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '500', color: colors.text }}>Hired</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted }}>{formatDate(employee.hireDate)}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Last Updated */}
-              {employee.updatedAt && (
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: colors.yellow, marginTop: '4px', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: '500', color: colors.text }}>Last Updated</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted }}>
-                      {new Date(employee.updatedAt).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  // Main list
+  return React.createElement('div', { style: { padding:isMobile?'16px':'24px', fontFamily:"'Inter',sans-serif" } },
+    React.createElement('div', { style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px',flexWrap:'wrap',gap:'10px'} },
+      React.createElement('div', null, React.createElement('h1', {style:{fontSize:'22px',fontWeight:'700',color:C.text,margin:0}}, 'Employees'), React.createElement('p', {style:{fontSize:'14px',color:C.tm,marginTop:'4px'}}, 'Manage your organization employees')),
+      React.createElement('button', { onClick:openCreate, style:{padding:'9px 16px',background:C.grn,border:'none',borderRadius:'6px',color:'#fff',fontSize:'13px',fontWeight:'600',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',whiteSpace:'nowrap'} }, '+ Add Employee')
+    ),
+    React.createElement('div', { style:{background:C.bgCard,borderRadius:'8px',border:'1px solid '+C.bdr,padding:isMobile?'12px':'16px',marginBottom:'16px',display:'grid',gridTemplateColumns:isMobile?'1fr':'2fr 1fr 1fr 1fr 0.7fr',gap:'12px',alignItems:'end'} },
+      React.createElement('div', null, React.createElement('label', {style:lblS}, 'Search'), React.createElement('div', {style:{position:'relative'}}, React.createElement('span', {style:{position:'absolute',left:'10px',top:'50%',transform:'translateY(-50%)',color:C.tm,fontSize:'13px'}}, '\uD83D\uDD0D'), React.createElement('input', { style:Object.assign({},inpS,{paddingLeft:'32px'}), value:search, onChange:function(e){setSearch(e.target.value);}, placeholder:'Search employees...' }))),
+      React.createElement('div', null, React.createElement('label', {style:lblS}, 'Department'), React.createElement('select', { style:selS, value:filterDept, onChange:function(e){setFilterDept(e.target.value);} }, React.createElement('option', {value:'all'}, 'All departments'), allDepts.map(function(d){return React.createElement('option',{key:d,value:d},d);}))),
+      React.createElement('div', null, React.createElement('label', {style:lblS}, 'Status'), React.createElement('select', { style:selS, value:filterStatus, onChange:function(e){setFilterStatus(e.target.value);} }, React.createElement('option',{value:'all'},'All status'), React.createElement('option',{value:'active'},'Active'), React.createElement('option',{value:'inactive'},'Inactive'))),
+      React.createElement('div', null, React.createElement('label', {style:lblS}, 'Sort by'), React.createElement('select', { style:selS, value:sortBy, onChange:function(e){setSortBy(e.target.value);} }, React.createElement('option',{value:'name'},'Name'), React.createElement('option',{value:'id'},'Employee ID'), React.createElement('option',{value:'department'},'Department'), React.createElement('option',{value:'position'},'Position'), React.createElement('option',{value:'hireDate'},'Hire Date'))),
+      React.createElement('div', null, React.createElement('label', {style:lblS}, 'Order'), React.createElement('select', { style:selS, value:sortOrder, onChange:function(e){setSortOrder(e.target.value);} }, React.createElement('option',{value:'asc'},'A-Z'), React.createElement('option',{value:'desc'},'Z-A')))
+    ),
+    React.createElement('div', { style:{background:C.bgCard,borderRadius:'8px',border:'1px solid '+C.bdr,overflow:'hidden'} },
+      filtered.length > 0 && React.createElement('div', { style:{display:'flex',justifyContent:'space-between',padding:'10px 16px',fontSize:'12px',color:C.tm,borderBottom:'1px solid '+C.bdr} },
+        React.createElement('span', null, 'Showing '+((page-1)*PER_PAGE+1)+'\u2013'+Math.min(page*PER_PAGE,filtered.length)+' of '+filtered.length+' employees'),
+        React.createElement('span', null, 'Page '+page+' of '+totalPages)
+      ),
+      filtered.length > 0 ?
+        React.createElement('div', { style:{overflowX:'auto'} },
+          React.createElement('table', { style:{width:'100%',borderCollapse:'collapse',fontSize:'13px',minWidth:isMobile?'700px':'auto'} },
+            React.createElement('thead', null, React.createElement('tr', { style:{borderBottom:'1px solid '+C.bdr} },
+              ['Name','Employee ID','Position','Department','Email','Phone','Status','Invoices'].map(function(h){return React.createElement('th',{key:h,style:{padding:'10px 12px',textAlign:'left',color:C.tm,fontWeight:'600',fontSize:'12px',whiteSpace:'nowrap'}},h);})
+            )),
+            React.createElement('tbody', null, paged.map(function(emp){
+              var ic = invCount(emp.employeeId);
+              return React.createElement('tr', { key:emp.id, style:{borderBottom:'1px solid '+C.bdr,cursor:'pointer',transition:'background 0.15s'}, onClick:function(){setShowDetail(emp);}, onMouseEnter:function(e){e.currentTarget.style.background='#1c2333';}, onMouseLeave:function(e){e.currentTarget.style.background='transparent';} },
+                React.createElement('td', {style:{padding:'10px 12px',color:C.text,fontWeight:'600'}}, emp.fullName),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.tm}}, emp.employeeId),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.text}}, emp.position||'\u2014'),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.text}}, emp.department||'\u2014'),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.tm,fontSize:'12px'}}, emp.email||'\u2014'),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.tm}}, emp.phone||'\u2014'),
+                React.createElement('td', {style:{padding:'10px 12px'}}, React.createElement('span', {style:{padding:'2px 8px',borderRadius:'4px',fontSize:'11px',fontWeight:'600',color:emp.status==='active'?C.grn:C.tm}}, emp.status==='active'?'Active':'Inactive')),
+                React.createElement('td', {style:{padding:'10px 12px',color:C.text,fontWeight:'600',textAlign:'center'}}, ic)
+              );
+            }))
+          )
+        )
+      : React.createElement('div', { style:{textAlign:'center',padding:'60px 20px'} },
+          React.createElement('div', {style:{fontSize:'48px',marginBottom:'12px',opacity:0.5}}, '\uD83D\uDC64'),
+          React.createElement('div', {style:{fontSize:'16px',fontWeight:'600',color:C.text,marginBottom:'6px'}}, 'No employees found'),
+          React.createElement('div', {style:{fontSize:'13px',color:C.tm}}, employees.length===0?'Add your first employee to get started.':'No employees match your current filters.')
+        ),
+      totalPages > 1 && React.createElement('div', { style:{display:'flex',justifyContent:'center',alignItems:'center',gap:'6px',padding:'14px',borderTop:'1px solid '+C.bdr} },
+        React.createElement('button', { disabled:page<=1, onClick:function(){setPage(function(p){return p-1;});}, style:{padding:'6px 12px',background:'transparent',border:'1px solid '+C.bdr,borderRadius:'6px',color:page<=1?C.bdr:C.tm,fontSize:'12px',cursor:page<=1?'default':'pointer'} }, '\u2039 Previous'),
+        Array.from({length:totalPages},function(_,i){return i+1;}).slice(Math.max(0,page-3),Math.min(totalPages,page+2)).map(function(p){
+          return React.createElement('button', { key:p, onClick:function(){setPage(p);}, style:{padding:'6px 10px',borderRadius:'6px',fontSize:'12px',fontWeight:'600',cursor:'pointer',background:p===page?C.acc:'transparent',color:p===page?'#fff':C.tm,border:p===page?'none':'1px solid '+C.bdr} }, p);
+        }),
+        React.createElement('button', { disabled:page>=totalPages, onClick:function(){setPage(function(p){return p+1;});}, style:{padding:'6px 12px',background:'transparent',border:'1px solid '+C.bdr,borderRadius:'6px',color:page>=totalPages?C.bdr:C.tm,fontSize:'12px',cursor:page>=totalPages?'default':'pointer'} }, 'Next \u203A')
+      )
+    ),
+    React.createElement(Modal, { open:showModal, onClose:function(){setShowModal(false);}, title:editingEmp?'Edit Employee':'Create New Employee', subtitle:editingEmp?'Update employee details.':'Add a new employee to your organization.' }, renderForm()),
+    React.createElement(ConfirmDialog, { open:!!delConfirm, onClose:function(){setDelConfirm(null);}, onConfirm:confirmDel, title:'Delete Employee', message:delConfirm&&delConfirm.hasInv?'This employee has invoices and will be deactivated instead.':'Are you sure? This cannot be undone.', confirmLabel:delConfirm&&delConfirm.hasInv?'Deactivate':'Delete', confirmColor:delConfirm&&delConfirm.hasInv?C.yel:C.red })
   );
 }
