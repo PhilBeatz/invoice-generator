@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PLAN_LIMITS } from './planLimits';
+import { PLAN_LIMITS, fetchAndCachePlan } from './planLimits';
 
 export default function DashboardSubscription({ darkMode = true }) {
   var navigate = useNavigate();
   var [isMobile, setIsMobile] = useState(false);
   var [currentPlan, setCurrentPlan] = useState('free');
+  var [subData, setSubData] = useState({});
   var [usage, setUsage] = useState({ invoices: 0, customers: 0, products: 0, categories: 0, paymentMethods: 0, employees: 0, emailsSent: 0 });
   var [trialEnd, setTrialEnd] = useState(null);
 
@@ -15,12 +16,16 @@ export default function DashboardSubscription({ darkMode = true }) {
   }, []);
 
   useEffect(function() {
-    // Load subscription from localStorage (will be replaced by Supabase)
-    try {
-      var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
-      if (sub.plan) setCurrentPlan(sub.plan);
-      if (sub.trialEnd) setTrialEnd(sub.trialEnd);
-    } catch(e) {}
+    // Fetch plan from Supabase
+    fetchAndCachePlan().then(function(plan) {
+      setCurrentPlan(plan || 'free');
+      // Read cached subscription data for display
+      try {
+        var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
+        setSubData(sub);
+        if (sub.trial_end) setTrialEnd(sub.trial_end);
+      } catch(e) {}
+    });
 
     // Calculate usage from localStorage
     try {
@@ -30,7 +35,6 @@ export default function DashboardSubscription({ darkMode = true }) {
       var cats = JSON.parse(localStorage.getItem('dayonetools_categories') || '[]');
       var pm = JSON.parse(localStorage.getItem('dayonetools_payment_methods') || '[]');
       var emp = JSON.parse(localStorage.getItem('dayonetools_employees') || '[]');
-      // Count invoices this month
       var now = new Date();
       var monthInv = inv.filter(function(i) { var d = new Date(i.createdAt || i.issueDate); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
       setUsage({ invoices: monthInv.length, customers: cust.length, products: prod.length, categories: cats.length, paymentMethods: pm.length, employees: emp.length, emailsSent: 0 });

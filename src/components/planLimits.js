@@ -42,21 +42,84 @@ export var PLAN_LIMITS = {
   },
 };
 
-// Get current user plan from localStorage (will be replaced by Supabase query)
+// Get current user plan - reads from localStorage cache (synced from Supabase)
+// The cache is updated by fetchAndCachePlan() which should be called on app load
 export function getCurrentPlan() {
   try {
     var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
-    // Check if trial is still active
-    if (sub.plan && sub.plan !== 'free' && sub.trialEnd) {
-      var trialEnd = new Date(sub.trialEnd);
-      if (trialEnd < new Date() && !sub.paid) {
-        // Trial expired and not paid - revert to free
+    if (sub.plan && sub.plan !== 'free') {
+      // Check trial expiry
+      if (sub.status === 'trialing' && sub.trial_end) {
+        var trialEnd = new Date(sub.trial_end);
+        if (trialEnd < new Date()) {
+          return 'free';
+        }
+      }
+      // Check if canceled
+      if (sub.status === 'canceled') {
+        return 'free';
+      }
+      return sub.plan;
+    }
+    return 'free';
+  } catch(e) {
+    return 'free';
+  }
+}
+
+// Fetch subscription from Supabase and cache to localStorage
+// Call this on app load and after successful checkout
+export async function fetchAndCachePlan() {
+  try {
+    // Get auth token from Supabase localStorage
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return 'free';
+    
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    var accessToken = session.access_token;
+    var userId = session.user && session.user.id;
+    if (!accessToken || !userId) return 'free';
+
+    // Extract project ref from auth key name: sb-{projectRef}-auth-token
+    var projectRef = authKeys[0].replace('sb-', '').replace('-auth-token', '');
+
+    // Query Supabase REST API for subscription
+    var response = await fetch(
+      'https://' + projectRef + '.supabase.co/rest/v1/subscriptions?user_id=eq.' + userId + '&select=*',
+      {
+        headers: {
+          'Authorization': 'Bearer ' + accessToken,
+          'apikey': accessToken,
+        },
+      }
+    );
+    
+    if (response.ok) {
+      var data = await response.json();
+      if (data && data.length > 0) {
+        var sub = data[0];
+        // Cache to localStorage for synchronous reads
+        localStorage.setItem('dayonetools_subscription', JSON.stringify({
+          plan: sub.plan,
+          status: sub.status,
+          trial_end: sub.trial_end,
+          current_period_end: sub.current_period_end,
+          stripe_subscription_id: sub.stripe_subscription_id,
+        }));
+        // Return the effective plan
+        if (sub.status === 'canceled') return 'free';
+        if (sub.status === 'trialing' && sub.trial_end && new Date(sub.trial_end) < new Date()) return 'free';
+        return sub.plan || 'free';
+      } else {
+        // No subscription row — user is on free plan
+        localStorage.setItem('dayonetools_subscription', JSON.stringify({ plan: 'free', status: 'active' }));
         return 'free';
       }
     }
-    return sub.plan || 'free';
+    return getCurrentPlan(); // Fall back to cached
   } catch(e) {
-    return 'free';
+    console.error('Error fetching plan:', e);
+    return getCurrentPlan(); // Fall back to cached version
   }
 }
 

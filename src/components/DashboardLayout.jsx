@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
@@ -17,10 +17,34 @@ import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import DashboardConfiguration from './DashboardConfiguration';
 import InvoiceGenerator from './InvoiceGenerator';
+import { getCurrentPlan, fetchAndCachePlan } from './planLimits';
+
+// Wrapper that blocks free users from accessing paid features
+function PaidRoute({ children, darkMode }) {
+  const plan = getCurrentPlan();
+  if (plan === 'free') {
+    return React.createElement(Navigate, { to: '/dashboard/pricing', replace: true });
+  }
+  return children;
+}
 
 export default function DashboardLayout({ darkMode = true, user }) {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState(getCurrentPlan());
+  const [planLoaded, setPlanLoaded] = useState(false);
+  const location = useLocation();
+
+  // Fetch plan from Supabase on mount and after navigation (e.g. returning from Stripe)
+  useEffect(() => {
+    fetchAndCachePlan().then(function(plan) {
+      setCurrentPlan(plan || 'free');
+      setPlanLoaded(true);
+    }).catch(function() {
+      setCurrentPlan(getCurrentPlan());
+      setPlanLoaded(true);
+    });
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -98,46 +122,49 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
         {/* Dashboard Routes */}
         <Routes>
-          <Route index element={<DashboardOverview darkMode={darkMode} />} />
-          <Route path="create" element={<InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} />} />
+          <Route index element={currentPlan === 'free' ? <Navigate to="/dashboard/pricing" replace /> : <DashboardOverview darkMode={darkMode} />} />
+          <Route path="create" element={
+            <PaidRoute darkMode={darkMode}><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
+          } />
           <Route path="analytics" element={
-            <DashboardAnalytics darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="vault" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." />
+            <PaidRoute darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
           } />
           <Route path="invoices" element={
-            <DashboardInvoices darkMode={darkMode} user={user} />
+            <PaidRoute darkMode={darkMode}><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="invoices/:invoiceId" element={
-            <InvoiceDetail darkMode={darkMode} user={user} />
+            <PaidRoute darkMode={darkMode}><InvoiceDetail darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="customers" element={
-            <DashboardCustomers darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardCustomers darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="payment-methods" element={
-            <DashboardPaymentMethods darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardPaymentMethods darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="configuration" element={
-            <DashboardConfiguration darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardConfiguration darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="products" element={
-            <DashboardProducts darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardProducts darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="categories" element={
-            <DashboardCategories darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardCategories darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="properties" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." />
+            <PaidRoute darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
           } />
           <Route path="organization" element={
-            <DashboardOrganization darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardOrganization darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="employees" element={
-            <DashboardEmployees darkMode={darkMode} />
+            <PaidRoute darkMode={darkMode}><DashboardEmployees darkMode={darkMode} /></PaidRoute>
           } />
+          {/* These routes are always accessible */}
           <Route path="pricing" element={
-            <PricingPage darkMode={darkMode} onSelectPlan={async function(plan, billing) {
+            <PricingPage darkMode={darkMode} currentPlan={currentPlan} onSelectPlan={async function(plan, billing) {
               try {
                 const session = JSON.parse(localStorage.getItem('sb-yeligmxxckhcfubrmuzx-auth-token') || '{}');
                 const accessToken = session.access_token;
