@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PLAN_LIMITS } from './planLimits';
 
 export default function DashboardSubscription({ darkMode = true }) {
+  var navigate = useNavigate();
   var [isMobile, setIsMobile] = useState(false);
   var [currentPlan, setCurrentPlan] = useState('free');
   var [usage, setUsage] = useState({ invoices: 0, customers: 0, products: 0, categories: 0, paymentMethods: 0, employees: 0, emailsSent: 0 });
@@ -80,7 +82,7 @@ export default function DashboardSubscription({ darkMode = true }) {
         ),
         React.createElement('div', { style: { display: 'flex', gap: '8px' } },
           currentPlan !== 'pro' && React.createElement('button', {
-            onClick: function() { window.location.href = window.location.origin + '/#/dashboard/pricing'; },
+            onClick: function() { navigate('/dashboard/pricing'); },
             style: { padding: '9px 16px', background: C.grn, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }
           }, '\u2191 Upgrade'),
           currentPlan !== 'free' && React.createElement('button', {
