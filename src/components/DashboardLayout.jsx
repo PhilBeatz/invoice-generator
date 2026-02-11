@@ -5,6 +5,7 @@ import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardAnalytics from './DashboardAnalytics';
 import DashboardEmployees from './DashboardEmployees';
+import DashboardPaymentMethods from './DashboardPaymentMethods';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
@@ -113,7 +114,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardCustomers darkMode={darkMode} />
           } />
           <Route path="payment-methods" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Payment Methods" icon="💳" description="Configure your accepted payment methods including bank transfers, PayPal, and crypto." />
+            <DashboardPaymentMethods darkMode={darkMode} />
           } />
           <Route path="configuration" element={
             <DashboardConfiguration darkMode={darkMode} />
