@@ -183,14 +183,29 @@ export default function PricingPage({ darkMode = true, currentPlan = 'free', onS
             )
           ),
           React.createElement('tbody', null,
-            PLANS.pro.features.map(function(_, i) {
+            [
+              { label: 'Invoices/month', values: { free: '5', solo: '100', pro: '1,000' } },
+              { label: 'Customers', values: { free: '5', solo: '100', pro: '2,000' } },
+              { label: 'Products', values: { free: '10', solo: '100', pro: '1,000' } },
+              { label: 'Email Invoicing/month', values: { free: '\u2015', solo: '50', pro: '200' } },
+              { label: 'Categories', values: { free: '3', solo: '10', pro: '200' } },
+              { label: 'Payment methods', values: { free: '1', solo: '5', pro: 'Unlimited' } },
+              { label: 'Basic PDF export', values: { free: true, solo: true, pro: true } },
+              { label: 'Advanced PDF templates', values: { free: false, solo: true, pro: true } },
+              { label: 'Analytics dashboard', values: { free: false, solo: true, pro: true } },
+              { label: 'Employee management', values: { free: false, solo: false, pro: true } },
+              { label: 'Priority support', values: { free: false, solo: false, pro: true } },
+            ].map(function(row, i) {
               return React.createElement('tr', { key: i, style: { borderBottom: '1px solid ' + C.bdr } },
-                React.createElement('td', { style: { padding: '8px 12px', color: C.text } }, PLANS.pro.features[i].text),
+                React.createElement('td', { style: { padding: '8px 12px', color: C.text } }, row.label),
                 planKeys.map(function(key) {
-                  var f = PLANS[key].features[i];
-                  return React.createElement('td', { key: key, style: { padding: '8px 12px', textAlign: 'center' } },
-                    React.createElement('span', { style: { color: f && f.included ? C.grn : C.tm + '40', fontSize: '16px' } }, f && f.included ? '\u2713' : '\u2715')
-                  );
+                  var val = row.values[key];
+                  if (typeof val === 'boolean') {
+                    return React.createElement('td', { key: key, style: { padding: '8px 12px', textAlign: 'center' } },
+                      React.createElement('span', { style: { color: val ? C.grn : C.tm + '40', fontSize: '16px' } }, val ? '\u2713' : '\u2715')
+                    );
+                  }
+                  return React.createElement('td', { key: key, style: { padding: '8px 12px', textAlign: 'center', color: val === '\u2015' ? C.tm + '40' : C.text, fontWeight: '600' } }, val);
                 })
               );
             })
