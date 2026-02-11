@@ -184,7 +184,7 @@ export function LimitModal({ open, onClose, message, planName }) {
       React.createElement('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
         React.createElement('button', { onClick: onClose, style: { padding: '9px 16px', background: '#21262d', border: '1px solid ' + C.bdr, borderRadius: '6px', color: C.text, fontSize: '13px', fontWeight: '500', cursor: 'pointer' } }, 'Got it'),
         React.createElement('button', {
-          onClick: function() { window.location.hash = '#/dashboard/pricing'; onClose(); },
+          onClick: function() { window.location.href = window.location.origin + '/#/dashboard/pricing'; onClose(); },
           style: { padding: '9px 16px', background: C.grn, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }
         }, '\u2191 Upgrade Plan')
       )

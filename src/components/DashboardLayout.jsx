@@ -137,7 +137,34 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardEmployees darkMode={darkMode} />
           } />
           <Route path="pricing" element={
-            <PricingPage darkMode={darkMode} onSelectPlan={function(plan, billing) { console.log('Selected:', plan, billing); /* Wire to Stripe checkout */ }} />
+            <PricingPage darkMode={darkMode} onSelectPlan={async function(plan, billing) {
+              try {
+                const session = JSON.parse(localStorage.getItem('sb-yeligmxxckhcfubrmuzx-auth-token') || '{}');
+                const accessToken = session.access_token;
+                const userEmail = session.user?.email || user?.email;
+                const userId = session.user?.id || user?.id;
+                
+                const response = await fetch(
+                  'https://yeligmxxckhcfubrmuzx.supabase.co/functions/v1/create-checkout-session',
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer ' + accessToken,
+                    },
+                    body: JSON.stringify({ plan, billing, userId, email: userEmail }),
+                  }
+                );
+                const data = await response.json();
+                if (data.url) {
+                  window.location.href = data.url;
+                } else {
+                  alert('Error creating checkout session: ' + (data.error || 'Unknown error'));
+                }
+              } catch (err) {
+                alert('Error: ' + err.message);
+              }
+            }} />
           } />
           <Route path="subscription" element={
             <DashboardSubscription darkMode={darkMode} />

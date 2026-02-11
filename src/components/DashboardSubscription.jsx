@@ -80,7 +80,7 @@ export default function DashboardSubscription({ darkMode = true }) {
         ),
         React.createElement('div', { style: { display: 'flex', gap: '8px' } },
           currentPlan !== 'pro' && React.createElement('button', {
-            onClick: function() { window.location.hash = '#/dashboard/pricing'; },
+            onClick: function() { window.location.href = window.location.origin + '/#/dashboard/pricing'; },
             style: { padding: '9px 16px', background: C.grn, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }
           }, '\u2191 Upgrade'),
           currentPlan !== 'free' && React.createElement('button', {
