@@ -6,6 +6,8 @@ import DashboardPlaceholder from './DashboardPlaceholder';
 import DashboardAnalytics from './DashboardAnalytics';
 import DashboardEmployees from './DashboardEmployees';
 import DashboardPaymentMethods from './DashboardPaymentMethods';
+import PricingPage from './PricingPage';
+import DashboardSubscription from './DashboardSubscription';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
@@ -133,6 +135,12 @@ export default function DashboardLayout({ darkMode = true, user }) {
           } />
           <Route path="employees" element={
             <DashboardEmployees darkMode={darkMode} />
+          } />
+          <Route path="pricing" element={
+            <PricingPage darkMode={darkMode} onSelectPlan={function(plan, billing) { console.log('Selected:', plan, billing); /* Wire to Stripe checkout */ }} />
+          } />
+          <Route path="subscription" element={
+            <DashboardSubscription darkMode={darkMode} />
           } />
           <Route path="settings" element={
             <DashboardSettings darkMode={darkMode} />
