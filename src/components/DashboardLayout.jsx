@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardOverview from './DashboardOverview';
 import DashboardPlaceholder from './DashboardPlaceholder';
+import DashboardAnalytics from './DashboardAnalytics';
 import DashboardCustomers from './DashboardCustomers';
 import DashboardInvoices from './DashboardInvoices';
 import DashboardProducts from './DashboardProducts';
@@ -12,7 +13,6 @@ import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import DashboardConfiguration from './DashboardConfiguration';
 import InvoiceGenerator from './InvoiceGenerator';
-import { migrateLocalInvoices } from '../supabaseService';
 
 export default function DashboardLayout({ darkMode = true, user }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -24,16 +24,6 @@ export default function DashboardLayout({ darkMode = true, user }) {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (user && !localStorage.getItem('dayonetools_invoices_migrated')) {
-      migrateLocalInvoices(user.id).then(result => {
-        if (result.migrated > 0) {
-          console.log(`Migrated ${result.migrated} invoices to Supabase`);
-        }
-      });
-    }
-  }, [user]);
 
   const colors = darkMode ? {
     bg: '#0d1117',
@@ -107,7 +97,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
           <Route index element={<DashboardOverview darkMode={darkMode} />} />
           <Route path="create" element={<InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} />} />
           <Route path="analytics" element={
-            <DashboardPlaceholder darkMode={darkMode} title="Analytics" icon="📈" description="Track your revenue, invoice trends, and business growth with interactive charts and reports." />
+            <DashboardAnalytics darkMode={darkMode} />
           } />
           <Route path="vault" element={
             <DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." />
