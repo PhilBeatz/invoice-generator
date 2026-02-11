@@ -1,48 +1,66 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function Header({ darkMode = true, user = null, supabase = null }) {
-  const [productsOpen, setProductsOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+export default function Header({ darkMode = true, user, supabase }) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [productDropdown, setProductDropdown] = useState(false);
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
-  const userMenuRef = useRef(null);
-  const location = useLocation();
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setProductsOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setUserMenuOpen(false);
-      }
+    const check = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) setMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setProductDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   const handleLogout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-    setUserMenuOpen(false);
+    if (supabase) await supabase.auth.signOut();
+    setMenuOpen(false);
+    navigate('/');
   };
 
   const colors = darkMode ? {
     bg: '#111111',
+    border: '#2d2d2d',
     text: '#ffffff',
     textMuted: '#9ca3af',
     accent: '#3b82f6',
-    border: '#2d2d2d',
-    dropdownBg: '#1a1a1a',
   } : {
     bg: '#ffffff',
+    border: '#e5e7eb',
     text: '#1f2937',
     textMuted: '#6b7280',
     accent: '#3b82f6',
-    border: '#e5e7eb',
-    dropdownBg: '#ffffff',
+  };
+
+  const navLinkStyle = {
+    color: colors.textMuted,
+    textDecoration: 'none',
+    fontSize: '14px',
+    fontWeight: '500',
+    fontFamily: "'Inter', sans-serif",
+    transition: 'color 0.2s',
   };
 
   return (
@@ -54,295 +72,175 @@ export default function Header({ darkMode = true, user = null, supabase = null }
       zIndex: 100,
       width: '100%',
     }}>
-    <header style={{
-      padding: '0 40px',
-      height: '60px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      maxWidth: '1100px',
-      margin: '0 auto',
-      width: '100%',
-      boxSizing: 'border-box',
-    }}>
-      {/* Logo / Brand */}
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <span style={{
-          fontSize: '20px',
-          fontWeight: '700',
-          color: colors.text,
-          fontFamily: "'Inter', sans-serif",
-        }}>
-          Day One
-        </span>
-      </Link>
-
-      {/* Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        {/* Products Dropdown */}
-        <div ref={dropdownRef} style={{ position: 'relative' }}>
-          <button
-            onClick={() => setProductsOpen(!productsOpen)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: colors.textMuted,
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 0',
-              fontFamily: "'Inter', sans-serif",
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={(e) => e.target.style.color = colors.text}
-            onMouseLeave={(e) => e.target.style.color = productsOpen ? colors.text : colors.textMuted}
-          >
-            Product
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              style={{
-                transform: productsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s',
-              }}
-            >
-              <path
-                d="M2.5 4.5L6 8L9.5 4.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          {/* Dropdown Menu */}
-          {productsOpen && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: '8px',
-              background: colors.dropdownBg,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '8px',
-              padding: '8px 0',
-              minWidth: '200px',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
-            }}>
-              <Link
-                to="/invoicegenerator"
-                onClick={() => setProductsOpen(false)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px 16px',
-                  color: colors.textMuted,
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontFamily: "'Inter', sans-serif",
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#2d2d2d';
-                  e.target.style.color = colors.text;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'transparent';
-                  e.target.style.color = colors.textMuted;
-                }}
-              >
-                <span style={{ fontSize: '16px' }}>📄</span>
-                Invoice Generator
-              </Link>
-              {/* Add more products here later */}
-            </div>
-          )}
-        </div>
-
-        {/* Contact Link */}
-        <Link
-          to="/contact"
-          style={{
-            color: colors.textMuted,
-            textDecoration: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            fontFamily: "'Inter', sans-serif",
-            transition: 'color 0.2s',
-          }}
-          onMouseEnter={(e) => e.target.style.color = colors.text}
-          onMouseLeave={(e) => e.target.style.color = colors.textMuted}
-        >
-          Contact
+      <header style={{
+        padding: isMobile ? '0 16px' : '0 40px',
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        maxWidth: '1100px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
+        {/* Logo */}
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => setMenuOpen(false)}>
+          <span style={{ fontSize: '18px', fontWeight: '700', color: colors.text, fontFamily: "'Inter', sans-serif" }}>Day One</span>
         </Link>
-      </nav>
 
-      {/* Right Side - Auth Buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {user ? (
+        {/* Desktop nav */}
+        {!isMobile && (
           <>
-            {/* Dashboard Button - only when logged in */}
-            <Link
-              to="/dashboard"
-              style={{
-                padding: '8px 18px',
-                background: 'transparent',
-                color: colors.accent,
-                borderRadius: '6px',
-                border: `1.5px solid ${colors.accent}`,
-                textDecoration: 'none',
-                fontSize: '13px',
-                fontWeight: '600',
-                fontFamily: "'Inter', sans-serif",
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; }}
-            >
-              Dashboard <span style={{ fontSize: '14px' }}>↗</span>
-            </Link>
-
-            {/* User Avatar / Menu */}
-            <div ref={userMenuRef} style={{ position: 'relative' }}>
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: colors.accent,
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                {user.email?.charAt(0).toUpperCase() || '?'}
-              </button>
-
-              {userMenuOpen && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: '0',
-                  marginTop: '8px',
-                  background: colors.dropdownBg,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '8px',
-                  padding: '8px 0',
-                  minWidth: '200px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
-                  zIndex: 200,
-                }}>
-                  <div style={{ padding: '12px 16px', borderBottom: `1px solid ${colors.border}` }}>
-                    <div style={{ fontSize: '13px', fontWeight: '600', color: colors.text, fontFamily: "'Inter', sans-serif" }}>
-                      {user.user_metadata?.full_name || 'User'}
-                    </div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px', fontFamily: "'Inter', sans-serif" }}>
-                      {user.email}
-                    </div>
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div ref={dropdownRef} style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setProductDropdown(!productDropdown)}
+                  style={{
+                    ...navLinkStyle,
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: 0,
+                  }}
+                >
+                  Product
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: productDropdown ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {productDropdown && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, marginTop: '8px',
+                    background: colors.bg, border: `1px solid ${colors.border}`, borderRadius: '8px',
+                    padding: '8px 0', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', zIndex: 200,
+                  }}>
+                    <Link to="/invoicegenerator" onClick={() => setProductDropdown(false)} style={{ display: 'block', padding: '10px 16px', color: colors.text, textDecoration: 'none', fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>Invoice Generator</Link>
+                    <Link to="/dashboard" onClick={() => setProductDropdown(false)} style={{ display: 'block', padding: '10px 16px', color: colors.text, textDecoration: 'none', fontSize: '13px', fontFamily: "'Inter', sans-serif" }}>Dashboard</Link>
                   </div>
-                  <Link
-                    to="/dashboard/settings"
-                    onClick={() => setUserMenuOpen(false)}
-                    style={{
-                      display: 'block',
-                      padding: '10px 16px',
-                      color: colors.textMuted,
-                      textDecoration: 'none',
-                      fontSize: '13px',
-                      fontFamily: "'Inter', sans-serif",
-                      transition: 'color 0.15s',
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = colors.text}
-                    onMouseLeave={(e) => e.target.style.color = colors.textMuted}
-                  >
-                    ⚙️ Settings
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '10px 16px',
-                      color: '#ef4444',
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      fontFamily: "'Inter', sans-serif",
-                      transition: 'opacity 0.15s',
-                    }}
-                    onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                    onMouseLeave={(e) => e.target.style.opacity = '1'}
-                  >
-                    🚪 Log out
-                  </button>
-                </div>
+                )}
+              </div>
+              <Link to="/contact" style={navLinkStyle}>Contact</Link>
+            </nav>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {user ? (
+                <>
+                  <Link to="/dashboard" style={{ ...navLinkStyle, fontSize: '13px' }}>Dashboard</Link>
+                  <button onClick={handleLogout} style={{ ...navLinkStyle, fontSize: '13px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>Log out</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" style={{ ...navLinkStyle, fontSize: '13px' }}>Log in</Link>
+                  <Link to="/signup" style={{
+                    padding: '8px 18px', background: 'transparent', color: colors.accent,
+                    borderRadius: '6px', border: `1.5px solid ${colors.accent}`, textDecoration: 'none',
+                    fontSize: '13px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
+                  }}>Sign up</Link>
+                </>
               )}
             </div>
           </>
-        ) : (
-          <>
-            {/* Login / Sign Up - when not logged in */}
-            <Link
-              to="/login"
-              style={{
-                color: location.pathname === '/login' ? colors.accent : colors.textMuted,
-                textDecoration: 'none',
-                fontSize: '13px',
-                fontWeight: location.pathname === '/login' ? '600' : '500',
-                fontFamily: "'Inter', sans-serif",
-                transition: 'color 0.2s',
-              }}
-              onMouseEnter={(e) => e.target.style.color = location.pathname === '/login' ? colors.accent : colors.text}
-              onMouseLeave={(e) => e.target.style.color = location.pathname === '/login' ? colors.accent : colors.textMuted}
-            >
-              Log in
-            </Link>
-            <Link
-              to="/signup"
-              style={{
-                padding: '8px 18px',
-                background: location.pathname === '/signup' ? colors.accent : 'transparent',
-                color: location.pathname === '/signup' ? '#ffffff' : colors.accent,
-                borderRadius: '6px',
-                border: `1.5px solid ${colors.accent}`,
-                textDecoration: 'none',
-                fontSize: '13px',
-                fontWeight: '600',
-                fontFamily: "'Inter', sans-serif",
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; }}
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.background = location.pathname === '/signup' ? colors.accent : 'transparent'; 
-                e.currentTarget.style.color = location.pathname === '/signup' ? '#ffffff' : colors.accent; 
-              }}
-            >
-              Sign up
-            </Link>
-          </>
         )}
-      </div>
-    </header>
+
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+            style={{
+              background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px',
+              display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+              width: '40px', height: '40px', gap: '0px',
+            }}
+          >
+            <span style={{
+              display: 'block', width: '22px', height: '2px', background: colors.text, borderRadius: '2px',
+              transition: 'all 0.3s ease',
+              transform: menuOpen ? 'rotate(45deg) translateY(3.5px)' : 'rotate(0deg) translateY(-3.5px)',
+            }} />
+            <span style={{
+              display: 'block', width: '22px', height: '2px', background: colors.text, borderRadius: '2px',
+              transition: 'all 0.2s ease', opacity: menuOpen ? 0 : 1,
+            }} />
+            <span style={{
+              display: 'block', width: '22px', height: '2px', background: colors.text, borderRadius: '2px',
+              transition: 'all 0.3s ease',
+              transform: menuOpen ? 'rotate(-45deg) translateY(-3.5px)' : 'rotate(0deg) translateY(3.5px)',
+            }} />
+          </button>
+        )}
+      </header>
+
+      {/* Mobile menu overlay */}
+      {isMobile && menuOpen && (
+        <div style={{
+          position: 'fixed', top: '60px', left: 0, right: 0, bottom: 0,
+          background: colors.bg, zIndex: 99,
+          display: 'flex', flexDirection: 'column',
+          padding: '8px 0',
+          overflowY: 'auto',
+          animation: 'slideDown 0.2s ease',
+        }}>
+          <style>{`
+            @keyframes slideDown {
+              from { opacity: 0; transform: translateY(-10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+
+          {/* Nav links */}
+          <div style={{ borderBottom: `1px solid ${colors.border}`, padding: '8px 0' }}>
+            <Link to="/invoicegenerator" onClick={() => setMenuOpen(false)} style={{
+              display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
+              fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+            }}>Invoice Generator</Link>
+            <Link to="/dashboard" onClick={() => setMenuOpen(false)} style={{
+              display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
+              fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+            }}>Dashboard</Link>
+            <Link to="/contact" onClick={() => setMenuOpen(false)} style={{
+              display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
+              fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+            }}>Contact</Link>
+          </div>
+
+          {/* Auth */}
+          <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setMenuOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
+                  background: colors.accent, color: '#ffffff', borderRadius: '8px', textDecoration: 'none',
+                  fontSize: '15px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
+                }}>Go to Dashboard</Link>
+                <button onClick={handleLogout} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
+                  background: 'transparent', color: colors.textMuted, borderRadius: '8px',
+                  border: `1px solid ${colors.border}`, fontSize: '15px', fontWeight: '500',
+                  fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+                }}>Log out</button>
+              </>
+            ) : (
+              <>
+                <Link to="/signup" onClick={() => setMenuOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
+                  background: colors.accent, color: '#ffffff', borderRadius: '8px', textDecoration: 'none',
+                  fontSize: '15px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
+                }}>Sign up</Link>
+                <Link to="/login" onClick={() => setMenuOpen(false)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
+                  background: 'transparent', color: colors.text, borderRadius: '8px',
+                  border: `1px solid ${colors.border}`, textDecoration: 'none',
+                  fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+                }}>Log in</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

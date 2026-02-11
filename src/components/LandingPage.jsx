@@ -2,119 +2,170 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // ── CSS Mockup: Mini Dashboard ──
-const DashboardMockup = () => (
-  <div style={{ background: '#0f1419', borderRadius: '12px', overflow: 'hidden', border: '1px solid #21262d', fontFamily: "'Inter', sans-serif", width: '100%' }}>
-    {/* Top bar */}
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#161b22', borderBottom: '1px solid #21262d' }}>
-      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
-      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
-      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
-      <div style={{ flex: 1, textAlign: 'center', fontSize: '11px', color: '#8b949e' }}>dayonetools.app/dashboard</div>
-    </div>
-    <div style={{ display: 'flex' }}>
-      {/* Sidebar */}
-      <div style={{ width: '160px', background: '#0d1117', borderRight: '1px solid #21262d', padding: '14px 10px', flexShrink: 0 }}>
-        <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '10px', letterSpacing: '0.5px' }}>GENERAL</div>
-        <div style={{ padding: '7px 10px', background: '#10b981', borderRadius: '6px', fontSize: '12px', color: '#fff', fontWeight: '600', marginBottom: '4px' }}>📊 Dashboard</div>
-        <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '2px' }}>📈 Analytics</div>
-        <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '8px' }}>🔒 Vault</div>
-        <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '8px', letterSpacing: '0.5px' }}>INVOICE</div>
-        <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>➕ Create</div>
-        <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>📄 Invoices</div>
-        <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3' }}>👥 Customers</div>
-      </div>
-      {/* Main content */}
-      <div style={{ flex: 1, padding: '16px', minWidth: 0 }}>
-        <div style={{ fontSize: '16px', fontWeight: '700', color: '#e6edf3', marginBottom: '4px' }}>Dashboard</div>
-        <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '14px' }}>Welcome back! Here's an overview of your business.</div>
-        {/* Stat cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '14px' }}>
-          {[
-            { label: 'TOTAL INVOICES', val: '24', sub: '+3 from last month', icon: '📋' },
-            { label: 'MONTHLY SALES', val: '$4,280', sub: '+12% from last month', icon: '💰' },
-            { label: 'OUTSTANDING', val: '$1,150', sub: '3 unpaid invoices', icon: '⏳' },
-            { label: 'CUSTOMERS', val: '12', sub: '+2 new this month', icon: '👥' },
-          ].map((s, i) => (
-            <div key={i} style={{ background: '#161b22', borderRadius: '8px', padding: '10px', border: '1px solid #21262d' }}>
-              <div style={{ fontSize: '9px', color: '#8b949e', fontWeight: '600', letterSpacing: '0.5px', marginBottom: '4px' }}>{s.label}</div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>{s.val}</div>
-              <div style={{ fontSize: '9px', color: i === 1 ? '#10b981' : i === 3 ? '#10b981' : '#8b949e' }}>{s.sub}</div>
-            </div>
-          ))}
+const DashboardMockup = ({ isMobile }) => {
+  if (isMobile) {
+    // Simplified mobile mockup — no sidebar, just the main content area
+    return (
+      <div style={{ background: '#0f1419', borderRadius: '12px', overflow: 'hidden', border: '1px solid #21262d', fontFamily: "'Inter', sans-serif", width: '100%' }}>
+        {/* Top bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#161b22', borderBottom: '1px solid #21262d' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }} />
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
+          <div style={{ flex: 1, textAlign: 'center', fontSize: '10px', color: '#8b949e' }}>dayonetools.app/dashboard</div>
         </div>
-        {/* Status overview + Quick actions */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '8px' }}>
-          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '10px' }}>Invoice Status Overview</div>
+        {/* Main content only */}
+        <div style={{ padding: '12px' }}>
+          <div style={{ fontSize: '14px', fontWeight: '700', color: '#e6edf3', marginBottom: '3px' }}>Dashboard</div>
+          <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Welcome back! Here's an overview.</div>
+          {/* Stat cards — 2x2 grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '10px' }}>
             {[
-              { label: 'Draft', count: '3', color: '#8b949e', amt: '$0.00' },
-              { label: 'Sent', count: '5', color: '#3b82f6', amt: '$2,430.00' },
-              { label: 'Paid', count: '14', color: '#10b981', amt: '$8,750.00' },
-              { label: 'Overdue', count: '2', color: '#ef4444', amt: '$1,150.00' },
+              { label: 'INVOICES', val: '24', sub: '+3 this month' },
+              { label: 'SALES', val: '$4,280', sub: '+12%' },
+              { label: 'OUTSTANDING', val: '$1,150', sub: '3 unpaid' },
+              { label: 'CUSTOMERS', val: '12', sub: '+2 new' },
+            ].map((s, i) => (
+              <div key={i} style={{ background: '#161b22', borderRadius: '6px', padding: '8px', border: '1px solid #21262d' }}>
+                <div style={{ fontSize: '8px', color: '#8b949e', fontWeight: '600', letterSpacing: '0.4px', marginBottom: '3px' }}>{s.label}</div>
+                <div style={{ fontSize: '14px', fontWeight: '700', color: '#e6edf3', marginBottom: '1px' }}>{s.val}</div>
+                <div style={{ fontSize: '8px', color: i === 1 || i === 3 ? '#10b981' : '#8b949e' }}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+          {/* Status overview */}
+          <div style={{ background: '#161b22', borderRadius: '6px', padding: '10px', border: '1px solid #21262d', marginBottom: '8px' }}>
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#e6edf3', marginBottom: '8px' }}>Invoice Status</div>
+            {[
+              { label: 'Paid', count: '14', color: '#10b981', amt: '$8,750' },
+              { label: 'Sent', count: '5', color: '#3b82f6', amt: '$2,430' },
+              { label: 'Overdue', count: '2', color: '#ef4444', amt: '$1,150' },
             ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 3 ? '1px solid #21262d' : 'none' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', color: '#fff', background: r.color }}>{r.label}</span>
-                  <span style={{ fontSize: '11px', color: '#8b949e' }}>{r.count} invoices</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ padding: '1px 6px', borderRadius: '3px', fontSize: '9px', fontWeight: '600', color: '#fff', background: r.color }}>{r.label}</span>
+                  <span style={{ fontSize: '9px', color: '#8b949e' }}>{r.count}</span>
                 </div>
-                <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{r.amt}</span>
+                <span style={{ fontSize: '10px', color: '#e6edf3', fontWeight: '500' }}>{r.amt}</span>
               </div>
             ))}
           </div>
-          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '10px' }}>Quick Actions</div>
-            <div style={{ padding: '8px 12px', background: '#10b981', borderRadius: '6px', fontSize: '12px', color: '#fff', fontWeight: '600', marginBottom: '6px', textAlign: 'center' }}>+ Generate New Invoice</div>
-            {['👥 Manage Customers', '📦 Manage Products', '📈 View Analytics'].map((a, i) => (
-              <div key={i} style={{ padding: '7px 12px', background: '#21262d', borderRadius: '6px', fontSize: '11px', color: '#e6edf3', marginBottom: '4px' }}>{a}</div>
-            ))}
-          </div>
+          {/* CTA */}
+          <div style={{ padding: '7px 10px', background: '#10b981', borderRadius: '5px', fontSize: '11px', color: '#fff', fontWeight: '600', textAlign: 'center' }}>+ Generate New Invoice</div>
         </div>
-        {/* Recent Invoices + Recent Customers */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '8px', marginTop: '8px' }}>
-          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Invoices</div>
-            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Your latest invoices</div>
+      </div>
+    );
+  }
+
+  // Desktop mockup (unchanged)
+  return (
+    <div style={{ background: '#0f1419', borderRadius: '12px', overflow: 'hidden', border: '1px solid #21262d', fontFamily: "'Inter', sans-serif", width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#161b22', borderBottom: '1px solid #21262d' }}>
+        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
+        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
+        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
+        <div style={{ flex: 1, textAlign: 'center', fontSize: '11px', color: '#8b949e' }}>dayonetools.app/dashboard</div>
+      </div>
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: '160px', background: '#0d1117', borderRight: '1px solid #21262d', padding: '14px 10px', flexShrink: 0 }}>
+          <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '10px', letterSpacing: '0.5px' }}>GENERAL</div>
+          <div style={{ padding: '7px 10px', background: '#10b981', borderRadius: '6px', fontSize: '12px', color: '#fff', fontWeight: '600', marginBottom: '4px' }}>📊 Dashboard</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '2px' }}>📈 Analytics</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '8px' }}>🔒 Vault</div>
+          <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '8px', letterSpacing: '0.5px' }}>INVOICE</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>➕ Create</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>📄 Invoices</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3' }}>👥 Customers</div>
+        </div>
+        <div style={{ flex: 1, padding: '16px', minWidth: 0 }}>
+          <div style={{ fontSize: '16px', fontWeight: '700', color: '#e6edf3', marginBottom: '4px' }}>Dashboard</div>
+          <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '14px' }}>Welcome back! Here's an overview of your business.</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '14px' }}>
             {[
-              { num: 'INV-001', status: 'Paid', statusColor: '#10b981', amount: '$2,400.00', date: '2 days ago' },
-              { num: 'INV-002', status: 'Sent', statusColor: '#3b82f6', amount: '$800.00', date: 'Today' },
-              { num: 'INV-003', status: 'Draft', statusColor: '#8b949e', amount: '$1,550.00', date: 'Today' },
-            ].map((inv, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.num}</span>
-                    <span style={{ padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '600', color: '#fff', background: inv.statusColor }}>{inv.status}</span>
-                  </div>
-                  <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '2px' }}>• {inv.date}</div>
-                </div>
-                <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.amount}</span>
+              { label: 'TOTAL INVOICES', val: '24', sub: '+3 from last month' },
+              { label: 'MONTHLY SALES', val: '$4,280', sub: '+12% from last month' },
+              { label: 'OUTSTANDING', val: '$1,150', sub: '3 unpaid invoices' },
+              { label: 'CUSTOMERS', val: '12', sub: '+2 new this month' },
+            ].map((s, i) => (
+              <div key={i} style={{ background: '#161b22', borderRadius: '8px', padding: '10px', border: '1px solid #21262d' }}>
+                <div style={{ fontSize: '9px', color: '#8b949e', fontWeight: '600', letterSpacing: '0.5px', marginBottom: '4px' }}>{s.label}</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>{s.val}</div>
+                <div style={{ fontSize: '9px', color: i === 1 || i === 3 ? '#10b981' : '#8b949e' }}>{s.sub}</div>
               </div>
             ))}
-            <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Invoices →</div>
           </div>
-          <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Customers</div>
-            <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Newly added customers</div>
-            {[
-              { name: 'Acme Corp Inc.', email: 'billing@acme.com', count: '3 invoices' },
-              { name: 'Greenfield Design', email: 'ap@greenfield.co', count: '1 invoice' },
-              { name: 'Summit Analytics', email: 'pay@summit.io', count: '2 invoices' },
-            ].map((c, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{c.name}</div>
-                  <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '1px' }}>{c.email}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '8px' }}>
+            <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '10px' }}>Invoice Status Overview</div>
+              {[
+                { label: 'Draft', count: '3', color: '#8b949e', amt: '$0.00' },
+                { label: 'Sent', count: '5', color: '#3b82f6', amt: '$2,430.00' },
+                { label: 'Paid', count: '14', color: '#10b981', amt: '$8,750.00' },
+                { label: 'Overdue', count: '2', color: '#ef4444', amt: '$1,150.00' },
+              ].map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 0', borderBottom: i < 3 ? '1px solid #21262d' : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '600', color: '#fff', background: r.color }}>{r.label}</span>
+                    <span style={{ fontSize: '11px', color: '#8b949e' }}>{r.count} invoices</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{r.amt}</span>
                 </div>
-                <span style={{ fontSize: '10px', color: '#8b949e' }}>{c.count}</span>
-              </div>
-            ))}
-            <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Customers →</div>
+              ))}
+            </div>
+            <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '10px' }}>Quick Actions</div>
+              <div style={{ padding: '8px 12px', background: '#10b981', borderRadius: '6px', fontSize: '12px', color: '#fff', fontWeight: '600', marginBottom: '6px', textAlign: 'center' }}>+ Generate New Invoice</div>
+              {['👥 Manage Customers', '📦 Manage Products', '📈 View Analytics'].map((a, i) => (
+                <div key={i} style={{ padding: '7px 12px', background: '#21262d', borderRadius: '6px', fontSize: '11px', color: '#e6edf3', marginBottom: '4px' }}>{a}</div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '8px', marginTop: '8px' }}>
+            <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Invoices</div>
+              <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Your latest invoices</div>
+              {[
+                { num: 'INV-001', status: 'Paid', statusColor: '#10b981', amount: '$2,400.00', date: '2 days ago' },
+                { num: 'INV-002', status: 'Sent', statusColor: '#3b82f6', amount: '$800.00', date: 'Today' },
+                { num: 'INV-003', status: 'Draft', statusColor: '#8b949e', amount: '$1,550.00', date: 'Today' },
+              ].map((inv, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.num}</span>
+                      <span style={{ padding: '1px 6px', borderRadius: '3px', fontSize: '9px', fontWeight: '600', color: '#fff', background: inv.statusColor }}>{inv.status}</span>
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '2px' }}>• {inv.date}</div>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{inv.amount}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Invoices →</div>
+            </div>
+            <div style={{ background: '#161b22', borderRadius: '8px', padding: '12px', border: '1px solid #21262d' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#e6edf3', marginBottom: '2px' }}>Recent Customers</div>
+              <div style={{ fontSize: '10px', color: '#8b949e', marginBottom: '10px' }}>Newly added customers</div>
+              {[
+                { name: 'Acme Corp Inc.', email: 'billing@acme.com', count: '3 invoices' },
+                { name: 'Greenfield Design', email: 'ap@greenfield.co', count: '1 invoice' },
+                { name: 'Summit Analytics', email: 'pay@summit.io', count: '2 invoices' },
+              ].map((c, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < 2 ? '1px solid #21262d' : 'none' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#e6edf3', fontWeight: '500' }}>{c.name}</div>
+                    <div style={{ fontSize: '9px', color: '#8b949e', marginTop: '1px' }}>{c.email}</div>
+                  </div>
+                  <span style={{ fontSize: '10px', color: '#8b949e' }}>{c.count}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: '8px', padding: '6px', textAlign: 'center', border: '1px solid #21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e' }}>View All Customers →</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ── CSS Mockup: Invoice Creator Card ──
 const CreateMockup = () => (
@@ -198,15 +249,16 @@ const ShareMockup = () => (
       </div>
     ))}
     <div style={{ marginTop: '12px' }}>
-      <div style={{ fontSize: '9px', color: '#8b949e', marginBottom: '4px', fontWeight: '500' }}>PUBLIC LINK</div>
-      <div style={{ display: 'flex', gap: '6px' }}>
-        <div style={{ flex: 1, padding: '7px 10px', background: '#21262d', borderRadius: '6px', fontSize: '11px', color: '#8b949e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>dayonetools.app/s/inv-a7k9x</div>
-        <div style={{ padding: '7px 10px', background: '#21262d', borderRadius: '6px', fontSize: '12px', color: '#8b949e', cursor: 'pointer' }}>📋</div>
+      <div style={{ fontSize: '9px', color: '#8b949e', fontWeight: '600', letterSpacing: '0.5px', marginBottom: '6px' }}>PUBLIC LINK</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: '#0d1117', borderRadius: '6px', border: '1px solid #21262d' }}>
+        <span style={{ flex: 1, fontSize: '11px', color: '#3b82f6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>dayonetools.app/s/inv-a7k9x</span>
+        <span style={{ fontSize: '12px', cursor: 'pointer' }}>📋</span>
       </div>
+      <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '6px' }}>View limit enabled · 50 views remaining</div>
     </div>
-    <div style={{ fontSize: '10px', color: '#8b949e', marginTop: '8px', fontStyle: 'italic' }}>View limit enabled · 50 views remaining</div>
   </div>
 );
+
 
 export default function LandingPage({ darkMode = true }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -248,17 +300,18 @@ export default function LandingPage({ darkMode = true }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: isMobile ? '32px 20px 0' : '48px 20px 0',
+        padding: isMobile ? '24px 16px 0' : '48px 20px 0',
         textAlign: 'center',
       }}>
         <h1 style={{
-          fontSize: isMobile ? '30px' : '42px',
+          fontSize: isMobile ? '26px' : '42px',
           fontWeight: '700',
           color: colors.text,
           lineHeight: '1.2',
-          marginBottom: '16px',
+          marginBottom: '14px',
           maxWidth: '700px',
           letterSpacing: '-0.5px',
+          padding: isMobile ? '0 4px' : 0,
         }}>
           <span style={{ fontStyle: 'italic' }}>Easy-To-Use</span> Invoicing Platform That Scales With Your Business
         </h1>
@@ -268,40 +321,78 @@ export default function LandingPage({ darkMode = true }) {
           color: colors.textMuted,
           maxWidth: '580px',
           lineHeight: '1.6',
-          marginBottom: '28px',
+          marginBottom: '24px',
+          padding: isMobile ? '0 8px' : 0,
         }}>
           Day One is an invoicing platform built for small-medium businesses and freelancers to create professional invoices fast, manage clients, and get paid on time.
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '0' }}>
-          <Link to="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`, color: '#ffffff', fontSize: '15px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.4)'; }}>
+        {/* CTA Buttons — stack vertically on mobile */}
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'center',
+          gap: isMobile ? '10px' : '20px',
+          width: isMobile ? '100%' : 'auto',
+          maxWidth: isMobile ? '320px' : 'none',
+          marginBottom: '0',
+        }}>
+          <Link to="/signup" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: isMobile ? '13px 24px' : '14px 28px',
+            background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
+            color: '#ffffff',
+            fontSize: '15px',
+            fontWeight: '600',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+            width: isMobile ? '100%' : 'auto',
+            boxSizing: 'border-box',
+          }}>
             Get Started <span style={{ fontSize: '16px' }}>›</span>
           </Link>
-          <Link to="/invoicegenerator" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 28px', background: 'transparent', color: colors.accent, fontSize: '15px', fontWeight: '600', textDecoration: 'none', borderRadius: '8px', border: `1.5px solid ${colors.accent}`, transition: 'all 0.2s' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = colors.accent; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = colors.accent; e.currentTarget.style.transform = 'translateY(0)'; }}>
+          <Link to="/invoicegenerator" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: isMobile ? '13px 24px' : '14px 28px',
+            background: 'transparent',
+            color: colors.accent,
+            fontSize: '15px',
+            fontWeight: '600',
+            textDecoration: 'none',
+            borderRadius: '8px',
+            border: `1.5px solid ${colors.accent}`,
+            width: isMobile ? '100%' : 'auto',
+            boxSizing: 'border-box',
+          }}>
             Try Free Invoice Generator
           </Link>
-          <Link to="/contact" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 4px', color: colors.accent, fontSize: '15px', fontWeight: '500', textDecoration: 'none', transition: 'gap 0.2s' }}
-            onMouseEnter={(e) => { e.currentTarget.style.gap = '12px'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.gap = '8px'; }}>
+          <Link to="/contact" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '8px 4px',
+            color: colors.accent,
+            fontSize: '15px',
+            fontWeight: '500',
+            textDecoration: 'none',
+          }}>
             Talk to Us <span style={{ fontSize: '16px' }}>→</span>
           </Link>
         </div>
 
-        {/* Dashboard mockup - wide, prominent, immediately visible */}
-        <div style={{ width: '100%', maxWidth: '1100px', marginTop: '36px', padding: '0 20px', position: 'relative' }}>
+        {/* Dashboard mockup */}
+        <div style={{ width: '100%', maxWidth: '1100px', marginTop: isMobile ? '28px' : '36px', padding: isMobile ? '0' : '0 20px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-          <div style={{ position: 'relative', zIndex: 1, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 40px rgba(0,0,0,0.3)', marginBottom: isMobile ? '40px' : '60px' }}>
-            {isMobile ? (
-              <div style={{ overflowX: 'auto' }}>
-                <div style={{ minWidth: '700px' }}><DashboardMockup /></div>
-              </div>
-            ) : (
-              <DashboardMockup />
-            )}
+          <div style={{ position: 'relative', zIndex: 1, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 40px rgba(0,0,0,0.3)', marginBottom: isMobile ? '32px' : '60px' }}>
+            <DashboardMockup isMobile={isMobile} />
           </div>
         </div>
       </div>
@@ -311,15 +402,15 @@ export default function LandingPage({ darkMode = true }) {
         background: darkMode
           ? `radial-gradient(ellipse 60% 40% at 50% 0%, rgba(59, 130, 246, 0.08), transparent), ${colors.bg}`
           : `radial-gradient(ellipse 60% 40% at 50% 0%, rgba(59, 130, 246, 0.06), transparent), ${colors.bg}`,
-        padding: isMobile ? '60px 16px 80px' : '100px 20px 120px',
+        padding: isMobile ? '48px 16px 60px' : '100px 20px 120px',
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? '36px' : '60px' }}>
             <div style={{ fontSize: '13px', fontWeight: '600', color: '#10b981', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>How It Works</div>
-            <h2 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: '700', color: colors.text, marginBottom: '16px', letterSpacing: '-0.5px' }}>
+            <h2 style={{ fontSize: isMobile ? '24px' : '40px', fontWeight: '700', color: colors.text, marginBottom: '14px', letterSpacing: '-0.5px', padding: isMobile ? '0 8px' : 0 }}>
               Smart invoicing in 3 simple steps
             </h2>
-            <p style={{ fontSize: '16px', color: colors.textMuted, maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
+            <p style={{ fontSize: isMobile ? '14px' : '16px', color: colors.textMuted, maxWidth: '650px', margin: '0 auto', lineHeight: '1.6', padding: isMobile ? '0 8px' : 0 }}>
               From creating your first invoice to getting paid faster. Each step is designed to save you time and give you complete control over your billing.
             </p>
           </div>
@@ -327,23 +418,20 @@ export default function LandingPage({ darkMode = true }) {
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-            gap: '24px',
+            gap: isMobile ? '16px' : '24px',
           }}>
             {/* Step 1: Create */}
             <div style={{
               background: darkMode ? '#161b22' : '#ffffff',
               borderRadius: '12px',
-              padding: '28px 24px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
               border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
-              transition: 'transform 0.2s, box-shadow 0.2s',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent }}>1</div>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Create</h3>
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>1</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Create</h3>
               </div>
-              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '20px' }}>
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
                 Generate invoices with smart numbering, multi-currency support, multi-language options in 12 languages, and custom templates in one interface.
               </p>
               <CreateMockup />
@@ -353,17 +441,14 @@ export default function LandingPage({ darkMode = true }) {
             <div style={{
               background: darkMode ? '#161b22' : '#ffffff',
               borderRadius: '12px',
-              padding: '28px 24px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
               border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
-              transition: 'transform 0.2s, box-shadow 0.2s',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent }}>2</div>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Analyze</h3>
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>2</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Analyze</h3>
               </div>
-              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '20px' }}>
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
                 Monitor invoice statuses with visual dashboards. Identify overdue payments and track cash flow instantly.
               </p>
               <AnalyzeMockup />
@@ -373,17 +458,14 @@ export default function LandingPage({ darkMode = true }) {
             <div style={{
               background: darkMode ? '#161b22' : '#ffffff',
               borderRadius: '12px',
-              padding: '28px 24px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
               border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
-              transition: 'transform 0.2s, box-shadow 0.2s',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent }}>3</div>
-                <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Share</h3>
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>3</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Share</h3>
               </div>
-              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '20px' }}>
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
                 Send invoices with password protection, expiration dates, and view limits. Automated reminders ensure faster payments.
               </p>
               <ShareMockup />
