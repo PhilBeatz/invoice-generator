@@ -33,7 +33,7 @@ export default function App() {
     localStorage.setItem('dayonetools_darkmode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Listen for auth state changes — only update state if user actually changed
+  // Listen for auth state changes — only update state on actual sign-in/sign-out
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const newUser = session?.user ?? null;
@@ -42,13 +42,15 @@ export default function App() {
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const newUser = session?.user ?? null;
-      const newId = newUser?.id || null;
-      // Only update state if user actually signed in/out — skip token refreshes
-      if (newId !== userIdRef.current) {
-        userIdRef.current = newId;
-        setUser(newUser);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only react to real auth changes, not token refreshes
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        const newUser = session?.user ?? null;
+        const newId = newUser?.id || null;
+        if (newId !== userIdRef.current) {
+          userIdRef.current = newId;
+          setUser(newUser);
+        }
       }
     });
 
