@@ -70,7 +70,7 @@ export var PLAN_LIMITS = {
 };
 
 // Owner email - always gets unlimited Pro access
-var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+var OWNER_EMAIL = 'phildouthard@gmail.com';
 
 function isOwner() {
   try {

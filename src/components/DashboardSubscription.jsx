@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PLAN_LIMITS, fetchAndCachePlan, getCurrentPlan, getTrialDaysLeft } from './planLimits';
 
 // Owner email - always shows Pro
-var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+var OWNER_EMAIL = 'phildouthard@gmail.com';
 
 function checkIsOwner() {
   try {

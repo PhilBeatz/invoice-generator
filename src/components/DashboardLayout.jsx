@@ -20,7 +20,7 @@ import InvoiceGenerator from './InvoiceGenerator';
 import { getCurrentPlan, fetchAndCachePlan, hasDashboardAccess, getTrialDaysLeft } from './planLimits';
 
 // Owner email - always gets full access (must match planLimits.js)
-var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+var OWNER_EMAIL = 'phildouthard@gmail.com';
 
 function checkIsOwner() {
   try {
