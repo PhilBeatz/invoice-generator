@@ -18,14 +18,14 @@ export var PLAN_LIMITS = {
     prioritySupport: false,
   },
   trial: {
-    // 7-day trial gets full Pro access
-    invoicesPerMonth: 1000,
-    customers: 2000,
-    products: 1000,
-    emailsPerMonth: 200,
-    categories: 200,
-    paymentMethods: 999999,
-    employees: 999999,
+    // 7-day trial gets reduced access
+    invoicesPerMonth: 25,
+    customers: 25,
+    products: 25,
+    emailsPerMonth: 5,
+    categories: 3,
+    paymentMethods: 1,
+    employees: 0,
     analytics: true,
     advancedTemplates: true,
     prioritySupport: false,

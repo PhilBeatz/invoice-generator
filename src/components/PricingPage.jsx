@@ -172,6 +172,7 @@ export default function PricingPage({ darkMode = true, currentPlan = 'none', tri
           React.createElement('thead', null,
             React.createElement('tr', { style: { borderBottom: '1px solid ' + C.bdr } },
               React.createElement('th', { style: { padding: '10px 12px', textAlign: 'left', color: C.tm, fontWeight: '600' } }, 'Feature'),
+              React.createElement('th', { style: { padding: '10px 12px', textAlign: 'center', color: C.yel, fontWeight: '700' } }, 'Trial', React.createElement('div', { style: { fontSize: '11px', fontWeight: '500', color: C.tm } }, '7 days free')),
               planKeys.map(function(key) {
                 return React.createElement('th', { key: key, style: { padding: '10px 12px', textAlign: 'center', color: C.text, fontWeight: '700' } }, PLANS[key].name);
               })
@@ -179,20 +180,20 @@ export default function PricingPage({ darkMode = true, currentPlan = 'none', tri
           ),
           React.createElement('tbody', null,
             [
-              { label: 'Invoices/month', values: { solo: '100', pro: '1,000' } },
-              { label: 'Customers', values: { solo: '100', pro: '2,000' } },
-              { label: 'Products', values: { solo: '100', pro: '1,000' } },
-              { label: 'Email invoicing/month', values: { solo: '50', pro: '200' } },
-              { label: 'Categories', values: { solo: '10', pro: '200' } },
-              { label: 'Payment methods', values: { solo: '5', pro: 'Unlimited' } },
-              { label: 'Advanced PDF templates', values: { solo: true, pro: true } },
-              { label: 'Analytics dashboard', values: { solo: true, pro: true } },
-              { label: 'Employee management', values: { solo: false, pro: true } },
-              { label: 'Priority support', values: { solo: false, pro: true } },
+              { label: 'Invoices/month', values: { trial: '25', solo: '100', pro: '1,000' } },
+              { label: 'Customers', values: { trial: '25', solo: '100', pro: '2,000' } },
+              { label: 'Products', values: { trial: '25', solo: '100', pro: '1,000' } },
+              { label: 'Email invoicing/month', values: { trial: '5', solo: '50', pro: '200' } },
+              { label: 'Categories', values: { trial: '3', solo: '10', pro: '200' } },
+              { label: 'Payment methods', values: { trial: '1', solo: '5', pro: 'Unlimited' } },
+              { label: 'Advanced PDF templates', values: { trial: true, solo: true, pro: true } },
+              { label: 'Analytics dashboard', values: { trial: true, solo: true, pro: true } },
+              { label: 'Employee management', values: { trial: false, solo: false, pro: true } },
+              { label: 'Priority support', values: { trial: false, solo: false, pro: true } },
             ].map(function(row, i) {
               return React.createElement('tr', { key: i, style: { borderBottom: '1px solid ' + C.bdr } },
                 React.createElement('td', { style: { padding: '8px 12px', color: C.text } }, row.label),
-                planKeys.map(function(key) {
+                ['trial'].concat(planKeys).map(function(key) {
                   var val = row.values[key];
                   if (typeof val === 'boolean') {
                     return React.createElement('td', { key: key, style: { padding: '8px 12px', textAlign: 'center' } },
@@ -209,7 +210,7 @@ export default function PricingPage({ darkMode = true, currentPlan = 'none', tri
     ),
     // Footer
     React.createElement('div', { style: { textAlign: 'center', marginTop: '20px' } },
-      React.createElement('p', { style: { fontSize: '13px', color: C.tm } }, '7-day free trial with full Pro access. No credit card required. Cancel or change plans anytime.'),
+      React.createElement('p', { style: { fontSize: '13px', color: C.tm } }, '7-day free trial included with every account. No credit card required. Cancel or change plans anytime.'),
       React.createElement('p', { style: { fontSize: '12px', color: C.tm + '80', marginTop: '8px' } }, 'Questions? Contact support@dayonetools.app')
     )
   );

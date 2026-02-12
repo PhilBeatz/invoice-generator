@@ -47,14 +47,16 @@ export default function DashboardSubscription({ darkMode = true }) {
   var periodEnd = subData.current_period_end;
 
   // Display plan name
-  var displayPlan = 'Free';
-  if (isTrialing) displayPlan = 'Pro';
+  var displayPlan = 'Trial';
+  if (currentPlan === 'none' || currentPlan === 'trial_expired') displayPlan = 'Expired';
   else if (currentPlan === 'solo') displayPlan = 'Solo';
   else if (currentPlan === 'pro') displayPlan = 'Pro';
+  else if (currentPlan === 'trial') displayPlan = 'Trial';
 
   // Display period label
   var periodLabel = 'Trial Period';
-  if (isPaid) periodLabel = subData.plan === 'solo' ? '$8.99/month' : '$14.99/month';
+  if (currentPlan === 'solo') periodLabel = '$8.99/month';
+  else if (currentPlan === 'pro') periodLabel = '$14.99/month';
 
   // Status badge
   var statusBadge = { label: 'Active', color: C.grn };
