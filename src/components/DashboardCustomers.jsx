@@ -22,7 +22,7 @@ export default function DashboardCustomers({ darkMode = true }) {
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [showActionsMenu, setShowActionsMenu] = useState(null);
-  const [newCustomer, setNewCustomer] = useState({
+  const emptyCustomer = {
     name: '',
     identifier: '',
     email: '',
@@ -32,7 +32,27 @@ export default function DashboardCustomers({ darkMode = true }) {
     timezone: '',
     address: '',
     description: '',
-  });
+  };
+
+  const [newCustomer, setNewCustomerRaw] = useState(emptyCustomer);
+
+  // Draft persistence via sessionStorage
+  const DRAFT_KEY = 'dayonetools_draft_customer';
+  const setNewCustomer = (valOrFn) => {
+    setNewCustomerRaw(prev => {
+      const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+      try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch(e) {}
+      return next;
+    });
+  };
+  const clearDraft = () => { try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {} };
+  const restoreDraft = () => {
+    try {
+      const saved = sessionStorage.getItem(DRAFT_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return null;
+  };
 
   // Country list for dropdown
   const countries = [
@@ -149,23 +169,15 @@ export default function DashboardCustomers({ darkMode = true }) {
 
   const handleCreateCustomer = () => {
     setEditingCustomer(null);
-    setNewCustomer({
-      name: '',
-      identifier: '',
-      email: '',
-      phone: '',
-      zipCode: '',
-      country: '',
-      timezone: '',
-      address: '',
-      description: '',
-    });
+    const draft = restoreDraft();
+    setNewCustomerRaw(draft || emptyCustomer);
     setShowModal(true);
   };
 
   const handleEditCustomer = (customer) => {
     setEditingCustomer(customer);
-    setNewCustomer({ ...customer });
+    setNewCustomerRaw({ ...customer });
+    clearDraft();
     setShowModal(true);
     setShowActionsMenu(null);
   };
@@ -219,6 +231,7 @@ export default function DashboardCustomers({ darkMode = true }) {
         setCustomers(prev => [...prev, { ...created, invoiceCount: 0 }]);
       }
     } catch(e) { alert('Error saving customer: ' + e.message); }
+    clearDraft();
     setShowModal(false);
   };
 

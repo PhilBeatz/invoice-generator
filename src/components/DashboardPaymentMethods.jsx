@@ -68,6 +68,7 @@ export default function DashboardPaymentMethods() {
   var [actionsOpen, setActionsOpen] = useState(null);
   var [isMobile, setIsMobile] = useState(false);
 
+  var DRAFT_KEY = 'dayonetools_draft_payment_method';
   var emptyForm = {
     name:'', type:'bank', active:true, isDefault:false,
     bankName:'', accountName:'', accountNumber:'', swift:'', iban:'', routing:'', sortCode:'', branch:'', address:'',
@@ -75,7 +76,17 @@ export default function DashboardPaymentMethods() {
     cryptoCurrency:'BTC', walletAddress:'',
     customFields:[{label:'',value:''}],
   };
-  var [form, setForm] = useState(emptyForm);
+  var [form, setFormRaw] = useState(emptyForm);
+  var setForm = function(val) {
+    var next = typeof val === 'function' ? val(form) : val;
+    setFormRaw(next);
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch(e) {}
+  };
+  var clearDraft = function() { try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {} };
+  var restoreDraft = function() {
+    try { var saved = sessionStorage.getItem(DRAFT_KEY); if (saved) return JSON.parse(saved); } catch(e) {}
+    return null;
+  };
   var [errors, setErrors] = useState({});
 
   useEffect(function(){var ck=function(){setIsMobile(window.innerWidth<=768);};ck();window.addEventListener('resize',ck);return function(){window.removeEventListener('resize',ck);};}, []);
@@ -95,14 +106,15 @@ export default function DashboardPaymentMethods() {
 
   var openCreate = function(){
     setEditing(null);
-    setForm(Object.assign({},emptyForm));
+    var draft = restoreDraft();
+    setFormRaw(draft || Object.assign({},emptyForm));
     setErrors({});
     setShowModal(true);
   };
 
   var openEdit = function(m){
     setEditing(m);
-    setForm({
+    setFormRaw({
       name:m.name||'', type:m.type||'bank', active:m.active!==false, isDefault:!!m.isDefault,
       bankName:m.bankName||'', accountName:m.accountName||'', accountNumber:m.accountNumber||'',
       swift:m.swift||'', iban:m.iban||'', routing:m.routing||'', sortCode:m.sortCode||'', branch:m.branch||'', address:m.address||'',
@@ -110,6 +122,7 @@ export default function DashboardPaymentMethods() {
       cryptoCurrency:m.cryptoCurrency||'BTC', walletAddress:m.walletAddress||'',
       customFields:m.customFields&&m.customFields.length>0?m.customFields.map(function(f){return{label:f.label||'',value:f.value||''};}): [{label:'',value:''}],
     });
+    clearDraft();
     setErrors({});
     setActionsOpen(null);
     setShowModal(true);
@@ -169,6 +182,7 @@ export default function DashboardPaymentMethods() {
         });
       }
     } catch(e) { alert('Error saving payment method: ' + e.message); }
+    clearDraft();
     setShowModal(false);
   };
 

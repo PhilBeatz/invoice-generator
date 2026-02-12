@@ -63,7 +63,19 @@ export default function DashboardEmployees({ darkMode }) {
   var [editingEmp, setEditingEmp] = useState(null);
   var [showDetail, setShowDetail] = useState(null);
   var [delConfirm, setDelConfirm] = useState(null);
-  var [form, setForm] = useState({ employeeId: '', fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' });
+  var DRAFT_KEY = 'dayonetools_draft_employee';
+  var emptyForm = { employeeId: '', fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' };
+  var [form, setFormRaw] = useState(emptyForm);
+  var setForm = function(val) {
+    var next = typeof val === 'function' ? val(form) : val;
+    setFormRaw(next);
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch(e) {}
+  };
+  var clearDraft = function() { try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {} };
+  var restoreDraft = function() {
+    try { var saved = sessionStorage.getItem(DRAFT_KEY); if (saved) return JSON.parse(saved); } catch(e) {}
+    return null;
+  };
   var [errors, setErrors] = useState({});
 
   useEffect(function() { var ck = function() { setIsMobile(window.innerWidth <= 768); }; ck(); window.addEventListener('resize', ck); return function() { window.removeEventListener('resize', ck); }; }, []);
@@ -92,12 +104,12 @@ export default function DashboardEmployees({ darkMode }) {
   var paged = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
   useEffect(function() { setPage(1); }, [search, filterDept, filterStatus, sortBy, sortOrder]);
 
-  var openCreate = function() { setEditingEmp(null); setForm({ employeeId: nextEmployeeId(employees), fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' }); setErrors({}); setShowModal(true); };
+  var openCreate = function() { setEditingEmp(null); var draft = restoreDraft(); setFormRaw(draft || Object.assign({}, emptyForm, { employeeId: nextEmployeeId(employees) })); setErrors({}); setShowModal(true); };
   var openEdit = function(emp) {
     setEditingEmp(emp);
     var isCust = emp.department && !DEFAULT_DEPTS.includes(emp.department);
-    setForm({ employeeId: emp.employeeId||'', fullName: emp.fullName||'', email: emp.email||'', phone: emp.phone||'', position: emp.position||'', department: isCust ? '__custom__' : (emp.department||''), customDept: isCust ? emp.department : '', hireDate: emp.hireDate||'', status: emp.status||'active' });
-    setErrors({}); setShowModal(true);
+    setFormRaw({ employeeId: emp.employeeId||'', fullName: emp.fullName||'', email: emp.email||'', phone: emp.phone||'', position: emp.position||'', department: isCust ? '__custom__' : (emp.department||''), customDept: isCust ? emp.department : '', hireDate: emp.hireDate||'', status: emp.status||'active' });
+    clearDraft(); setErrors({}); setShowModal(true);
   };
 
   var validate = function() {
@@ -124,6 +136,7 @@ export default function DashboardEmployees({ darkMode }) {
         setEmployees(function(prev) { return prev.concat([created]); });
       }
     } catch(e) { alert('Error saving employee: ' + e.message); }
+    clearDraft();
     setShowModal(false);
   };
 

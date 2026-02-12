@@ -403,11 +403,21 @@ export default function DashboardCategories({ darkMode = true }) {
 
 // Category Modal Component
 function CategoryModal({ darkMode, colors, category, existingNames, onSave, onClose }) {
-  const [formData, setFormData] = useState({
-    name: category?.name || '',
-    description: category?.description || '',
-    status: category?.status || 'active',
-  });
+  const DRAFT_KEY = 'dayonetools_draft_category';
+  const isEditing = !!category;
+
+  const getInitial = () => {
+    if (isEditing) return { name: category.name || '', description: category.description || '', status: category.status || 'active' };
+    try { const saved = sessionStorage.getItem(DRAFT_KEY); if (saved) return JSON.parse(saved); } catch(e) {}
+    return { name: '', description: '', status: 'active' };
+  };
+
+  const [formData, setFormDataRaw] = useState(getInitial);
+  const setFormData = (val) => {
+    const next = typeof val === 'function' ? val(formData) : val;
+    setFormDataRaw(next);
+    if (!isEditing) { try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch(e) {} }
+  };
 
   const inputStyle = {
     width: '100%',
@@ -443,6 +453,7 @@ function CategoryModal({ darkMode, colors, category, existingNames, onSave, onCl
       return;
     }
     onSave(formData);
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {}
   };
 
   return (

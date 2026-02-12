@@ -575,15 +575,22 @@ export default function DashboardProducts({ darkMode = true }) {
 
 // Product Modal Component
 function ProductModal({ darkMode, colors, product, categories, onSave, onClose }) {
-  const [formData, setFormData] = useState({
-    name: product?.name || '',
-    model: product?.model || '',
-    price: product?.price || '',
-    description: product?.description || '',
-    category: product?.category || '',
-    status: product?.status || 'active',
-    photo: product?.photo || '',
-  });
+  const DRAFT_KEY = 'dayonetools_draft_product';
+  const isEditing = !!product;
+
+  // Restore draft only for new products
+  const getInitial = () => {
+    if (isEditing) return { name: product.name || '', model: product.model || '', price: product.price || '', description: product.description || '', category: product.category || '', status: product.status || 'active', photo: product.photo || '' };
+    try { const saved = sessionStorage.getItem(DRAFT_KEY); if (saved) return JSON.parse(saved); } catch(e) {}
+    return { name: '', model: '', price: '', description: '', category: '', status: 'active', photo: '' };
+  };
+
+  const [formData, setFormDataRaw] = useState(getInitial);
+  const setFormData = (val) => {
+    const next = typeof val === 'function' ? val(formData) : val;
+    setFormDataRaw(next);
+    if (!isEditing) { try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch(e) {} }
+  };
   const [newCategory, setNewCategory] = useState('');
 
   const inputStyle = {
@@ -619,6 +626,7 @@ function ProductModal({ darkMode, colors, product, categories, onSave, onClose }
       ...formData,
       category: newCategory || formData.category,
     });
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch(e) {}
   };
 
   return (
