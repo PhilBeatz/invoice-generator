@@ -19,12 +19,16 @@ import DashboardConfiguration from './DashboardConfiguration';
 import InvoiceGenerator from './InvoiceGenerator';
 import { getCurrentPlan, fetchAndCachePlan, hasDashboardAccess, getTrialDaysLeft } from './planLimits';
 
-// Wrapper that blocks non-subscribed users from accessing dashboard features
-function PaidRoute({ children, darkMode }) {
-  if (!hasDashboardAccess()) {
-    return React.createElement(Navigate, { to: '/dashboard/pricing', replace: true });
-  }
-  return children;
+// Owner email - always gets full access (must match planLimits.js)
+var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+
+function checkIsOwner() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return false;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user && session.user.email === OWNER_EMAIL;
+  } catch(e) { return false; }
 }
 
 export default function DashboardLayout({ darkMode = true, user }) {
@@ -32,10 +36,12 @@ export default function DashboardLayout({ darkMode = true, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState(getCurrentPlan());
   const [planLoaded, setPlanLoaded] = useState(false);
+  const [isOwnerUser, setIsOwnerUser] = useState(checkIsOwner());
   const location = useLocation();
 
   // Fetch plan from Supabase on mount and after navigation (e.g. returning from Stripe)
   useEffect(() => {
+    setIsOwnerUser(checkIsOwner());
     fetchAndCachePlan().then(function(plan) {
       setCurrentPlan(plan || 'none');
       setPlanLoaded(true);
@@ -47,6 +53,17 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
   // Trial starts automatically on signup via Supabase trigger
   // No manual trial start needed
+
+  // Check if user has access (owner always does, trial/paid users do)
+  var hasAccess = isOwnerUser || currentPlan === 'trial' || currentPlan === 'solo' || currentPlan === 'pro';
+
+  // Gate component — redirects to pricing if no access
+  function PaidRoute({ children }) {
+    if (!hasAccess) {
+      return <Navigate to="/dashboard/pricing" replace />;
+    }
+    return children;
+  }
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -124,45 +141,45 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
         {/* Dashboard Routes */}
         <Routes>
-          <Route index element={hasDashboardAccess() ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />} />
+          <Route index element={hasAccess ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />} />
           <Route path="create" element={
-            <PaidRoute darkMode={darkMode}><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
+            <PaidRoute><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
           } />
           <Route path="analytics" element={
-            <PaidRoute darkMode={darkMode}><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="vault" element={
-            <PaidRoute darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
+            <PaidRoute><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
           } />
           <Route path="invoices" element={
-            <PaidRoute darkMode={darkMode}><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
+            <PaidRoute><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="invoices/:invoiceId" element={
-            <PaidRoute darkMode={darkMode}><InvoiceDetail darkMode={darkMode} user={user} /></PaidRoute>
+            <PaidRoute><InvoiceDetail darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="customers" element={
-            <PaidRoute darkMode={darkMode}><DashboardCustomers darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardCustomers darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="payment-methods" element={
-            <PaidRoute darkMode={darkMode}><DashboardPaymentMethods darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardPaymentMethods darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="configuration" element={
-            <PaidRoute darkMode={darkMode}><DashboardConfiguration darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardConfiguration darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="products" element={
-            <PaidRoute darkMode={darkMode}><DashboardProducts darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardProducts darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="categories" element={
-            <PaidRoute darkMode={darkMode}><DashboardCategories darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardCategories darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="properties" element={
-            <PaidRoute darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
+            <PaidRoute><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
           } />
           <Route path="organization" element={
-            <PaidRoute darkMode={darkMode}><DashboardOrganization darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardOrganization darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="employees" element={
-            <PaidRoute darkMode={darkMode}><DashboardEmployees darkMode={darkMode} /></PaidRoute>
+            <PaidRoute><DashboardEmployees darkMode={darkMode} /></PaidRoute>
           } />
           {/* These routes are always accessible */}
           <Route path="pricing" element={
