@@ -17,10 +17,26 @@ export default function DashboardProducts({ darkMode = true }) {
   const [sortBy, setSortBy] = useState('created');
   const [sortOrder, setSortOrder] = useState('desc');
   const [perPage, setPerPage] = useState(10);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
+  const MODAL_KEY_PROD = 'dayonetools_modal_product';
+  const getInitialModalProd = () => {
+    try { const s = sessionStorage.getItem(MODAL_KEY_PROD); if (s) return JSON.parse(s); } catch(e) {}
+    return { open: false, editing: null };
+  };
+  const initialModalProd = getInitialModalProd();
+
+  const [showModal, setShowModalRaw] = useState(initialModalProd.open);
+  const [editingProduct, setEditingProductRaw] = useState(initialModalProd.editing);
   const [showActionsMenu, setShowActionsMenu] = useState(null);
   const [expandProperties, setExpandProperties] = useState(false);
+
+  const setShowModal = (val) => {
+    setShowModalRaw(val);
+    if (!val) { try { sessionStorage.removeItem(MODAL_KEY_PROD); } catch(e) {} }
+  };
+  const setEditingProduct = (val) => {
+    setEditingProductRaw(val);
+    if (val) { try { sessionStorage.setItem(MODAL_KEY_PROD, JSON.stringify({ open: true, editing: val })); } catch(e) {} }
+  };
 
   const colors = darkMode ? {
     bg: '#0d1117',

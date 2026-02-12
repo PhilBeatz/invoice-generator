@@ -62,11 +62,28 @@ function ConfirmDialog({ open, onClose, onConfirm, title, message }) {
 
 export default function DashboardPaymentMethods() {
   var [methods, setMethods] = useState([]);
-  var [showModal, setShowModal] = useState(false);
-  var [editing, setEditing] = useState(null);
+
+  var MODAL_KEY_PM = 'dayonetools_modal_payment_method';
+  var getInitialModalPM = function() {
+    try { var s = sessionStorage.getItem(MODAL_KEY_PM); if (s) return JSON.parse(s); } catch(e) {}
+    return { open: false, editing: null };
+  };
+  var initialModalPM = getInitialModalPM();
+
+  var [showModal, setShowModalRaw] = useState(initialModalPM.open);
+  var [editing, setEditingRaw] = useState(initialModalPM.editing);
   var [delConfirm, setDelConfirm] = useState(null);
   var [actionsOpen, setActionsOpen] = useState(null);
   var [isMobile, setIsMobile] = useState(false);
+
+  var setShowModal = function(val) {
+    setShowModalRaw(val);
+    if (!val) { try { sessionStorage.removeItem(MODAL_KEY_PM); } catch(e) {} }
+  };
+  var setEditing = function(val) {
+    setEditingRaw(val);
+    if (val) { try { sessionStorage.setItem(MODAL_KEY_PM, JSON.stringify({ open: true, editing: val })); } catch(e) {} }
+  };
 
   var DRAFT_KEY = 'dayonetools_draft_payment_method';
   var emptyForm = {
@@ -76,7 +93,16 @@ export default function DashboardPaymentMethods() {
     cryptoCurrency:'BTC', walletAddress:'',
     customFields:[{label:'',value:''}],
   };
-  var [form, setFormRaw] = useState(emptyForm);
+
+  // Restore form from draft if modal was open
+  var getInitialFormPM = function() {
+    if (initialModalPM.open) {
+      if (initialModalPM.editing) return Object.assign({}, emptyForm, initialModalPM.editing);
+      try { var s = sessionStorage.getItem(DRAFT_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    }
+    return emptyForm;
+  };
+  var [form, setFormRaw] = useState(getInitialFormPM);
   var setForm = function(val) {
     var next = typeof val === 'function' ? val(form) : val;
     setFormRaw(next);

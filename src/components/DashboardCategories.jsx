@@ -13,9 +13,25 @@ function getUserId() {
 export default function DashboardCategories({ darkMode = true }) {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const MODAL_KEY_CAT = 'dayonetools_modal_category';
+  const getInitialModalCat = () => {
+    try { const s = sessionStorage.getItem(MODAL_KEY_CAT); if (s) return JSON.parse(s); } catch(e) {}
+    return { open: false, editing: null };
+  };
+  const initialModalCat = getInitialModalCat();
+
+  const [showModal, setShowModalRaw] = useState(initialModalCat.open);
+  const [editingCategory, setEditingCategoryRaw] = useState(initialModalCat.editing);
   const [showActionsMenu, setShowActionsMenu] = useState(null);
+
+  const setShowModal = (val) => {
+    setShowModalRaw(val);
+    if (!val) { try { sessionStorage.removeItem(MODAL_KEY_CAT); } catch(e) {} }
+  };
+  const setEditingCategory = (val) => {
+    setEditingCategoryRaw(val);
+    if (val) { try { sessionStorage.setItem(MODAL_KEY_CAT, JSON.stringify({ open: true, editing: val })); } catch(e) {} }
+  };
 
   const colors = darkMode ? {
     bg: '#0d1117',

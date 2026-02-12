@@ -59,13 +59,44 @@ export default function DashboardEmployees({ darkMode }) {
   var [sortOrder, setSortOrder] = useState('asc');
   var [page, setPage] = useState(1);
   var [isMobile, setIsMobile] = useState(false);
-  var [showModal, setShowModal] = useState(false);
-  var [editingEmp, setEditingEmp] = useState(null);
+
+  var MODAL_KEY_EMP = 'dayonetools_modal_employee';
+  var getInitialModalEmp = function() {
+    try { var s = sessionStorage.getItem(MODAL_KEY_EMP); if (s) return JSON.parse(s); } catch(e) {}
+    return { open: false, editing: null };
+  };
+  var initialModalEmp = getInitialModalEmp();
+
+  var [showModal, setShowModalRaw] = useState(initialModalEmp.open);
+  var [editingEmp, setEditingEmpRaw] = useState(initialModalEmp.editing);
   var [showDetail, setShowDetail] = useState(null);
   var [delConfirm, setDelConfirm] = useState(null);
+
+  var setShowModal = function(val) {
+    setShowModalRaw(val);
+    if (!val) { try { sessionStorage.removeItem(MODAL_KEY_EMP); } catch(e) {} }
+  };
+  var setEditingEmp = function(val) {
+    setEditingEmpRaw(val);
+    if (val) { try { sessionStorage.setItem(MODAL_KEY_EMP, JSON.stringify({ open: true, editing: val })); } catch(e) {} }
+  };
+
   var DRAFT_KEY = 'dayonetools_draft_employee';
   var emptyForm = { employeeId: '', fullName: '', email: '', phone: '', position: '', department: '', customDept: '', hireDate: '', status: 'active' };
-  var [form, setFormRaw] = useState(emptyForm);
+
+  // Restore form from draft if modal was open
+  var getInitialFormEmp = function() {
+    if (initialModalEmp.open) {
+      if (initialModalEmp.editing) {
+        var emp = initialModalEmp.editing;
+        var isCust = emp.department && !DEFAULT_DEPTS.includes(emp.department);
+        return { employeeId: emp.employeeId||'', fullName: emp.fullName||'', email: emp.email||'', phone: emp.phone||'', position: emp.position||'', department: isCust ? '__custom__' : (emp.department||''), customDept: isCust ? emp.department : '', hireDate: emp.hireDate||'', status: emp.status||'active' };
+      }
+      try { var s = sessionStorage.getItem(DRAFT_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    }
+    return emptyForm;
+  };
+  var [form, setFormRaw] = useState(getInitialFormEmp);
   var setForm = function(val) {
     var next = typeof val === 'function' ? val(form) : val;
     setFormRaw(next);

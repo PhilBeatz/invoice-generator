@@ -19,10 +19,33 @@ export default function DashboardCustomers({ darkMode = true }) {
   const [sortOrder, setSortOrder] = useState('asc');
   const [perPage, setPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const DRAFT_KEY = 'dayonetools_draft_customer';
+  const MODAL_KEY = 'dayonetools_modal_customer';
+
+  // Restore modal state from sessionStorage on mount
+  const getInitialModal = () => {
+    try { const s = sessionStorage.getItem(MODAL_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    return { open: false, editing: null };
+  };
+  const initialModal = getInitialModal();
+
+  const [showModal, setShowModalRaw] = useState(initialModal.open);
+  const [editingCustomer, setEditingCustomerRaw] = useState(initialModal.editing);
   const [showActionsMenu, setShowActionsMenu] = useState(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+
+  // Persist modal open/editing state
+  const setShowModal = (val) => {
+    setShowModalRaw(val);
+    if (!val) {
+      try { sessionStorage.removeItem(MODAL_KEY); } catch(e) {}
+    }
+  };
+  const setEditingCustomer = (val) => {
+    setEditingCustomerRaw(val);
+    try { sessionStorage.setItem(MODAL_KEY, JSON.stringify({ open: true, editing: val })); } catch(e) {}
+  };
+
   const emptyCustomer = {
     name: '',
     identifier: '',
@@ -35,10 +58,17 @@ export default function DashboardCustomers({ darkMode = true }) {
     description: '',
   };
 
-  const [newCustomer, setNewCustomerRaw] = useState(emptyCustomer);
+  // Restore form data from draft if modal was open on remount
+  const getInitialForm = () => {
+    if (initialModal.open) {
+      if (initialModal.editing) return { ...initialModal.editing };
+      try { const s = sessionStorage.getItem(DRAFT_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    }
+    return emptyCustomer;
+  };
+  const [newCustomer, setNewCustomerRaw] = useState(getInitialForm);
 
   // Draft persistence via sessionStorage
-  const DRAFT_KEY = 'dayonetools_draft_customer';
   const setNewCustomer = (valOrFn) => {
     setNewCustomerRaw(prev => {
       const next = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
