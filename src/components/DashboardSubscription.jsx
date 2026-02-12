@@ -2,11 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PLAN_LIMITS, fetchAndCachePlan, getCurrentPlan, getTrialDaysLeft } from './planLimits';
 
+// Owner email - always shows Pro
+var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+
+function checkIsOwner() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return false;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user && session.user.email === OWNER_EMAIL;
+  } catch(e) { return false; }
+}
+
 export default function DashboardSubscription({ darkMode = true }) {
   var navigate = useNavigate();
   var [isMobile, setIsMobile] = useState(false);
-  var [currentPlan, setCurrentPlan] = useState(getCurrentPlan());
-  var [subData, setSubData] = useState({});
+  var isOwner = checkIsOwner();
+  var [currentPlan, setCurrentPlan] = useState(isOwner ? 'pro' : getCurrentPlan());
+  var [subData, setSubData] = useState(isOwner ? { plan: 'pro', status: 'active' } : {});
   var [usage, setUsage] = useState({ invoices: 0, customers: 0, products: 0, categories: 0, paymentMethods: 0, employees: 0, emailsSent: 0 });
   var [showCancelModal, setShowCancelModal] = useState(false);
   var [cancelReason, setCancelReason] = useState('');
@@ -17,13 +30,18 @@ export default function DashboardSubscription({ darkMode = true }) {
   }, []);
 
   useEffect(function() {
-    fetchAndCachePlan().then(function(plan) {
-      setCurrentPlan(plan || 'none');
-      try {
-        var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
-        setSubData(sub);
-      } catch(e) {}
-    });
+    if (isOwner) {
+      setCurrentPlan('pro');
+      setSubData({ plan: 'pro', status: 'active' });
+    } else {
+      fetchAndCachePlan().then(function(plan) {
+        setCurrentPlan(plan || 'none');
+        try {
+          var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
+          setSubData(sub);
+        } catch(e) {}
+      });
+    }
     try {
       var inv = JSON.parse(localStorage.getItem('dayonetools_invoices') || '[]');
       var cust = JSON.parse(localStorage.getItem('dayonetools_customers') || '[]');
