@@ -57,8 +57,11 @@ export default function DashboardLayout({ darkMode = true, user }) {
   // Check if user has access (owner always does, trial/paid users do)
   var hasAccess = isOwnerUser || currentPlan === 'trial' || currentPlan === 'solo' || currentPlan === 'pro';
 
-  // Gate component — redirects to pricing if no access
+  // Gate component — redirects to pricing if no access, shows loading while checking
   function PaidRoute({ children }) {
+    if (!planLoaded && !isOwnerUser) {
+      return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: darkMode ? '#8b949e' : '#6b7280', fontFamily: "'Inter',sans-serif", fontSize: '14px' }}>Loading...</div>;
+    }
     if (!hasAccess) {
       return <Navigate to="/dashboard/pricing" replace />;
     }
@@ -141,7 +144,11 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
         {/* Dashboard Routes */}
         <Routes>
-          <Route index element={hasAccess ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />} />
+          <Route index element={
+            !planLoaded && !isOwnerUser
+              ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: darkMode ? '#8b949e' : '#6b7280', fontFamily: "'Inter',sans-serif", fontSize: '14px' }}>Loading...</div>
+              : hasAccess ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />
+          } />
           <Route path="create" element={
             <PaidRoute><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
           } />
