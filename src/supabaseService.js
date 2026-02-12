@@ -395,3 +395,399 @@ export async function migrateLocalInvoices(userId) {
 
   return { migrated };
 }
+
+
+// ============================================
+// CUSTOMERS
+// ============================================
+
+const toDbCustomer = (c, userId) => ({
+  user_id: userId,
+  name: c.name || '',
+  identifier: c.identifier || null,
+  email: c.email || null,
+  phone: c.phone || null,
+  country: c.country || null,
+  address: c.address || null,
+  description: c.description || null,
+});
+
+const fromDbCustomer = (row) => ({
+  id: row.id,
+  name: row.name,
+  identifier: row.identifier || '',
+  email: row.email || '',
+  phone: row.phone || '',
+  country: row.country || '',
+  address: row.address || '',
+  description: row.description || '',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchCustomers() {
+  const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbCustomer);
+}
+
+export async function createCustomer(customer, userId) {
+  const { data, error } = await supabase.from('customers').insert(toDbCustomer(customer, userId)).select().single();
+  if (error) throw error;
+  return fromDbCustomer(data);
+}
+
+export async function updateCustomer(id, updates, userId) {
+  const row = {};
+  const map = { name: 'name', identifier: 'identifier', email: 'email', phone: 'phone', country: 'country', address: 'address', description: 'description' };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  const { data, error } = await supabase.from('customers').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbCustomer(data);
+}
+
+export async function deleteCustomer(id) {
+  const { error } = await supabase.from('customers').delete().eq('id', id);
+  if (error) throw error;
+}
+
+
+// ============================================
+// CATEGORIES
+// ============================================
+
+const toDbCategory = (c, userId) => ({
+  user_id: userId,
+  name: c.name || '',
+  description: c.description || null,
+  color: c.color || '#10b981',
+  status: c.status || 'active',
+});
+
+const fromDbCategory = (row) => ({
+  id: row.id,
+  name: row.name,
+  description: row.description || '',
+  color: row.color || '#10b981',
+  status: row.status || 'active',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchCategories() {
+  const { data, error } = await supabase.from('categories').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbCategory);
+}
+
+export async function createCategory(category, userId) {
+  const { data, error } = await supabase.from('categories').insert(toDbCategory(category, userId)).select().single();
+  if (error) throw error;
+  return fromDbCategory(data);
+}
+
+export async function updateCategory(id, updates, userId) {
+  const row = {};
+  const map = { name: 'name', description: 'description', color: 'color', status: 'status' };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  const { data, error } = await supabase.from('categories').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbCategory(data);
+}
+
+export async function deleteCategory(id) {
+  const { error } = await supabase.from('categories').delete().eq('id', id);
+  if (error) throw error;
+}
+
+
+// ============================================
+// PRODUCTS
+// ============================================
+
+const toDbProduct = (p, userId) => ({
+  user_id: userId,
+  name: p.name || '',
+  price: parseFloat(p.price) || 0,
+  description: p.description || null,
+  category: p.category || null,
+  status: p.status || 'active',
+});
+
+const fromDbProduct = (row) => ({
+  id: row.id,
+  name: row.name,
+  price: parseFloat(row.price) || 0,
+  description: row.description || '',
+  category: row.category || '',
+  status: row.status || 'active',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchProducts() {
+  const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbProduct);
+}
+
+export async function createProduct(product, userId) {
+  const { data, error } = await supabase.from('products').insert(toDbProduct(product, userId)).select().single();
+  if (error) throw error;
+  return fromDbProduct(data);
+}
+
+export async function updateProduct(id, updates, userId) {
+  const row = {};
+  const map = { name: 'name', price: 'price', description: 'description', category: 'category', status: 'status' };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  if (row.price !== undefined) row.price = parseFloat(row.price) || 0;
+  const { data, error } = await supabase.from('products').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbProduct(data);
+}
+
+export async function deleteProduct(id) {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+}
+
+
+// ============================================
+// EMPLOYEES
+// ============================================
+
+const toDbEmployee = (e, userId) => ({
+  user_id: userId,
+  employee_id: e.employeeId || null,
+  full_name: e.fullName || '',
+  email: e.email || null,
+  phone: e.phone || null,
+  position: e.position || null,
+  department: e.department || null,
+  hire_date: e.hireDate || null,
+  status: e.status || 'active',
+});
+
+const fromDbEmployee = (row) => ({
+  id: row.id,
+  employeeId: row.employee_id || '',
+  fullName: row.full_name,
+  email: row.email || '',
+  phone: row.phone || '',
+  position: row.position || '',
+  department: row.department || '',
+  hireDate: row.hire_date || '',
+  status: row.status || 'active',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchEmployees() {
+  const { data, error } = await supabase.from('employees').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbEmployee);
+}
+
+export async function createEmployee(employee, userId) {
+  const { data, error } = await supabase.from('employees').insert(toDbEmployee(employee, userId)).select().single();
+  if (error) throw error;
+  return fromDbEmployee(data);
+}
+
+export async function updateEmployee(id, updates, userId) {
+  const row = {};
+  const map = { employeeId: 'employee_id', fullName: 'full_name', email: 'email', phone: 'phone', position: 'position', department: 'department', hireDate: 'hire_date', status: 'status' };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  const { data, error } = await supabase.from('employees').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbEmployee(data);
+}
+
+export async function deleteEmployee(id) {
+  const { error } = await supabase.from('employees').delete().eq('id', id);
+  if (error) throw error;
+}
+
+
+// ============================================
+// PAYMENT METHODS
+// ============================================
+
+const toDbPaymentMethod = (pm, userId) => ({
+  user_id: userId,
+  name: pm.name || '',
+  type: pm.type || 'bank',
+  active: pm.active !== undefined ? pm.active : true,
+  is_default: pm.isDefault || false,
+  bank_name: pm.bankName || null,
+  account_name: pm.accountName || null,
+  account_number: pm.accountNumber || null,
+  swift: pm.swift || null,
+  iban: pm.iban || null,
+  routing: pm.routing || null,
+  sort_code: pm.sortCode || null,
+  branch: pm.branch || null,
+  address: pm.address || null,
+  paypal_email: pm.paypalEmail || null,
+  crypto_currency: pm.cryptoCurrency || null,
+  wallet_address: pm.walletAddress || null,
+  custom_fields: pm.customFields || [],
+});
+
+const fromDbPaymentMethod = (row) => ({
+  id: row.id,
+  name: row.name,
+  type: row.type || 'bank',
+  active: row.active !== false,
+  isDefault: row.is_default || false,
+  bankName: row.bank_name || '',
+  accountName: row.account_name || '',
+  accountNumber: row.account_number || '',
+  swift: row.swift || '',
+  iban: row.iban || '',
+  routing: row.routing || '',
+  sortCode: row.sort_code || '',
+  branch: row.branch || '',
+  address: row.address || '',
+  paypalEmail: row.paypal_email || '',
+  cryptoCurrency: row.crypto_currency || '',
+  walletAddress: row.wallet_address || '',
+  customFields: row.custom_fields || [],
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchPaymentMethods() {
+  const { data, error } = await supabase.from('payment_methods').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbPaymentMethod);
+}
+
+export async function createPaymentMethod(pm, userId) {
+  const { data, error } = await supabase.from('payment_methods').insert(toDbPaymentMethod(pm, userId)).select().single();
+  if (error) throw error;
+  return fromDbPaymentMethod(data);
+}
+
+export async function updatePaymentMethod(id, updates, userId) {
+  const row = {};
+  const map = {
+    name: 'name', type: 'type', active: 'active', isDefault: 'is_default',
+    bankName: 'bank_name', accountName: 'account_name', accountNumber: 'account_number',
+    swift: 'swift', iban: 'iban', routing: 'routing', sortCode: 'sort_code', branch: 'branch', address: 'address',
+    paypalEmail: 'paypal_email', cryptoCurrency: 'crypto_currency', walletAddress: 'wallet_address',
+    customFields: 'custom_fields',
+  };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  const { data, error } = await supabase.from('payment_methods').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbPaymentMethod(data);
+}
+
+export async function deletePaymentMethod(id) {
+  const { error } = await supabase.from('payment_methods').delete().eq('id', id);
+  if (error) throw error;
+}
+
+
+// ============================================
+// ORGANIZATION
+// ============================================
+
+const fromDbOrganization = (row) => ({
+  id: row.id,
+  name: row.name || '',
+  email: row.email || '',
+  phone: row.phone || '',
+  address: row.address || '',
+  website: row.website || '',
+  taxId: row.tax_id || '',
+  logo: row.logo || '',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchOrganization() {
+  const { data, error } = await supabase.from('organizations').select('*').maybeSingle();
+  if (error) throw error;
+  return data ? fromDbOrganization(data) : null;
+}
+
+export async function upsertOrganization(org, userId) {
+  const row = {
+    user_id: userId,
+    name: org.name || null,
+    email: org.email || null,
+    phone: org.phone || null,
+    address: org.address || null,
+    website: org.website || null,
+    tax_id: org.taxId || null,
+    logo: org.logo || null,
+  };
+  const { data, error } = await supabase.from('organizations').upsert(row, { onConflict: 'user_id' }).select().single();
+  if (error) throw error;
+  return fromDbOrganization(data);
+}
+
+
+// ============================================
+// FULL DATA MIGRATION HELPER
+// ============================================
+// One-time migration: move ALL localStorage data to Supabase
+export async function migrateAllLocalData(userId) {
+  const results = { customers: 0, products: 0, categories: 0, employees: 0, paymentMethods: 0, organization: false };
+
+  // Migrate customers
+  try {
+    const localCustomers = JSON.parse(localStorage.getItem('dayonetools_customers') || '[]');
+    for (const c of localCustomers) {
+      try { await createCustomer(c, userId); results.customers++; } catch(e) { console.error('Customer migration error:', e); }
+    }
+  } catch(e) {}
+
+  // Migrate categories
+  try {
+    const localCategories = JSON.parse(localStorage.getItem('dayonetools_categories') || '[]');
+    for (const c of localCategories) {
+      try { await createCategory(c, userId); results.categories++; } catch(e) { console.error('Category migration error:', e); }
+    }
+  } catch(e) {}
+
+  // Migrate products
+  try {
+    const localProducts = JSON.parse(localStorage.getItem('dayonetools_products') || '[]');
+    for (const p of localProducts) {
+      try { await createProduct(p, userId); results.products++; } catch(e) { console.error('Product migration error:', e); }
+    }
+  } catch(e) {}
+
+  // Migrate employees
+  try {
+    const localEmployees = JSON.parse(localStorage.getItem('dayonetools_employees') || '[]');
+    for (const e of localEmployees) {
+      try { await createEmployee(e, userId); results.employees++; } catch(e2) { console.error('Employee migration error:', e2); }
+    }
+  } catch(e) {}
+
+  // Migrate payment methods
+  try {
+    const localPM = JSON.parse(localStorage.getItem('dayonetools_payment_methods') || '[]');
+    for (const pm of localPM) {
+      try { await createPaymentMethod(pm, userId); results.paymentMethods++; } catch(e) { console.error('PM migration error:', e); }
+    }
+  } catch(e) {}
+
+  // Migrate organization
+  try {
+    const localOrg = JSON.parse(localStorage.getItem('dayonetools_organization') || 'null');
+    if (localOrg) {
+      await upsertOrganization(localOrg, userId);
+      results.organization = true;
+    }
+  } catch(e) {}
+
+  // Mark as fully migrated
+  localStorage.setItem('dayonetools_data_migrated', 'true');
+  return results;
+}
