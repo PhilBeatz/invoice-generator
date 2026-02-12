@@ -50,7 +50,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
   const [isOwnerUser, setIsOwnerUser] = useState(checkIsOwner());
   const location = useLocation();
 
-  // Fetch plan from Supabase on mount and after navigation (e.g. returning from Stripe)
+  // Fetch plan from Supabase on mount only
   useEffect(() => {
     setIsOwnerUser(checkIsOwner());
     fetchAndCachePlan().then(function(plan) {
@@ -60,7 +60,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
       setCurrentPlan(getCurrentPlan());
       setPlanLoaded(true);
     });
-  }, [location.pathname]);
+  }, []);
 
   // Trial starts automatically on signup via Supabase trigger
   // No manual trial start needed
