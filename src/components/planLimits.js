@@ -69,9 +69,22 @@ export var PLAN_LIMITS = {
   },
 };
 
+// Owner email - always gets unlimited Pro access
+var OWNER_EMAIL = 'pdouthard@qes-lab.com';
+
+function isOwner() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return false;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user && session.user.email === OWNER_EMAIL;
+  } catch(e) { return false; }
+}
+
 // Get current user plan - reads from localStorage cache (synced from Supabase)
 // Returns: 'none', 'trial', 'trial_expired', 'solo', 'pro'
 export function getCurrentPlan() {
+  if (isOwner()) return 'pro';
   try {
     var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
     
@@ -116,6 +129,7 @@ export function getTrialDaysLeft() {
 
 // Check if user has dashboard access (trial active or paid)
 export function hasDashboardAccess() {
+  if (isOwner()) return true;
   var plan = getCurrentPlan();
   return plan === 'trial' || plan === 'solo' || plan === 'pro';
 }
