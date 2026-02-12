@@ -17,12 +17,11 @@ import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import DashboardConfiguration from './DashboardConfiguration';
 import InvoiceGenerator from './InvoiceGenerator';
-import { getCurrentPlan, fetchAndCachePlan } from './planLimits';
+import { getCurrentPlan, fetchAndCachePlan, hasDashboardAccess, getTrialDaysLeft } from './planLimits';
 
-// Wrapper that blocks free users from accessing paid features
+// Wrapper that blocks non-subscribed users from accessing dashboard features
 function PaidRoute({ children, darkMode }) {
-  const plan = getCurrentPlan();
-  if (plan === 'free') {
+  if (!hasDashboardAccess()) {
     return React.createElement(Navigate, { to: '/dashboard/pricing', replace: true });
   }
   return children;
@@ -38,13 +37,16 @@ export default function DashboardLayout({ darkMode = true, user }) {
   // Fetch plan from Supabase on mount and after navigation (e.g. returning from Stripe)
   useEffect(() => {
     fetchAndCachePlan().then(function(plan) {
-      setCurrentPlan(plan || 'free');
+      setCurrentPlan(plan || 'none');
       setPlanLoaded(true);
     }).catch(function() {
       setCurrentPlan(getCurrentPlan());
       setPlanLoaded(true);
     });
   }, [location.pathname]);
+
+  // Trial starts automatically on signup via Supabase trigger
+  // No manual trial start needed
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -122,7 +124,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
         {/* Dashboard Routes */}
         <Routes>
-          <Route index element={currentPlan === 'free' ? <Navigate to="/dashboard/pricing" replace /> : <DashboardOverview darkMode={darkMode} />} />
+          <Route index element={hasDashboardAccess() ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />} />
           <Route path="create" element={
             <PaidRoute darkMode={darkMode}><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
           } />
@@ -164,7 +166,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
           } />
           {/* These routes are always accessible */}
           <Route path="pricing" element={
-            <PricingPage darkMode={darkMode} currentPlan={currentPlan} onSelectPlan={async function(plan, billing) {
+            <PricingPage darkMode={darkMode} currentPlan={currentPlan} trialDaysLeft={getTrialDaysLeft()} onSelectPlan={async function(plan, billing) {
               try {
                 const session = JSON.parse(localStorage.getItem('sb-yeligmxxckhcfubrmuzx-auth-token') || '{}');
                 const accessToken = session.access_token;

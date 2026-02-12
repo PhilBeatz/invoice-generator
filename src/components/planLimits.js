@@ -4,13 +4,40 @@
 import React from 'react';
 
 export var PLAN_LIMITS = {
-  free: {
-    invoicesPerMonth: 5,
-    customers: 5,
-    products: 10,
+  none: {
+    // No trial started - no dashboard access at all
+    invoicesPerMonth: 0,
+    customers: 0,
+    products: 0,
     emailsPerMonth: 0,
-    categories: 3,
-    paymentMethods: 1,
+    categories: 0,
+    paymentMethods: 0,
+    employees: 0,
+    analytics: false,
+    advancedTemplates: false,
+    prioritySupport: false,
+  },
+  trial: {
+    // 7-day trial gets full Pro access
+    invoicesPerMonth: 1000,
+    customers: 2000,
+    products: 1000,
+    emailsPerMonth: 200,
+    categories: 200,
+    paymentMethods: 999999,
+    employees: 999999,
+    analytics: true,
+    advancedTemplates: true,
+    prioritySupport: false,
+  },
+  trial_expired: {
+    // Trial expired - no access
+    invoicesPerMonth: 0,
+    customers: 0,
+    products: 0,
+    emailsPerMonth: 0,
+    categories: 0,
+    paymentMethods: 0,
     employees: 0,
     analytics: false,
     advancedTemplates: false,
@@ -43,28 +70,54 @@ export var PLAN_LIMITS = {
 };
 
 // Get current user plan - reads from localStorage cache (synced from Supabase)
-// The cache is updated by fetchAndCachePlan() which should be called on app load
+// Returns: 'none', 'trial', 'trial_expired', 'solo', 'pro'
 export function getCurrentPlan() {
   try {
     var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
-    if (sub.plan && sub.plan !== 'free') {
-      // Check trial expiry
-      if (sub.status === 'trialing' && sub.trial_end) {
-        var trialEnd = new Date(sub.trial_end);
-        if (trialEnd < new Date()) {
-          return 'free';
-        }
+    
+    // No subscription data at all
+    if (!sub.plan && !sub.status) return 'none';
+    
+    // Check if trialing
+    if (sub.status === 'trialing') {
+      if (sub.trial_end && new Date(sub.trial_end) < new Date()) {
+        return 'trial_expired';
       }
-      // Check if canceled
-      if (sub.status === 'canceled') {
-        return 'free';
-      }
-      return sub.plan;
+      return 'trial';
     }
-    return 'free';
+    
+    // Canceled subscription
+    if (sub.status === 'canceled') return 'trial_expired';
+    
+    // Active paid plan
+    if (sub.plan === 'solo' || sub.plan === 'pro') {
+      if (sub.status === 'active' || sub.status === 'past_due') {
+        return sub.plan;
+      }
+    }
+    
+    return 'none';
   } catch(e) {
-    return 'free';
+    return 'none';
   }
+}
+
+// Helper to get trial days remaining
+export function getTrialDaysLeft() {
+  try {
+    var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
+    if (sub.status === 'trialing' && sub.trial_end) {
+      var diff = new Date(sub.trial_end) - new Date();
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    }
+    return 0;
+  } catch(e) { return 0; }
+}
+
+// Check if user has dashboard access (trial active or paid)
+export function hasDashboardAccess() {
+  var plan = getCurrentPlan();
+  return plan === 'trial' || plan === 'solo' || plan === 'pro';
 }
 
 // Fetch subscription from Supabase and cache to localStorage
@@ -106,14 +159,12 @@ export async function fetchAndCachePlan() {
           current_period_end: sub.current_period_end,
           stripe_subscription_id: sub.stripe_subscription_id,
         }));
-        // Return the effective plan
-        if (sub.status === 'canceled') return 'free';
-        if (sub.status === 'trialing' && sub.trial_end && new Date(sub.trial_end) < new Date()) return 'free';
-        return sub.plan || 'free';
+        // Return the effective plan using getCurrentPlan logic
+        return getCurrentPlan();
       } else {
-        // No subscription row — user is on free plan
-        localStorage.setItem('dayonetools_subscription', JSON.stringify({ plan: 'free', status: 'active' }));
-        return 'free';
+        // No subscription row — user hasn't started a trial
+        localStorage.setItem('dayonetools_subscription', JSON.stringify({}));
+        return 'none';
       }
     }
     return getCurrentPlan(); // Fall back to cached
@@ -184,12 +235,14 @@ export function checkLimit(resource) {
   }
 
   var allowed = limit === 0 ? false : current < limit;
-  var upgradeTo = plan === 'free' ? 'Solo' : plan === 'solo' ? 'Pro' : null;
+  var upgradeTo = (plan === 'none' || plan === 'trial_expired') ? 'Solo or Pro' : plan === 'solo' ? 'Pro' : null;
 
   var message = '';
   if (!allowed) {
-    if (limit === 0) {
-      message = 'This feature is not available on the ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan.';
+    if (plan === 'none' || plan === 'trial_expired') {
+      message = 'Subscribe to a plan to access this feature. ';
+    } else if (limit === 0) {
+      message = 'This feature is not available on the ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan. ';
     } else {
       message = 'You have reached your ' + resource.replace(/([A-Z])/g, ' $1').toLowerCase() + ' limit (' + limit + '). ';
     }
