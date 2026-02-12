@@ -22,6 +22,7 @@ export default function DashboardCustomers({ darkMode = true }) {
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [showActionsMenu, setShowActionsMenu] = useState(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const emptyCustomer = {
     name: '',
     identifier: '',
@@ -526,8 +527,14 @@ export default function DashboardCustomers({ darkMode = true }) {
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={(e) => { 
-                      e.stopPropagation(); 
-                      setShowActionsMenu(showActionsMenu === customer.id ? null : customer.id); 
+                      e.stopPropagation();
+                      if (showActionsMenu === customer.id) {
+                        setShowActionsMenu(null);
+                      } else {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                        setShowActionsMenu(customer.id);
+                      }
                     }}
                     style={{
                       padding: '6px 10px',
@@ -544,14 +551,14 @@ export default function DashboardCustomers({ darkMode = true }) {
                   
                   {showActionsMenu === customer.id && (
                     <div style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '100%',
+                      position: 'fixed',
+                      right: menuPos.right,
+                      top: menuPos.top,
                       background: colors.bgCard,
                       border: `1px solid ${colors.border}`,
                       borderRadius: '8px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                      zIndex: 100,
+                      zIndex: 1000,
                       minWidth: '140px',
                       overflow: 'hidden',
                     }}>
