@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Header from './components/Header';
@@ -12,6 +12,13 @@ import SignUp from './components/SignUp';
 import ForgotPassword from './components/ForgotPassword';
 import SharedInvoiceView from './components/SharedInvoiceView';
 
+// Protected route wrapper - defined OUTSIDE App to keep stable React identity
+function ProtectedRoute({ user, authLoading, children }) {
+  if (authLoading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('dayonetools_darkmode');
@@ -20,31 +27,33 @@ export default function App() {
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const userIdRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('dayonetools_darkmode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Listen for auth state changes
+  // Listen for auth state changes — only update state if user actually changed
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const newUser = session?.user ?? null;
+      userIdRef.current = newUser?.id || null;
+      setUser(newUser);
       setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const newUser = session?.user ?? null;
+      const newId = newUser?.id || null;
+      // Only update state if user actually signed in/out — skip token refreshes
+      if (newId !== userIdRef.current) {
+        userIdRef.current = newId;
+        setUser(newUser);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Protected route wrapper
-  const ProtectedRoute = ({ children }) => {
-    if (authLoading) return null;
-    if (!user) return <Navigate to="/login" replace />;
-    return children;
-  };
 
   return (
     <Routes>
@@ -71,7 +80,7 @@ export default function App() {
               } />
               <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
               <Route path="/dashboard/*" element={
-                <ProtectedRoute>
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <DashboardLayout darkMode={darkMode} user={user} />
                 </ProtectedRoute>
               } />
