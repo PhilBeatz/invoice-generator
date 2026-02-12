@@ -31,6 +31,17 @@ function checkIsOwner() {
   } catch(e) { return false; }
 }
 
+// Gate component — defined OUTSIDE DashboardLayout to keep stable React identity
+function PaidRoute({ hasAccess, planLoaded, isOwnerUser, darkMode, children }) {
+  if (!planLoaded && !isOwnerUser) {
+    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: darkMode ? '#8b949e' : '#6b7280', fontFamily: "'Inter',sans-serif", fontSize: '14px' }}>Loading...</div>;
+  }
+  if (!hasAccess) {
+    return <Navigate to="/dashboard/pricing" replace />;
+  }
+  return children;
+}
+
 export default function DashboardLayout({ darkMode = true, user }) {
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -56,17 +67,6 @@ export default function DashboardLayout({ darkMode = true, user }) {
 
   // Check if user has access (owner always does, trial/paid users do)
   var hasAccess = isOwnerUser || currentPlan === 'trial' || currentPlan === 'solo' || currentPlan === 'pro';
-
-  // Gate component — redirects to pricing if no access, shows loading while checking
-  function PaidRoute({ children }) {
-    if (!planLoaded && !isOwnerUser) {
-      return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', color: darkMode ? '#8b949e' : '#6b7280', fontFamily: "'Inter',sans-serif", fontSize: '14px' }}>Loading...</div>;
-    }
-    if (!hasAccess) {
-      return <Navigate to="/dashboard/pricing" replace />;
-    }
-    return children;
-  }
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -150,43 +150,43 @@ export default function DashboardLayout({ darkMode = true, user }) {
               : hasAccess ? <DashboardOverview darkMode={darkMode} /> : <Navigate to="/dashboard/pricing" replace />
           } />
           <Route path="create" element={
-            <PaidRoute><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><InvoiceGenerator darkMode={darkMode} inDashboard={true} user={user} /></PaidRoute>
           } />
           <Route path="analytics" element={
-            <PaidRoute><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="vault" element={
-            <PaidRoute><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
           } />
           <Route path="invoices" element={
-            <PaidRoute><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="invoices/:invoiceId" element={
-            <PaidRoute><InvoiceDetail darkMode={darkMode} user={user} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><InvoiceDetail darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="customers" element={
-            <PaidRoute><DashboardCustomers darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardCustomers darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="payment-methods" element={
-            <PaidRoute><DashboardPaymentMethods darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardPaymentMethods darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="configuration" element={
-            <PaidRoute><DashboardConfiguration darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardConfiguration darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="products" element={
-            <PaidRoute><DashboardProducts darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardProducts darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="categories" element={
-            <PaidRoute><DashboardCategories darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardCategories darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="properties" element={
-            <PaidRoute><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
           } />
           <Route path="organization" element={
-            <PaidRoute><DashboardOrganization darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardOrganization darkMode={darkMode} /></PaidRoute>
           } />
           <Route path="employees" element={
-            <PaidRoute><DashboardEmployees darkMode={darkMode} /></PaidRoute>
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardEmployees darkMode={darkMode} /></PaidRoute>
           } />
           {/* These routes are always accessible */}
           <Route path="pricing" element={
