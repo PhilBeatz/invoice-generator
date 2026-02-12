@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { fetchPaymentMethods, createPaymentMethod, updatePaymentMethod, deletePaymentMethod as deletePaymentMethodApi } from '../supabaseService';
 
-var STORAGE_KEY = 'dayonetools_payment_methods';
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
+
 var TYPES = [
   { value: 'bank', label: 'Bank Account', color: '#3b82f6' },
   { value: 'paypal', label: 'PayPal', color: '#0070ba' },
@@ -72,11 +81,9 @@ export default function DashboardPaymentMethods() {
   useEffect(function(){var ck=function(){setIsMobile(window.innerWidth<=768);};ck();window.addEventListener('resize',ck);return function(){window.removeEventListener('resize',ck);};}, []);
 
   var load = useCallback(function(){
-    try{var s=localStorage.getItem(STORAGE_KEY);if(s)setMethods(JSON.parse(s));}catch(e){}
+    fetchPaymentMethods().then(function(data){setMethods(data);}).catch(function(e){console.error('Error loading payment methods:',e);});
   },[]);
   useEffect(function(){load();},[load]);
-
-  var save = function(data){setMethods(data);localStorage.setItem(STORAGE_KEY,JSON.stringify(data));};
 
   var getDetails = function(m) {
     if(m.type==='bank') return m.bankName||'';
@@ -127,51 +134,75 @@ export default function DashboardPaymentMethods() {
     return Object.keys(er).length===0;
   };
 
-  var handleSave = function(){
+  var handleSave = async function(){
     if(!validate()) return;
     var data = {
       name:form.name.trim(), type:form.type, active:form.active, isDefault:form.isDefault,
-      updatedAt:new Date().toISOString(),
     };
     if(form.type==='bank') Object.assign(data,{bankName:form.bankName.trim(),accountName:form.accountName.trim(),accountNumber:form.accountNumber.trim(),swift:form.swift.trim(),iban:form.iban.trim(),routing:form.routing.trim(),sortCode:form.sortCode.trim(),branch:form.branch.trim(),address:form.address.trim()});
     if(form.type==='paypal') data.paypalEmail=form.paypalEmail.trim();
     if(form.type==='crypto'){data.cryptoCurrency=form.cryptoCurrency;data.walletAddress=form.walletAddress.trim();}
     if(form.type==='custom') data.customFields=form.customFields.filter(function(f){return f.label.trim()||f.value.trim();}).map(function(f){return{label:f.label.trim(),value:f.value.trim()};});
 
-    var updated;
-    if(editing){
-      updated=methods.map(function(m){return m.id===editing.id?Object.assign({},m,data):m;});
-    } else {
-      data.id='pm_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);
-      data.createdAt=new Date().toISOString();
-      updated=methods.concat([data]);
-    }
-    // Handle default: only one can be default
-    if(data.isDefault){
-      updated=updated.map(function(m){return m.id===(editing?editing.id:data.id)?m:Object.assign({},m,{isDefault:false});});
-    }
-    save(updated);
+    var userId = getUserId();
+    try {
+      // If setting as default, unset all others first
+      if(data.isDefault){
+        for(var m of methods){
+          if(m.isDefault && m.id !== (editing?editing.id:null)){
+            await updatePaymentMethod(m.id, {isDefault:false}, userId);
+          }
+        }
+      }
+      if(editing){
+        var updated = await updatePaymentMethod(editing.id, data, userId);
+        setMethods(function(prev){return prev.map(function(m){
+          if(m.id===editing.id) return updated;
+          if(data.isDefault) return Object.assign({},m,{isDefault:false});
+          return m;
+        });});
+      } else {
+        var created = await createPaymentMethod(data, userId);
+        setMethods(function(prev){
+          var list = data.isDefault ? prev.map(function(m){return Object.assign({},m,{isDefault:false});}) : prev;
+          return list.concat([created]);
+        });
+      }
+    } catch(e) { alert('Error saving payment method: ' + e.message); }
     setShowModal(false);
   };
 
-  var toggleDefault = function(m){
-    var updated=methods.map(function(pm){
-      if(pm.id===m.id) return Object.assign({},pm,{isDefault:!pm.isDefault});
-      return Object.assign({},pm,{isDefault:false});
-    });
-    save(updated);
+  var toggleDefault = async function(m){
+    var userId = getUserId();
+    try {
+      // Unset all defaults, then set the new one
+      for(var pm of methods){
+        if(pm.isDefault && pm.id !== m.id) await updatePaymentMethod(pm.id, {isDefault:false}, userId);
+      }
+      var updated = await updatePaymentMethod(m.id, {isDefault:!m.isDefault}, userId);
+      setMethods(function(prev){return prev.map(function(pm){
+        if(pm.id===m.id) return updated;
+        return Object.assign({},pm,{isDefault:false});
+      });});
+    } catch(e) { alert('Error: ' + e.message); }
     setActionsOpen(null);
   };
 
-  var toggleActive = function(m){
-    var updated=methods.map(function(pm){return pm.id===m.id?Object.assign({},pm,{active:!pm.active}):pm;});
-    save(updated);
+  var toggleActive = async function(m){
+    var userId = getUserId();
+    try {
+      var updated = await updatePaymentMethod(m.id, {active:!m.active}, userId);
+      setMethods(function(prev){return prev.map(function(pm){return pm.id===m.id?updated:pm;});});
+    } catch(e) { alert('Error: ' + e.message); }
     setActionsOpen(null);
   };
 
-  var confirmDel = function(){
+  var confirmDel = async function(){
     if(!delConfirm) return;
-    save(methods.filter(function(m){return m.id!==delConfirm.id;}));
+    try {
+      await deletePaymentMethodApi(delConfirm.id);
+      setMethods(function(prev){return prev.filter(function(m){return m.id!==delConfirm.id;});});
+    } catch(e) { alert('Error deleting: ' + e.message); }
     setDelConfirm(null);
   };
 

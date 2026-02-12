@@ -1,4 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee as deleteEmployeeApi, fetchInvoices } from '../supabaseService';
+
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
 
 function nextEmployeeId(employees) {
   var ids = employees.map(function(e) { var m = (e.employeeId || '').match(/(\d+)/); return m ? parseInt(m[1]) : 0; });
@@ -36,8 +46,6 @@ function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel,
   );
 }
 
-var STORAGE_KEY = 'dayonetools_employees';
-var INVOICES_KEY = 'dayonetools_invoices';
 var PER_PAGE = 10;
 var DEFAULT_DEPTS = ['Sales', 'Marketing', 'Engineering', 'Design', 'Finance', 'Support', 'Human Resources', 'Product'];
 
@@ -61,12 +69,11 @@ export default function DashboardEmployees({ darkMode }) {
   useEffect(function() { var ck = function() { setIsMobile(window.innerWidth <= 768); }; ck(); window.addEventListener('resize', ck); return function() { window.removeEventListener('resize', ck); }; }, []);
 
   var loadData = useCallback(function() {
-    try { var s = localStorage.getItem(STORAGE_KEY); if (s) setEmployees(JSON.parse(s)); } catch(e) {}
-    try { var i = localStorage.getItem(INVOICES_KEY); if (i) setInvoices(JSON.parse(i)); } catch(e) {}
+    fetchEmployees().then(function(data) { setEmployees(data); }).catch(function(e) { console.error('Error loading employees:', e); });
+    fetchInvoices().then(function(data) { setInvoices(data); }).catch(function(e) { console.error('Error loading invoices:', e); });
   }, []);
   useEffect(function() { loadData(); }, [loadData]);
 
-  var save = function(data) { setEmployees(data); localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); };
   var allDepts = Array.from(new Set(DEFAULT_DEPTS.concat(employees.map(function(e) { return e.department; }).filter(Boolean)))).sort();
   var invCount = function(id) { return invoices.filter(function(i) { return i.employeeId === id || i.assignedEmployee === id; }).length; };
 
@@ -102,25 +109,40 @@ export default function DashboardEmployees({ darkMode }) {
     setErrors(er); return Object.keys(er).length === 0;
   };
 
-  var handleSave = function() {
+  var handleSave = async function() {
     if (!validate()) return;
     var dept = form.department === '__custom__' ? form.customDept.trim() : form.department;
-    var d = { employeeId: form.employeeId.trim(), fullName: form.fullName.trim(), email: form.email.trim(), phone: form.phone.trim(), position: form.position.trim(), department: dept, hireDate: form.hireDate, status: form.status, updatedAt: new Date().toISOString() };
-    var up;
-    if (editingEmp) { up = employees.map(function(e) { return e.id === editingEmp.id ? Object.assign({}, e, d) : e; }); }
-    else { d.id = 'emp_' + Date.now() + '_' + Math.random().toString(36).substr(2,6); d.createdAt = new Date().toISOString(); up = employees.concat([d]); }
-    save(up); setShowModal(false);
-    if (showDetail && editingEmp && showDetail.id === editingEmp.id) setShowDetail(Object.assign({}, showDetail, d));
+    var d = { employeeId: form.employeeId.trim(), fullName: form.fullName.trim(), email: form.email.trim(), phone: form.phone.trim(), position: form.position.trim(), department: dept, hireDate: form.hireDate, status: form.status };
+    var userId = getUserId();
+    try {
+      if (editingEmp) {
+        var updated = await updateEmployee(editingEmp.id, d, userId);
+        setEmployees(function(prev) { return prev.map(function(e) { return e.id === editingEmp.id ? updated : e; }); });
+        if (showDetail && showDetail.id === editingEmp.id) setShowDetail(updated);
+      } else {
+        var created = await createEmployee(d, userId);
+        setEmployees(function(prev) { return prev.concat([created]); });
+      }
+    } catch(e) { alert('Error saving employee: ' + e.message); }
+    setShowModal(false);
   };
 
   var handleDel = function(emp) { setDelConfirm({ employee: emp, hasInv: invCount(emp.employeeId) > 0 }); };
-  var confirmDel = function() {
+  var confirmDel = async function() {
     if (!delConfirm) return;
-    var up;
-    if (delConfirm.hasInv) { up = employees.map(function(e) { return e.id === delConfirm.employee.id ? Object.assign({}, e, { status: 'inactive', updatedAt: new Date().toISOString() }) : e; }); }
-    else { up = employees.filter(function(e) { return e.id !== delConfirm.employee.id; }); }
-    save(up); setDelConfirm(null);
-    if (showDetail && showDetail.id === delConfirm.employee.id) { if (delConfirm.hasInv) setShowDetail(Object.assign({}, showDetail, { status: 'inactive' })); else setShowDetail(null); }
+    var userId = getUserId();
+    try {
+      if (delConfirm.hasInv) {
+        var updated = await updateEmployee(delConfirm.employee.id, { status: 'inactive' }, userId);
+        setEmployees(function(prev) { return prev.map(function(e) { return e.id === delConfirm.employee.id ? updated : e; }); });
+        if (showDetail && showDetail.id === delConfirm.employee.id) setShowDetail(updated);
+      } else {
+        await deleteEmployeeApi(delConfirm.employee.id);
+        setEmployees(function(prev) { return prev.filter(function(e) { return e.id !== delConfirm.employee.id; }); });
+        if (showDetail && showDetail.id === delConfirm.employee.id) setShowDetail(null);
+      }
+    } catch(e) { alert('Error: ' + e.message); }
+    setDelConfirm(null);
   };
 
   var C = { bg: '#0d1117', bgCard: '#161b22', bgIn: '#0d1117', text: '#e6edf3', tm: '#8b949e', bdr: '#30363d', acc: '#3b82f6', grn: '#10b981', red: '#ef4444', yel: '#f59e0b' };

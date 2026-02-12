@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { fetchInvoices, fetchCustomers } from '../supabaseService';
 
 export default function DashboardOverview({ darkMode = true }) {
   const navigate = useNavigate();
@@ -14,12 +15,10 @@ export default function DashboardOverview({ darkMode = true }) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load real data from localStorage
+  // Load real data from Supabase
   useEffect(() => {
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    const savedCustomers = localStorage.getItem('dayonetools_customers');
-    if (savedInvoices) setInvoices(JSON.parse(savedInvoices));
-    if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
+    fetchInvoices().then(data => setInvoices(data)).catch(e => console.error(e));
+    fetchCustomers().then(data => setCustomers(data)).catch(e => console.error(e));
   }, []);
 
   const colors = darkMode ? {

@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { fetchProducts, createProduct, updateProduct, deleteProduct as deleteProductApi, fetchCategories } from '../supabaseService';
+
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
 
 export default function DashboardProducts({ darkMode = true }) {
   const [products, setProducts] = useState([]);
@@ -36,28 +46,18 @@ export default function DashboardProducts({ darkMode = true }) {
     red: '#ef4444',
   };
 
-  // Load products from localStorage
+  // Load products from Supabase
   useEffect(() => {
-    const saved = localStorage.getItem('dayonetools_products');
-    if (saved) {
-      setProducts(JSON.parse(saved));
-    }
+    fetchProducts().then(data => setProducts(data)).catch(e => console.error('Error loading products:', e));
   }, []);
 
-  // Load categories from localStorage
+  // Load categories from Supabase
   const [savedCategories, setSavedCategories] = useState([]);
   useEffect(() => {
-    const saved = localStorage.getItem('dayonetools_categories');
-    if (saved) {
-      setSavedCategories(JSON.parse(saved));
-    }
+    fetchCategories().then(data => setSavedCategories(data)).catch(e => console.error('Error loading categories:', e));
   }, [showModal]);
 
-  // Save products to localStorage
-  const saveProducts = (newProducts) => {
-    setProducts(newProducts);
-    localStorage.setItem('dayonetools_products', JSON.stringify(newProducts));
-  };
+  // No longer need localStorage save helper
 
   // Get unique categories from both saved categories and existing product categories
   const categories = [...new Set([
@@ -105,27 +105,27 @@ export default function DashboardProducts({ darkMode = true }) {
     setShowActionsMenu(null);
   };
 
-  const handleDelete = (productId) => {
+  const handleDelete = async (productId) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      saveProducts(products.filter(p => p.id !== productId));
+      try {
+        await deleteProductApi(productId);
+        setProducts(prev => prev.filter(p => p.id !== productId));
+      } catch(e) { alert('Error deleting product: ' + e.message); }
     }
     setShowActionsMenu(null);
   };
 
-  const handleSave = (productData) => {
-    if (editingProduct) {
-      // Update existing
-      saveProducts(products.map(p => p.id === editingProduct.id ? { ...p, ...productData, updatedAt: new Date().toISOString() } : p));
-    } else {
-      // Create new
-      const newProduct = {
-        ...productData,
-        id: `prod_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        status: 'active',
-      };
-      saveProducts([...products, newProduct]);
-    }
+  const handleSave = async (productData) => {
+    const userId = getUserId();
+    try {
+      if (editingProduct) {
+        const updated = await updateProduct(editingProduct.id, productData, userId);
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p));
+      } else {
+        const created = await createProduct({ ...productData, status: 'active' }, userId);
+        setProducts(prev => [...prev, created]);
+      }
+    } catch(e) { alert('Error saving product: ' + e.message); }
     setShowModal(false);
     setEditingProduct(null);
   };

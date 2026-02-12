@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { fetchInvoices, fetchCustomers } from '../supabaseService';
 
 // ── Mini Sparkline SVG Component ──
 function Sparkline({ data, color = '#10b981', width = 120, height = 40 }) {
@@ -112,10 +113,8 @@ export default function DashboardAnalytics({ darkMode = true }) {
   }, []);
 
   const loadData = useCallback(() => {
-    const savedInvoices = localStorage.getItem('dayonetools_invoices');
-    const savedCustomers = localStorage.getItem('dayonetools_customers');
-    if (savedInvoices) setInvoices(JSON.parse(savedInvoices));
-    if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
+    fetchInvoices().then(data => setInvoices(data)).catch(e => console.error('Error loading invoices:', e));
+    fetchCustomers().then(data => setCustomers(data)).catch(e => console.error('Error loading customers:', e));
   }, []);
 
   useEffect(() => { loadData(); }, [loadData, refreshKey]);

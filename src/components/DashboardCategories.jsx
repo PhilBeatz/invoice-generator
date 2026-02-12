@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { fetchCategories, createCategory, updateCategory, deleteCategory as deleteCategoryApi, fetchProducts, updateProduct } from '../supabaseService';
+
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
 
 export default function DashboardCategories({ darkMode = true }) {
   const [categories, setCategories] = useState([]);
@@ -31,24 +41,11 @@ export default function DashboardCategories({ darkMode = true }) {
     red: '#ef4444',
   };
 
-  // Load categories and products from localStorage
+  // Load categories and products from Supabase
   useEffect(() => {
-    const savedCategories = localStorage.getItem('dayonetools_categories');
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
-    
-    const savedProducts = localStorage.getItem('dayonetools_products');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
+    fetchCategories().then(data => setCategories(data)).catch(e => console.error('Error loading categories:', e));
+    fetchProducts().then(data => setProducts(data)).catch(e => console.error('Error loading products:', e));
   }, []);
-
-  // Save categories to localStorage
-  const saveCategories = (newCategories) => {
-    setCategories(newCategories);
-    localStorage.setItem('dayonetools_categories', JSON.stringify(newCategories));
-  };
 
   // Count products in a category
   const getProductCount = (categoryName) => {
@@ -71,57 +68,56 @@ export default function DashboardCategories({ darkMode = true }) {
     setShowActionsMenu(null);
   };
 
-  const handleDelete = (categoryId) => {
+  const handleDelete = async (categoryId) => {
     const category = categories.find(c => c.id === categoryId);
     const productCount = getProductCount(category?.name);
+    const userId = getUserId();
     
     if (productCount > 0) {
       if (!window.confirm(`This category has ${productCount} product(s). Deleting it will remove the category from those products. Continue?`)) {
         return;
       }
-      // Remove category from products
-      const updatedProducts = products.map(p => 
-        p.category === category.name ? { ...p, category: '' } : p
-      );
-      setProducts(updatedProducts);
-      localStorage.setItem('dayonetools_products', JSON.stringify(updatedProducts));
+      // Remove category from products in Supabase
+      const affectedProducts = products.filter(p => p.category === category.name);
+      for (const p of affectedProducts) {
+        try { await updateProduct(p.id, { category: '' }, userId); } catch(e) { console.error(e); }
+      }
+      setProducts(prev => prev.map(p => p.category === category.name ? { ...p, category: '' } : p));
     } else {
       if (!window.confirm('Are you sure you want to delete this category?')) {
         return;
       }
     }
     
-    saveCategories(categories.filter(c => c.id !== categoryId));
+    try {
+      await deleteCategoryApi(categoryId);
+      setCategories(prev => prev.filter(c => c.id !== categoryId));
+    } catch(e) { alert('Error deleting category: ' + e.message); }
     setShowActionsMenu(null);
   };
 
-  const handleSave = (categoryData) => {
-    if (editingCategory) {
-      // Update existing - also update products if name changed
-      const oldName = editingCategory.name;
-      const newName = categoryData.name;
-      
-      if (oldName !== newName) {
-        const updatedProducts = products.map(p => 
-          p.category === oldName ? { ...p, category: newName } : p
-        );
-        setProducts(updatedProducts);
-        localStorage.setItem('dayonetools_products', JSON.stringify(updatedProducts));
+  const handleSave = async (categoryData) => {
+    const userId = getUserId();
+    try {
+      if (editingCategory) {
+        const oldName = editingCategory.name;
+        const newName = categoryData.name;
+        
+        if (oldName !== newName) {
+          const affectedProducts = products.filter(p => p.category === oldName);
+          for (const p of affectedProducts) {
+            try { await updateProduct(p.id, { category: newName }, userId); } catch(e) { console.error(e); }
+          }
+          setProducts(prev => prev.map(p => p.category === oldName ? { ...p, category: newName } : p));
+        }
+        
+        const updated = await updateCategory(editingCategory.id, categoryData, userId);
+        setCategories(prev => prev.map(c => c.id === editingCategory.id ? updated : c));
+      } else {
+        const created = await createCategory({ ...categoryData, status: categoryData.status || 'active' }, userId);
+        setCategories(prev => [...prev, created]);
       }
-      
-      saveCategories(categories.map(c => 
-        c.id === editingCategory.id ? { ...c, ...categoryData, updatedAt: new Date().toISOString() } : c
-      ));
-    } else {
-      // Create new
-      const newCategory = {
-        ...categoryData,
-        id: `cat_${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        status: categoryData.status || 'active',
-      };
-      saveCategories([...categories, newCategory]);
-    }
+    } catch(e) { alert('Error saving category: ' + e.message); }
     setShowModal(false);
     setEditingCategory(null);
   };

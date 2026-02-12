@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchOrganization, upsertOrganization } from '../supabaseService';
+
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
 
 export default function DashboardOrganization({ darkMode = true }) {
   const navigate = useNavigate();
@@ -35,38 +45,23 @@ export default function DashboardOrganization({ darkMode = true }) {
     green: '#10b981',
   };
 
-  // Load organization data from localStorage
+  // Load organization data from Supabase
   useEffect(() => {
-    const saved = localStorage.getItem('dayonetools_organization');
-    if (saved) {
-      setOrgData(JSON.parse(saved));
-    } else {
-      // Initialize with default data
-      const defaultOrg = {
-        companyName: '',
-        email: '',
-        phone: '',
-        address: '',
-        timezone: 'America/New_York',
-        currency: 'USD',
-        logo: '',
-        createdAt: new Date().toISOString(),
-        organizationId: `org_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`,
-      };
-      
-      // Try to get company name from business_info
-      const businessInfo = localStorage.getItem('dayonetools_business_info');
-      if (businessInfo) {
-        const info = JSON.parse(businessInfo);
-        defaultOrg.companyName = info.businessName || '';
-        defaultOrg.email = info.businessEmail || '';
-        defaultOrg.phone = info.businessPhone || '';
-        defaultOrg.address = info.businessAddress || '';
+    fetchOrganization().then(data => {
+      if (data) {
+        setOrgData({
+          companyName: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          timezone: 'America/New_York',
+          currency: 'USD',
+          logo: data.logo || '',
+          createdAt: data.createdAt || '',
+          organizationId: data.id || '',
+        });
       }
-      
-      setOrgData(defaultOrg);
-      localStorage.setItem('dayonetools_organization', JSON.stringify(defaultOrg));
-    }
+    }).catch(e => console.error('Error loading organization:', e));
   }, []);
 
   const formatDate = (dateStr) => {

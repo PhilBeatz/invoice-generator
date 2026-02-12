@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PLAN_LIMITS, fetchAndCachePlan, getCurrentPlan, getTrialDaysLeft } from './planLimits';
+import { fetchInvoices, fetchCustomers, fetchProducts, fetchCategories, fetchPaymentMethods, fetchEmployees } from '../supabaseService';
 
 // Owner email - always shows Pro
 var OWNER_EMAIL = 'phildouthard@gmail.com';
@@ -42,17 +43,20 @@ export default function DashboardSubscription({ darkMode = true }) {
         } catch(e) {}
       });
     }
-    try {
-      var inv = JSON.parse(localStorage.getItem('dayonetools_invoices') || '[]');
-      var cust = JSON.parse(localStorage.getItem('dayonetools_customers') || '[]');
-      var prod = JSON.parse(localStorage.getItem('dayonetools_products') || '[]');
-      var cats = JSON.parse(localStorage.getItem('dayonetools_categories') || '[]');
-      var pm = JSON.parse(localStorage.getItem('dayonetools_payment_methods') || '[]');
-      var emp = JSON.parse(localStorage.getItem('dayonetools_employees') || '[]');
+    // Calculate usage from Supabase
+    Promise.all([
+      fetchInvoices().catch(function() { return []; }),
+      fetchCustomers().catch(function() { return []; }),
+      fetchProducts().catch(function() { return []; }),
+      fetchCategories().catch(function() { return []; }),
+      fetchPaymentMethods().catch(function() { return []; }),
+      fetchEmployees().catch(function() { return []; }),
+    ]).then(function(results) {
+      var inv = results[0]; var cust = results[1]; var prod = results[2]; var cats = results[3]; var pm = results[4]; var emp = results[5];
       var now = new Date();
       var monthInv = inv.filter(function(i) { var d = new Date(i.createdAt || i.issueDate); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
       setUsage({ invoices: monthInv.length, customers: cust.length, products: prod.length, categories: cats.length, paymentMethods: pm.length, employees: emp.length, emailsSent: 0 });
-    } catch(e) {}
+    });
   }, []);
 
   var C = { bg: '#0d1117', bgCard: '#161b22', text: '#e6edf3', tm: '#8b949e', bdr: '#30363d', grn: '#10b981', acc: '#3b82f6', red: '#ef4444', yel: '#f59e0b' };

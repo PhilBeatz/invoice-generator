@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
+import { fetchCustomers, createCustomer, updateCustomer, deleteCustomer as deleteCustomerApi } from '../supabaseService';
+
+function getUserId() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (authKeys.length === 0) return null;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user?.id || null;
+  } catch(e) { return null; }
+}
 
 export default function DashboardCustomers({ darkMode = true }) {
   const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -84,18 +96,10 @@ export default function DashboardCustomers({ darkMode = true }) {
     red: '#ef4444',
   };
 
-  // Load customers from localStorage
+  // Load customers from Supabase
   useEffect(() => {
-    const savedCustomers = localStorage.getItem('dayonetools_customers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
-    }
+    fetchCustomers().then(data => { setCustomers(data); setLoading(false); }).catch(e => { console.error('Error loading customers:', e); setLoading(false); });
   }, []);
-
-  // Save customers to localStorage
-  useEffect(() => {
-    localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
-  }, [customers]);
 
   // Close actions menu when clicking outside
   useEffect(() => {
@@ -166,21 +170,22 @@ export default function DashboardCustomers({ darkMode = true }) {
     setShowActionsMenu(null);
   };
 
-  const handleDeleteCustomer = (id) => {
-    // Check if customer has invoices (for future use)
+  const handleDeleteCustomer = async (id) => {
     const customer = customers.find(c => c.id === id);
     if (customer?.invoiceCount > 0) {
       alert('Cannot delete customer with existing invoices. Please delete or reassign their invoices first.');
       return;
     }
-    
     if (window.confirm('Are you sure you want to delete this customer?')) {
-      setCustomers(prev => prev.filter(c => c.id !== id));
+      try {
+        await deleteCustomerApi(id);
+        setCustomers(prev => prev.filter(c => c.id !== id));
+      } catch(e) { alert('Error deleting customer: ' + e.message); }
     }
     setShowActionsMenu(null);
   };
 
-  const handleSaveCustomer = () => {
+  const handleSaveCustomer = async () => {
     if (!newCustomer.name.trim()) {
       alert('Customer name is required');
       return;
@@ -190,7 +195,6 @@ export default function DashboardCustomers({ darkMode = true }) {
       return;
     }
 
-    // Check for duplicate identifier
     const existingCustomer = customers.find(c => 
       c.identifier.toLowerCase() === newCustomer.identifier.toLowerCase() && 
       c.id !== editingCustomer?.id
@@ -200,23 +204,21 @@ export default function DashboardCustomers({ darkMode = true }) {
       return;
     }
 
-    // Validate email if provided
     if (newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)) {
       alert('Please enter a valid email address');
       return;
     }
 
-    if (editingCustomer) {
-      // Update existing
-      setCustomers(prev => prev.map(c => 
-        c.id === editingCustomer.id ? { ...newCustomer, id: c.id, createdAt: c.createdAt, invoiceCount: c.invoiceCount || 0 } : c
-      ));
-    } else {
-      // Create new
-      const id = Date.now().toString();
-      const createdAt = new Date().toISOString();
-      setCustomers(prev => [...prev, { ...newCustomer, id, createdAt, invoiceCount: 0 }]);
-    }
+    const userId = getUserId();
+    try {
+      if (editingCustomer) {
+        const updated = await updateCustomer(editingCustomer.id, newCustomer, userId);
+        setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? { ...updated, invoiceCount: c.invoiceCount || 0 } : c));
+      } else {
+        const created = await createCustomer(newCustomer, userId);
+        setCustomers(prev => [...prev, { ...created, invoiceCount: 0 }]);
+      }
+    } catch(e) { alert('Error saving customer: ' + e.message); }
     setShowModal(false);
   };
 
