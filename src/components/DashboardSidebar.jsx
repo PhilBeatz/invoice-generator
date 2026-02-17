@@ -199,6 +199,9 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
             <Link to="/dashboard/proposals" style={subItemStyle('/dashboard/proposals')} onClick={onClose}>
               📋 Proposal Log
             </Link>
+            <Link to="/dashboard/proposal-analytics" style={subItemStyle('/dashboard/proposal-analytics')} onClick={onClose}>
+              📊 Analytics
+            </Link>
           </div>
         )}
 
