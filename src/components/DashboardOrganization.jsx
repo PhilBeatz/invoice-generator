@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchOrganization, upsertOrganization } from '../supabaseService';
-
-function getUserId() {
-  try {
-    var authKeys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-    if (authKeys.length === 0) return null;
-    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
-    return session.user?.id || null;
-  } catch(e) { return null; }
-}
+import { fetchOrganization } from '../supabaseService';
 
 export default function DashboardOrganization({ darkMode = true }) {
   const navigate = useNavigate();
@@ -45,7 +36,6 @@ export default function DashboardOrganization({ darkMode = true }) {
     green: '#10b981',
   };
 
-  // Load organization data from Supabase
   useEffect(() => {
     fetchOrganization().then(data => {
       if (data) {
@@ -65,44 +55,50 @@ export default function DashboardOrganization({ darkMode = true }) {
   }, []);
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
+    if (!dateStr) return '\u2014';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   };
 
-  const cardStyle = {
-    background: colors.bgCard,
-    border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
-    padding: '24px',
-  };
-
-  const labelStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '12px',
-    fontWeight: '500',
-    color: colors.textMuted,
-    marginBottom: '6px',
-  };
-
-  const valueStyle = {
-    fontSize: '15px',
-    fontWeight: '500',
-    color: colors.accent,
-  };
+  const InfoItem = ({ icon, label, value, isLink, mono }) => (
+    <div style={{
+      padding: '16px 20px',
+      background: colors.bgInput,
+      borderRadius: '8px',
+      border: `1px solid ${colors.border}`,
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '11px',
+        fontWeight: '600',
+        color: colors.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        marginBottom: '8px',
+      }}>
+        <span style={{ fontSize: '14px' }}>{icon}</span>
+        {label}
+      </div>
+      <div style={{
+        fontSize: mono ? '13px' : '15px',
+        fontWeight: mono ? '400' : '500',
+        color: isLink ? colors.accent : (value && value !== '\u2014' ? colors.text : colors.textMuted),
+        fontFamily: mono ? "'SFMono-Regular', Consolas, monospace" : "'Inter', sans-serif",
+        wordBreak: 'break-all',
+      }}>
+        {value || '\u2014'}
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ padding: '24px', fontFamily: "'Inter', sans-serif" }}>
       {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-start', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
         marginBottom: '24px',
         flexWrap: 'wrap',
         gap: '16px',
@@ -136,94 +132,79 @@ export default function DashboardOrganization({ darkMode = true }) {
         </button>
       </div>
 
-      {/* Organization Info Card */}
-      <div style={cardStyle}>
-        {/* Row 1: Company Name, Email, Phone */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '32px',
-          marginBottom: '24px',
-        }}>
-          <div>
-            <div style={labelStyle}>
-              <span>🏢</span> Company Name
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: '600', color: colors.text }}>
-              {orgData.companyName || '—'}
-            </div>
-          </div>
-          <div>
-            <div style={labelStyle}>
-              <span>✉️</span> Email
-            </div>
-            <div style={valueStyle}>
-              {orgData.email || '—'}
-            </div>
-          </div>
-          <div>
-            <div style={labelStyle}>
-              <span>📞</span> Phone
-            </div>
-            <div style={valueStyle}>
-              {orgData.phone || '—'}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2: Address, Timezone */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
-          gap: '32px',
-          marginBottom: '24px',
-        }}>
-          <div>
-            <div style={labelStyle}>
-              <span>📍</span> Address
-            </div>
-            <div style={{ fontSize: '15px', color: colors.text }}>
-              {orgData.address || '—'}
-            </div>
-          </div>
-          <div>
-            <div style={labelStyle}>
-              <span>🕐</span> Timezone
-            </div>
-            <div style={{ fontSize: '15px', color: colors.text }}>
-              {orgData.timezone || '—'}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: Created */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={labelStyle}>
-            <span>📅</span> Created
-          </div>
-          <div style={{ fontSize: '15px', color: colors.text }}>
-            {formatDate(orgData.createdAt)}
-          </div>
-        </div>
-
-        {/* Row 4: Organization ID */}
-        <div>
-          <div style={labelStyle}>
-            <span>#</span> Organization ID
-          </div>
-          <div style={{ 
-            padding: '12px 16px',
+      {/* Company Header Card */}
+      <div style={{
+        background: colors.bgCard,
+        border: `1px solid ${colors.border}`,
+        borderRadius: '10px',
+        padding: '28px',
+        marginBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '20px',
+      }}>
+        {orgData.logo ? (
+          <img src={orgData.logo} alt="Logo" style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '12px',
+            objectFit: 'contain',
             background: colors.bgInput,
+            padding: '4px',
             border: `1px solid ${colors.border}`,
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontFamily: 'monospace',
-            color: colors.textMuted,
+          }} />
+        ) : (
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '12px',
+            background: `${colors.accent}15`,
+            border: `1px solid ${colors.accent}30`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '24px',
+            color: colors.accent,
+            flexShrink: 0,
           }}>
-            {orgData.organizationId || '—'}
+            🏢
+          </div>
+        )}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '20px', fontWeight: '700', color: colors.text }}>
+            {orgData.companyName || 'Organization Name'}
+          </div>
+          <div style={{ fontSize: '13px', color: colors.textMuted, marginTop: '4px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            {orgData.email && <span>✉️ {orgData.email}</span>}
+            {orgData.phone && <span>📞 {orgData.phone}</span>}
           </div>
         </div>
       </div>
+
+      {/* Details Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '12px',
+        marginBottom: '12px',
+      }}>
+        <InfoItem icon="✉️" label="Email" value={orgData.email} isLink />
+        <InfoItem icon="📞" label="Phone" value={orgData.phone} isLink />
+        <InfoItem icon="🕐" label="Timezone" value={orgData.timezone?.replace('_', ' ')} />
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px',
+        marginBottom: '12px',
+      }}>
+        <InfoItem icon="📍" label="Address" value={orgData.address} />
+        <InfoItem icon="📅" label="Created" value={formatDate(orgData.createdAt)} />
+      </div>
+
+      {/* Organization ID */}
+      <InfoItem icon="#" label="Organization ID" value={orgData.organizationId} mono />
     </div>
   );
 }
