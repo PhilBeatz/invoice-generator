@@ -32,6 +32,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
   // Send email
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailTo, setEmailTo] = useState('');
+  const [emailCc, setEmailCc] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [emailHistory, setEmailHistory] = useState([]);
   // More actions
@@ -160,6 +161,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
       if (!user) return;
       const emailRecord = await sendInvoiceEmail(invoiceId, user.id, {
         to: emailTo,
+        cc: emailCc.trim() || null,
         message: emailMessage,
         sentBy: 'You',
       });
@@ -168,7 +170,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
       if (invoice.status === 'draft' || invoice.status === 'pending') {
         await updateInvoice({ status: 'sent' });
       }
-      setShowEmailModal(false); setEmailMessage('');
+      setShowEmailModal(false); setEmailMessage(''); setEmailCc('');
     } catch (e) {
       console.error('Error sending email:', e);
       alert('Failed to send email. Please try again.');
@@ -1007,6 +1009,10 @@ export default function InvoiceDetail({ darkMode = true, user }) {
               <div>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Recipient Email</label>
                 <input type="email" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} placeholder="customer@example.com" style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>CC <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></label>
+                <input type="email" value={emailCc} onChange={(e) => setEmailCc(e.target.value)} placeholder="cc@example.com" style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Custom Message (Optional)</label>
