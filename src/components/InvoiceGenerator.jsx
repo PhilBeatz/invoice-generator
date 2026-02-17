@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft } from '../supabaseService';
+import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft, fetchCustomers, createCustomer as createCustomerDb, updateCustomer as updateCustomerDb, deleteCustomer as deleteCustomerDb } from '../supabaseService';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
@@ -190,13 +190,17 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     name: '', identifier: '', address: '', zipCode: '', phone: '', email: ''
   });
 
-  // Load customers from localStorage on mount
+  // Load customers from Supabase (or localStorage for non-dashboard)
   useEffect(() => {
-    const savedCustomers = localStorage.getItem('dayonetools_customers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
+    if (inDashboard && user) {
+      fetchCustomers().then(data => setCustomers(data)).catch(e => console.error('Error loading customers:', e));
+    } else {
+      const savedCustomers = localStorage.getItem('dayonetools_customers');
+      if (savedCustomers) {
+        setCustomers(JSON.parse(savedCustomers));
+      }
     }
-  }, []);
+  }, [inDashboard, user]);
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
@@ -301,10 +305,12 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     }
   }, []);
 
-  // Save customers to localStorage when changed
+  // Save customers to localStorage when changed (non-dashboard only)
   useEffect(() => {
-    localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
-  }, [customers]);
+    if (!inDashboard) {
+      localStorage.setItem('dayonetools_customers', JSON.stringify(customers));
+    }
+  }, [customers, inDashboard]);
 
   // Auto-save as draft when user starts editing (dashboard only)
   useEffect(() => {
@@ -439,19 +445,30 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); processFile(e.dataTransfer.files[0]); };
 
   // Customer Manager functions
-  const handleAddCustomer = () => {
+  const handleAddCustomer = async () => {
     if (!newCustomer.name.trim()) return;
     
-    const customer = {
-      id: Date.now(),
-      ...newCustomer
-    };
-    
-    if (editingCustomer) {
-      setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? { ...customer, id: editingCustomer.id } : c));
-      setEditingCustomer(null);
+    if (inDashboard && user) {
+      try {
+        if (editingCustomer) {
+          const updated = await updateCustomerDb(editingCustomer.id, newCustomer, user.id);
+          setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? updated : c));
+          setEditingCustomer(null);
+        } else {
+          const created = await createCustomerDb(newCustomer, user.id);
+          setCustomers(prev => [created, ...prev]);
+        }
+      } catch (e) {
+        console.error('Error saving customer:', e);
+      }
     } else {
-      setCustomers(prev => [...prev, customer]);
+      const customer = { id: Date.now(), ...newCustomer };
+      if (editingCustomer) {
+        setCustomers(prev => prev.map(c => c.id === editingCustomer.id ? { ...customer, id: editingCustomer.id } : c));
+        setEditingCustomer(null);
+      } else {
+        setCustomers(prev => [...prev, customer]);
+      }
     }
     
     setNewCustomer({ name: '', identifier: '', address: '', zipCode: '', phone: '', email: '' });
@@ -484,7 +501,14 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     setShowAddCustomer(true);
   };
 
-  const handleDeleteCustomer = (id) => {
+  const handleDeleteCustomer = async (id) => {
+    if (inDashboard) {
+      try {
+        await deleteCustomerDb(id);
+      } catch (e) {
+        console.error('Error deleting customer:', e);
+      }
+    }
     setCustomers(prev => prev.filter(c => c.id !== id));
   };
 
