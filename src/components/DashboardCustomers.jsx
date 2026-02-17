@@ -506,7 +506,7 @@ export default function DashboardCustomers({ darkMode = true }) {
                 
                 {/* Email */}
                 <div style={{ color: colors.textMuted, fontSize: '13px' }}>
-                  {customer.email || '—'}
+                  {customer.email ? <a href={`mailto:${customer.email}`} style={{ color: colors.accent, textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>{customer.email}</a> : '—'}
                 </div>
                 
                 {/* Phone */}
