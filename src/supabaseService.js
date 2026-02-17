@@ -792,3 +792,80 @@ export async function migrateAllLocalData(userId) {
   localStorage.setItem('dayonetools_data_migrated', 'true');
   return results;
 }
+
+
+// ============================================
+// PROPOSALS
+// ============================================
+
+const toDbProposal = (p, userId) => ({
+  user_id: userId,
+  proposal_number: p.proposalNumber || '',
+  assigned_to: p.assignedTo || null,
+  date_submitted: p.dateSubmitted || null,
+  customer: p.customer || null,
+  address: p.address || null,
+  city: p.city || null,
+  state: p.state || null,
+  service: p.service || null,
+  proposal_amount: p.proposalAmount || 0,
+  follow_up_date: p.followUpDate || null,
+  status: p.status || 'Client Review',
+  contact_name: p.contactName || null,
+  contact_phone: p.contactPhone || null,
+  contact_email: p.contactEmail || null,
+  notes: p.notes || null,
+});
+
+const fromDbProposal = (row) => ({
+  id: row.id,
+  proposalNumber: row.proposal_number || '',
+  assignedTo: row.assigned_to || '',
+  dateSubmitted: row.date_submitted || '',
+  customer: row.customer || '',
+  address: row.address || '',
+  city: row.city || '',
+  state: row.state || '',
+  service: row.service || '',
+  proposalAmount: parseFloat(row.proposal_amount) || 0,
+  followUpDate: row.follow_up_date || '',
+  status: row.status || 'Client Review',
+  contactName: row.contact_name || '',
+  contactPhone: row.contact_phone || '',
+  contactEmail: row.contact_email || '',
+  notes: row.notes || '',
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
+export async function fetchProposals() {
+  const { data, error } = await supabase.from('proposals').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(fromDbProposal);
+}
+
+export async function createProposal(proposal, userId) {
+  const { data, error } = await supabase.from('proposals').insert(toDbProposal(proposal, userId)).select().single();
+  if (error) throw error;
+  return fromDbProposal(data);
+}
+
+export async function updateProposal(id, updates, userId) {
+  const row = {};
+  const map = {
+    proposalNumber: 'proposal_number', assignedTo: 'assigned_to', dateSubmitted: 'date_submitted',
+    customer: 'customer', address: 'address', city: 'city', state: 'state', service: 'service',
+    proposalAmount: 'proposal_amount', followUpDate: 'follow_up_date', status: 'status',
+    contactName: 'contact_name', contactPhone: 'contact_phone', contactEmail: 'contact_email', notes: 'notes',
+  };
+  for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
+  row.updated_at = new Date().toISOString();
+  const { data, error } = await supabase.from('proposals').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return fromDbProposal(data);
+}
+
+export async function deleteProposal(id) {
+  const { error } = await supabase.from('proposals').delete().eq('id', id);
+  if (error) throw error;
+}
