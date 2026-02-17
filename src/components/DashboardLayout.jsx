@@ -16,6 +16,7 @@ import DashboardOrganization from './DashboardOrganization';
 import DashboardSettings from './DashboardSettings';
 import InvoiceDetail from './InvoiceDetail';
 import DashboardConfiguration from './DashboardConfiguration';
+import DashboardProposals from './DashboardProposals';
 import InvoiceGenerator from './InvoiceGenerator';
 import { getCurrentPlan, fetchAndCachePlan, hasDashboardAccess, getTrialDaysLeft } from './planLimits';
 
@@ -181,6 +182,9 @@ export default function DashboardLayout({ darkMode = true, user }) {
           } />
           <Route path="properties" element={
             <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Properties" icon="🔧" description="Define custom properties and attributes for your products." /></PaidRoute>
+          } />
+          <Route path="proposals" element={
+            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardProposals darkMode={darkMode} user={user} /></PaidRoute>
           } />
           <Route path="organization" element={
             <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardOrganization darkMode={darkMode} /></PaidRoute>

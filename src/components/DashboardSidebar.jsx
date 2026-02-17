@@ -6,6 +6,7 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
   const [expandedSections, setExpandedSections] = useState({
     invoice: true,
     products: false,
+    proposals: false,
     organization: false,
   });
 
@@ -183,6 +184,20 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
             </Link>
             <Link to="/dashboard/properties" style={subItemStyle('/dashboard/properties')} onClick={onClose}>
               🔧 Properties
+            </Link>
+          </div>
+        )}
+
+        {/* Proposal Management */}
+        <div style={sectionHeaderStyle}>Proposal Management</div>
+
+        <button onClick={() => toggleSection('proposals')} style={{ ...navItemStyle(''), background: 'transparent', color: colors.text }}>
+          <span style={{ fontSize: '16px' }}>📝</span> Proposals {chevron(expandedSections.proposals)}
+        </button>
+        {expandedSections.proposals && (
+          <div>
+            <Link to="/dashboard/proposals" style={subItemStyle('/dashboard/proposals')} onClick={onClose}>
+              📋 Proposal Log
             </Link>
           </div>
         )}
