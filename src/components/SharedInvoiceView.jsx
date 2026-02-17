@@ -53,6 +53,127 @@ export default function SharedInvoiceView() {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   };
 
+  const handleDownloadPDF = () => {
+    if (!invoice) return;
+
+    const items = invoice.items || [];
+    const isHours = invoice.invoiceMode === 'hours';
+
+    const itemRows = items.map(item => {
+      const qty = isHours ? item.hours : item.quantity;
+      const price = isHours ? item.rate : item.price;
+      const amt = (qty || 0) * (price || 0);
+      return `<tr>
+        <td style="padding:14px 16px;font-size:14px;border-bottom:1px solid #e2e8f0;font-weight:600;color:#1f2937">${item.description || 'Item'}${item.sku ? `<div style="font-size:11px;color:#9ca3af;margin-top:2px">SKU: ${item.sku}</div>` : ''}</td>
+        <td style="padding:14px 16px;font-size:14px;border-bottom:1px solid #e2e8f0;text-align:center;color:#6b7280">${qty}</td>
+        <td style="padding:14px 16px;font-size:14px;border-bottom:1px solid #e2e8f0;text-align:right;color:#6b7280">${formatCurrency(price, invoice.currency)}</td>
+        <td style="padding:14px 16px;font-size:14px;border-bottom:1px solid #e2e8f0;text-align:right;color:#1f2937;font-weight:500">${formatCurrency(amt, invoice.currency)}</td>
+      </tr>`;
+    }).join('');
+
+    const paymentHtml = (invoice.paymentMethods && invoice.paymentMethods.length > 0)
+      ? `<div style="margin-top:28px;padding-top:20px;border-top:1px solid #e2e8f0">
+          <div style="font-size:15px;font-weight:700;color:#1f2937;margin-bottom:14px">Payment Details</div>
+          ${invoice.paymentMethods.map(m => `<div style="font-size:13px;color:#6b7280;margin-bottom:4px"><span style="font-weight:500;color:#374151">${m.label}:</span> ${m.value}</div>`).join('')}
+        </div>`
+      : '';
+
+    const htmlContent = `<!DOCTYPE html><html><head>
+      <title>Invoice ${invoice.invoiceNumber || ''}</title>
+      <meta charset="utf-8">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;padding:30px 40px;color:#1f2937;font-size:14px;line-height:1.5;background:white}
+        @media print{body{padding:0;margin:0}@page{margin:10mm;size:auto}}
+      </style>
+    </head><body>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;flex-wrap:wrap;gap:15px">
+        <div>
+          ${invoice.logoPreview ? `<img src="${invoice.logoPreview}" style="max-width:180px;max-height:70px;margin-bottom:12px" />` : ''}
+          <div style="font-size:22px;font-weight:700;color:#1e40af;margin-bottom:6px">${invoice.businessName || 'Company'}</div>
+          <div style="color:#6b7280;font-size:14px;line-height:1.8">
+            ${invoice.businessAddress ? invoice.businessAddress + '<br>' : ''}
+            ${invoice.businessEmail ? invoice.businessEmail + '<br>' : ''}
+            ${invoice.businessPhone || ''}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="display:inline-block;padding:8px 20px;background:#3b82f6;color:white;border-radius:4px;font-size:18px;font-weight:700;margin-bottom:12px">INVOICE</div>
+          <div style="font-size:14px;line-height:2">
+            <div><span style="color:#3b82f6;font-weight:500">Invoice #:</span> ${invoice.invoiceNumber || ''}</div>
+            <div><span style="color:#3b82f6;font-weight:500">Issue Date:</span> ${formatDate(invoice.issueDate || invoice.createdAt)}</div>
+            ${invoice.dueDate ? `<div><span style="color:#3b82f6;font-weight:500">Due Date:</span> ${formatDate(invoice.dueDate)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:25px">
+        <h3 style="font-size:15px;font-weight:700;color:#1f2937;margin-bottom:12px">Issued To:</h3>
+        <div style="font-size:14px;color:#6b7280;line-height:1.8">
+          <div><strong style="color:#1f2937">${invoice.customerName || 'Customer'}</strong></div>
+          ${invoice.customerAddress ? `<div>${invoice.customerAddress}${invoice.customerZipCode ? `, ${invoice.customerZipCode}` : ''}</div>` : ''}
+          ${invoice.customerEmail ? `<div>Email: ${invoice.customerEmail}</div>` : ''}
+          ${invoice.customerPhone ? `<div>Phone: ${invoice.customerPhone}</div>` : ''}
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+        <thead><tr>
+          <th style="text-align:left;padding:14px 16px;background:#f1f5f9;color:#475569;font-size:14px;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">${isHours ? 'Service' : 'Product'}</th>
+          <th style="text-align:center;padding:14px 16px;background:#f1f5f9;color:#475569;font-size:14px;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">${isHours ? 'Hrs' : 'Qty'}</th>
+          <th style="text-align:right;padding:14px 16px;background:#f1f5f9;color:#475569;font-size:14px;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">${isHours ? 'Rate' : 'Unit Price'}</th>
+          <th style="text-align:right;padding:14px 16px;background:#f1f5f9;color:#475569;font-size:14px;font-weight:600;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0">Amount</th>
+        </tr></thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+
+      <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+        <div style="width:280px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9">
+            <span style="color:#6b7280">Subtotal:</span>
+            <span style="color:#374151">${formatCurrency(invoice.subtotal || invoice.total, invoice.currency)}</span>
+          </div>
+          ${invoice.discountAmount > 0 ? `<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9"><span style="color:#6b7280">Discount:</span><span style="color:#dc2626">-${formatCurrency(invoice.discountAmount, invoice.currency)}</span></div>` : ''}
+          ${invoice.taxAmount > 0 ? `<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #f1f5f9"><span style="color:#6b7280">Tax:</span><span style="color:#374151">${formatCurrency(invoice.taxAmount, invoice.currency)}</span></div>` : ''}
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:#f8fafc;border-radius:6px;margin-top:6px;font-weight:700;font-size:16px">
+            <span style="color:#1f2937">Total:</span>
+            <span style="color:#1f2937">${formatCurrency(invoice.total, invoice.currency)}</span>
+          </div>
+        </div>
+      </div>
+
+      ${paymentHtml}
+
+      ${invoice.endMessage ? `<div style="margin-top:24px;padding:16px;background:#f8fafc;border-radius:8px;text-align:center"><p style="font-size:14px;color:#6b7280;margin:0;font-style:italic">${invoice.endMessage}</p></div>` : ''}
+    </body></html>`;
+
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
+    document.body.appendChild(printFrame);
+
+    const frameDoc = printFrame.contentWindow || printFrame.contentDocument;
+    const doc = frameDoc.document || frameDoc;
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    printFrame.onload = () => {
+      setTimeout(() => {
+        printFrame.contentWindow.focus();
+        printFrame.contentWindow.print();
+        setTimeout(() => {
+          document.body.removeChild(printFrame);
+        }, 1000);
+      }, 500);
+    };
+  };
+
   const pageStyle = { minHeight: '100vh', background: '#f1f5f9', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 16px' };
 
   if (loading) {
@@ -117,8 +238,8 @@ export default function SharedInvoiceView() {
       <div style={{ width: '100%', maxWidth: '900px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <span style={{ fontSize: '12px', color: '#6b7280' }}>{statusInfo.join(' • ')}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={handleDownloadPDF} style={{ padding: '6px 14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>📥 Download PDF</button>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: '#dcfce7', color: '#16a34a', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>✓ Access Granted</span>
-          <span style={{ fontSize: '12px', color: '#9ca3af' }}>You can view and download this invoice.</span>
         </div>
       </div>
 
@@ -255,7 +376,8 @@ export default function SharedInvoiceView() {
           </div>
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '16px' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#16a34a', marginBottom: '4px' }}>✓ Access Granted</div>
-            <div style={{ fontSize: '12px', color: '#4ade80' }}>You can view and download this invoice.</div>
+            <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '12px' }}>You can view and download this invoice.</div>
+            <button onClick={handleDownloadPDF} style={{ width: '100%', padding: '10px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>📥 Download PDF</button>
           </div>
         </div>
       </div>
