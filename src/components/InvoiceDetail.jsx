@@ -164,6 +164,10 @@ export default function InvoiceDetail({ darkMode = true, user }) {
         sentBy: 'You',
       });
       setEmailHistory(prev => [emailRecord, ...prev]);
+      // Auto-update status to 'sent' if currently draft or pending
+      if (invoice.status === 'draft' || invoice.status === 'pending') {
+        await updateInvoice({ status: 'sent' });
+      }
       setShowEmailModal(false); setEmailMessage('');
     } catch (e) {
       console.error('Error sending email:', e);
