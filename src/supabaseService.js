@@ -335,6 +335,7 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
         invoiceId,
         emailId: emailRecord.id,
         to: options.to,
+        cc: options.cc || null,
         message: options.message,
       },
     });
