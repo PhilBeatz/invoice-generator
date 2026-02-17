@@ -223,7 +223,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
             <DashboardSubscription darkMode={darkMode} />
           } />
           <Route path="settings" element={
-            <DashboardSettings darkMode={darkMode} />
+            <DashboardSettings darkMode={darkMode} user={user} />
           } />
         </Routes>
       </div>

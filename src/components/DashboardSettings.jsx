@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { fetchOrganization, upsertOrganization } from '../supabaseService';
 
-export default function DashboardSettings({ darkMode = true }) {
+export default function DashboardSettings({ darkMode = true, user }) {
   const [isEditing, setIsEditing] = useState(false);
   const [orgData, setOrgData] = useState({
     companyName: '',
@@ -66,47 +67,69 @@ export default function DashboardSettings({ darkMode = true }) {
     { value: 'CNY', label: '¥ CNY - Chinese Yuan' },
   ];
 
-  // Load organization data from localStorage
+  // Load organization data from Supabase (with localStorage fallback)
   useEffect(() => {
-    const saved = localStorage.getItem('dayonetools_organization');
-    if (saved) {
-      const data = JSON.parse(saved);
-      setOrgData(data);
-      setFormData(data);
-      if (data.logo) {
-        setLogoPreview(data.logo);
+    const loadOrg = async () => {
+      try {
+        const data = await fetchOrganization();
+        if (data && data.name) {
+          const orgFromDb = {
+            companyName: data.name || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            timezone: 'America/New_York',
+            currency: 'USD',
+            logo: data.logo || '',
+            createdAt: data.createdAt || '',
+            organizationId: data.id || '',
+          };
+          setOrgData(orgFromDb);
+          setFormData(orgFromDb);
+          if (data.logo) setLogoPreview(data.logo);
+          // Keep localStorage in sync
+          localStorage.setItem('dayonetools_organization', JSON.stringify(orgFromDb));
+          return;
+        }
+      } catch (e) {
+        console.error('Error loading org from Supabase:', e);
       }
-    } else {
-      // Initialize with default data
-      const defaultOrg = {
-        companyName: '',
-        email: '',
-        phone: '',
-        address: '',
-        timezone: 'America/New_York',
-        currency: 'USD',
-        logo: '',
-        createdAt: new Date().toISOString(),
-        organizationId: `org_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`,
-      };
-      
-      // Try to get company name from business_info
-      const businessInfo = localStorage.getItem('dayonetools_business_info');
-      if (businessInfo) {
-        const info = JSON.parse(businessInfo);
-        defaultOrg.companyName = info.businessName || '';
-        defaultOrg.email = info.businessEmail || '';
-        defaultOrg.phone = info.businessPhone || '';
-        defaultOrg.address = info.businessAddress || '';
+      // Fallback to localStorage
+      const saved = localStorage.getItem('dayonetools_organization');
+      if (saved) {
+        const data = JSON.parse(saved);
+        setOrgData(data);
+        setFormData(data);
+        if (data.logo) setLogoPreview(data.logo);
+      } else {
+        const defaultOrg = {
+          companyName: '',
+          email: '',
+          phone: '',
+          address: '',
+          timezone: 'America/New_York',
+          currency: 'USD',
+          logo: '',
+          createdAt: new Date().toISOString(),
+          organizationId: `org_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`,
+        };
+        const businessInfo = localStorage.getItem('dayonetools_business_info');
+        if (businessInfo) {
+          const info = JSON.parse(businessInfo);
+          defaultOrg.companyName = info.businessName || '';
+          defaultOrg.email = info.businessEmail || '';
+          defaultOrg.phone = info.businessPhone || '';
+          defaultOrg.address = info.businessAddress || '';
+        }
+        setOrgData(defaultOrg);
+        setFormData(defaultOrg);
+        localStorage.setItem('dayonetools_organization', JSON.stringify(defaultOrg));
       }
-      
-      setOrgData(defaultOrg);
-      setFormData(defaultOrg);
-      localStorage.setItem('dayonetools_organization', JSON.stringify(defaultOrg));
-    }
+    };
+    loadOrg();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedData = {
       ...formData,
       logo: logoPreview,
@@ -123,6 +146,21 @@ export default function DashboardSettings({ darkMode = true }) {
       businessAddress: formData.address,
     };
     localStorage.setItem('dayonetools_business_info', JSON.stringify(businessInfo));
+
+    // Save to Supabase
+    if (user) {
+      try {
+        await upsertOrganization({
+          name: formData.companyName,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          logo: logoPreview,
+        }, user.id);
+      } catch (e) {
+        console.error('Error saving org to Supabase:', e);
+      }
+    }
     
     setIsEditing(false);
   };
