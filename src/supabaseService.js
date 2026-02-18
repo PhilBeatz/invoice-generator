@@ -869,3 +869,44 @@ export async function deleteProposal(id) {
   const { error } = await supabase.from('proposals').delete().eq('id', id);
   if (error) throw error;
 }
+
+
+// ============================================
+// DANGER ZONE - DELETE OPERATIONS
+// ============================================
+
+export async function deleteOrganization() {
+  const { error } = await supabase.from('organizations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (error) throw error;
+  // Clear localStorage
+  localStorage.removeItem('dayonetools_organization');
+  localStorage.removeItem('dayonetools_business_info');
+}
+
+export async function deleteAllUserData() {
+  // Delete in order to avoid FK issues
+  const tables = [
+    'invoice_emails',
+    'invoice_shares',
+    'invoices',
+    'proposals',
+    'products',
+    'categories',
+    'employees',
+    'payment_methods',
+    'organizations',
+  ];
+  
+  for (const table of tables) {
+    try {
+      const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) console.error(`Error deleting ${table}:`, error);
+    } catch (e) {
+      console.error(`Error deleting ${table}:`, e);
+    }
+  }
+  
+  // Clear all localStorage
+  const keysToRemove = Object.keys(localStorage).filter(k => k.startsWith('dayonetools_'));
+  keysToRemove.forEach(k => localStorage.removeItem(k));
+}
