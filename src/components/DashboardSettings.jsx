@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { fetchOrganization, upsertOrganization } from '../supabaseService';
+import { useNavigate } from 'react-router-dom';
+import { fetchOrganization, upsertOrganization, deleteOrganization, deleteAllUserData } from '../supabaseService';
+import { supabase } from '../supabaseClient';
 
 export default function DashboardSettings({ darkMode = true, user }) {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteOrgModal, setShowDeleteOrgModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [orgData, setOrgData] = useState({
     companyName: '',
     email: '',
@@ -566,7 +573,152 @@ export default function DashboardSettings({ darkMode = true, user }) {
             </div>
           </div>
         </div>
+
+        {/* ===== DANGER ZONE ===== */}
+        <div style={{
+          background: colors.bgCard,
+          border: `1px solid ${colors.red}40`,
+          borderRadius: '8px',
+          padding: '24px',
+          marginTop: '24px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '16px' }}>⚠️</span>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', color: colors.red, margin: 0 }}>Danger Zone</h3>
+          </div>
+          <p style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '20px' }}>Irreversible and destructive actions</p>
+
+          {/* Reset Organization */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '16px', background: colors.bgInput, border: `1px solid ${colors.border}`,
+            borderRadius: '8px', marginBottom: '12px',
+          }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Reset Organization</div>
+              <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
+                Clear your organization settings (name, email, phone, address, logo). Your invoices, customers, proposals, and other data will not be affected.
+              </div>
+            </div>
+            <button onClick={() => setShowDeleteOrgModal(true)} style={{
+              padding: '8px 16px', background: 'transparent', border: `1px solid ${colors.red}`,
+              borderRadius: '6px', color: colors.red, fontSize: '13px', fontWeight: '500',
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, marginLeft: '16px',
+            }}>🗑️ Reset Organization</button>
+          </div>
+
+          {/* Delete All Data */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '16px', background: `${colors.red}08`, border: `1px solid ${colors.red}30`,
+            borderRadius: '8px',
+          }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text }}>Delete All Data</div>
+              <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
+                Permanently delete all your data including organization settings, invoices, customers, products, proposals, employees, and payment methods. This action cannot be undone.
+              </div>
+            </div>
+            <button onClick={() => setShowDeleteAllModal(true)} style={{
+              padding: '8px 16px', background: colors.red, border: 'none',
+              borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '500',
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, marginLeft: '16px',
+            }}>🗑️ Delete All Data</button>
+          </div>
+        </div>
       </div>
+
+      {/* ===== RESET ORG MODAL ===== */}
+      {showDeleteOrgModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowDeleteOrgModal(false)}>
+          <div style={{ background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', padding: '24px', maxWidth: '440px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: '0 0 8px' }}>⚠️ Reset Organization</h3>
+            <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px', lineHeight: '1.6' }}>
+              This will clear your organization settings including company name, email, phone, address, and logo. Your invoices, customers, proposals, and other data will remain intact.
+            </p>
+            <div style={{ padding: '12px', background: `${colors.yellow}15`, border: `1px solid ${colors.yellow}30`, borderRadius: '6px', marginBottom: '20px' }}>
+              <p style={{ fontSize: '13px', color: colors.yellow, margin: 0 }}>You can re-enter your organization details at any time after resetting.</p>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => setShowDeleteOrgModal(false)} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+              <button disabled={deleting} onClick={async () => {
+                setDeleting(true);
+                try {
+                  await deleteOrganization();
+                  setOrgData({ companyName: '', email: '', phone: '', address: '', timezone: 'America/New_York', currency: 'USD', logo: '', createdAt: '', organizationId: '' });
+                  setFormData({ companyName: '', email: '', phone: '', address: '', timezone: 'America/New_York', currency: 'USD', logo: '', createdAt: '', organizationId: '' });
+                  setLogoPreview('');
+                  setShowDeleteOrgModal(false);
+                } catch (e) {
+                  console.error('Error resetting organization:', e);
+                  alert('Failed to reset organization.');
+                }
+                setDeleting(false);
+              }} style={{ padding: '10px 20px', background: colors.red, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.6 : 1 }}>
+                {deleting ? 'Resetting...' : 'Reset Organization'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== DELETE ALL DATA MODAL ===== */}
+      {showDeleteAllModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => { setShowDeleteAllModal(false); setDeleteConfirmText(''); }}>
+          <div style={{ background: colors.bgCard, border: `1px solid ${colors.red}40`, borderRadius: '12px', padding: '24px', maxWidth: '480px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.red, margin: '0 0 8px' }}>🚨 Delete All Data</h3>
+            <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px', lineHeight: '1.6' }}>
+              This will <strong style={{ color: colors.red }}>permanently delete</strong> all of your data including:
+            </p>
+            <div style={{ padding: '12px 16px', background: `${colors.red}10`, border: `1px solid ${colors.red}25`, borderRadius: '6px', marginBottom: '16px', fontSize: '13px', color: colors.text, lineHeight: '1.8' }}>
+              • Organization settings &amp; logo<br/>
+              • All invoices &amp; email history<br/>
+              • All customers<br/>
+              • All products &amp; categories<br/>
+              • All proposals<br/>
+              • All employees<br/>
+              • All payment methods
+            </div>
+            <p style={{ fontSize: '13px', color: colors.red, fontWeight: '600', marginBottom: '16px' }}>
+              This action cannot be undone. Your account will remain active but all data will be erased.
+            </p>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '6px' }}>
+                Type <strong style={{ color: colors.red }}>DELETE</strong> to confirm:
+              </label>
+              <input value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} placeholder="Type DELETE" style={{
+                width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${deleteConfirmText === 'DELETE' ? colors.red : colors.border}`,
+                borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box',
+              }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={() => { setShowDeleteAllModal(false); setDeleteConfirmText(''); }} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
+              <button disabled={deleteConfirmText !== 'DELETE' || deleting} onClick={async () => {
+                setDeleting(true);
+                try {
+                  await deleteAllUserData();
+                  // Sign out and redirect
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                } catch (e) {
+                  console.error('Error deleting all data:', e);
+                  alert('Failed to delete data. Please try again.');
+                  setDeleting(false);
+                }
+              }} style={{
+                padding: '10px 20px', background: deleteConfirmText === 'DELETE' && !deleting ? colors.red : colors.bgInput,
+                border: 'none', borderRadius: '6px',
+                color: deleteConfirmText === 'DELETE' && !deleting ? '#fff' : colors.textMuted,
+                fontSize: '14px', fontWeight: '500',
+                cursor: deleteConfirmText === 'DELETE' && !deleting ? 'pointer' : 'not-allowed',
+                opacity: deleting ? 0.6 : 1,
+              }}>
+                {deleting ? 'Deleting everything...' : 'Permanently Delete All Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
