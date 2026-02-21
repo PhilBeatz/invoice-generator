@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft, fetchCustomers, createCustomer as createCustomerDb, updateCustomer as updateCustomerDb, deleteCustomer as deleteCustomerDb } from '../supabaseService';
+import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft, fetchCustomers, createCustomer as createCustomerDb, updateCustomer as updateCustomerDb, deleteCustomer as deleteCustomerDb, fetchOrganization } from '../supabaseService';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
@@ -200,6 +200,28 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
         setCustomers(JSON.parse(savedCustomers));
       }
     }
+  }, [inDashboard, user]);
+
+  // Auto-fill company info from Supabase org data (dashboard only, new invoices only)
+  useEffect(() => {
+    if (!inDashboard || !user) return;
+    const editId = searchParams.get('edit');
+    if (editId) return; // Don't overwrite when editing existing invoice
+
+    fetchOrganization().then(org => {
+      if (org && (org.name || org.email || org.phone || org.address)) {
+        setInvoice(prev => ({
+          ...prev,
+          businessName: prev.businessName || org.name || '',
+          businessEmail: prev.businessEmail || org.email || '',
+          businessPhone: prev.businessPhone || org.phone || '',
+          businessAddress: prev.businessAddress || org.address || '',
+        }));
+        if (!logoPreview && org.logo) {
+          setLogoPreview(org.logo);
+        }
+      }
+    }).catch(e => console.error('Error loading org data:', e));
   }, [inDashboard, user]);
 
   // Edit mode state
