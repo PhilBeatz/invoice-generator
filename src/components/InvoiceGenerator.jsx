@@ -366,7 +366,6 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
 
   // Auto-save disabled - form state persistence via localStorage/sessionStorage handles this
   // The auto-draft was creating duplicate invoices, so we rely on client-side persistence instead
-  }, [invoice, inDashboard, isEditMode, user]);
 
   // Check if mobile on mount and resize
   useEffect(() => {
