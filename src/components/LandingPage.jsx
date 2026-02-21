@@ -473,6 +473,123 @@ export default function LandingPage({ darkMode = true }) {
           </div>
         </div>
       </div>
+
+      {/* ===== INDUSTRIES SECTION ===== */}
+      <div style={{
+        padding: isMobile ? '60px 16px' : '80px 40px',
+        maxWidth: '1100px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '6px 14px', borderRadius: '20px',
+            background: darkMode ? '#10b98120' : '#10b98115',
+            color: '#10b981', fontSize: '12px', fontWeight: '600',
+            marginBottom: '16px', letterSpacing: '0.5px',
+          }}>
+            🏢 Built For Your Industry
+          </div>
+          <h2 style={{
+            fontSize: isMobile ? '26px' : '36px', fontWeight: '800',
+            color: colors.text, margin: '0 0 12px', lineHeight: '1.2',
+          }}>
+            Invoice Software Tailored to Your Business
+          </h2>
+          <p style={{
+            fontSize: '15px', color: colors.textMuted, maxWidth: '600px',
+            margin: '0 auto', lineHeight: '1.6',
+          }}>
+            Every industry has unique invoicing needs. Day One provides specialized features
+            and templates designed for how you work.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: '20px',
+        }}>
+          {[
+            { title: 'Construction & Trades', desc: 'Job costing, progress billing, and material tracking', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop' },
+            { title: 'Legal Services', desc: 'Billable hours, retainer management, and trust accounting', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&h=400&fit=crop' },
+            { title: 'Freelancers & Creatives', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop' },
+            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop' },
+            { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop' },
+            { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop' },
+          ].map((industry, i) => (
+            <div key={i} style={{
+              background: darkMode ? '#161b22' : '#ffffff',
+              borderRadius: '12px',
+              border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
+              overflow: 'hidden',
+              cursor: 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              <div style={{
+                height: '160px',
+                backgroundImage: `url(${industry.img})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                display: 'flex',
+                alignItems: 'flex-end',
+                padding: '16px',
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 60%)',
+                }} />
+                <h3 style={{
+                  fontSize: '16px', fontWeight: '700', color: '#ffffff',
+                  margin: 0, position: 'relative', zIndex: 1,
+                }}>
+                  {industry.title}
+                </h3>
+              </div>
+              <div style={{ padding: '16px' }}>
+                <p style={{
+                  fontSize: '13px', color: colors.textMuted,
+                  margin: '0 0 12px', lineHeight: '1.5',
+                }}>
+                  {industry.desc}
+                </p>
+                <span onClick={(e) => e.preventDefault()} style={{
+                  fontSize: '13px', fontWeight: '600', color: '#10b981',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  cursor: 'pointer',
+                }}>
+                  Learn more →
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <button style={{
+            padding: '12px 28px',
+            background: 'transparent',
+            border: `1.5px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
+            borderRadius: '8px',
+            color: colors.text,
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif",
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+            View All Industries →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
