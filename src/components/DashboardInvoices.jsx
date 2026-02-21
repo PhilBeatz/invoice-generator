@@ -270,6 +270,11 @@ export default function DashboardInvoices({ darkMode = true, user }) {
                   {o.l}{sortBy===o.v&&<span style={{color:colors.green}}>✓</span>}
                 </button>
               ))}
+              <button onClick={e=>{e.stopPropagation();setSortBy('createdAt');setSortOrder('desc');}}
+                style={{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',padding:'8px 16px',background:'transparent',border:'none',cursor:'pointer',fontSize:'13px',color:colors.red,fontFamily:"'Inter',sans-serif"}}
+                onMouseEnter={e=>e.currentTarget.style.background=colors.bgInput} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                ✕ Clear Sort
+              </button>
               <div style={{borderTop:`1px solid ${colors.border}`,margin:'6px 0'}}/>
               <div style={{padding:'6px 16px',fontSize:'11px',color:colors.textMuted,fontWeight:'600',textTransform:'uppercase',letterSpacing:'0.5px'}}>Order</div>
               {[{v:'asc',l:'Ascending (A→Z / Oldest)'},{v:'desc',l:'Descending (Z→A / Newest)'}].map(o=>(
