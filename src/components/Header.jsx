@@ -123,6 +123,7 @@ export default function Header({ darkMode = true, user, supabase }) {
                 )}
               </div>
               <Link to="/contact" style={navLinkStyle}>Contact</Link>
+              <Link to="/dashboard/pricing" style={navLinkStyle}>Pricing</Link>
             </nav>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -133,12 +134,13 @@ export default function Header({ darkMode = true, user, supabase }) {
                 </>
               ) : (
                 <>
-                  <Link to="/login" style={{ ...navLinkStyle, fontSize: '13px' }}>Log in</Link>
+                  <Link to="/login" style={{ ...navLinkStyle, fontSize: '13px' }}>Sign In</Link>
                   <Link to="/signup" style={{
-                    padding: '8px 18px', background: 'transparent', color: colors.accent,
-                    borderRadius: '6px', border: `1.5px solid ${colors.accent}`, textDecoration: 'none',
+                    padding: '8px 18px', background: colors.accent, color: '#ffffff',
+                    borderRadius: '6px', border: 'none', textDecoration: 'none',
                     fontSize: '13px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
-                  }}>Sign up</Link>
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  }}>Start Free Trial <span style={{ fontSize: '14px' }}>→</span></Link>
                 </>
               )}
             </div>
@@ -228,14 +230,14 @@ export default function Header({ darkMode = true, user, supabase }) {
                 <Link to="/signup" onClick={() => setMenuOpen(false)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
                   background: colors.accent, color: '#ffffff', borderRadius: '8px', textDecoration: 'none',
-                  fontSize: '15px', fontWeight: '600', fontFamily: "'Inter', sans-serif",
-                }}>Sign up</Link>
+                  fontSize: '15px', fontWeight: '600', fontFamily: "'Inter', sans-serif", gap: '6px',
+                }}>Start Free Trial <span>→</span></Link>
                 <Link to="/login" onClick={() => setMenuOpen(false)} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '13px 20px',
                   background: 'transparent', color: colors.text, borderRadius: '8px',
                   border: `1px solid ${colors.border}`, textDecoration: 'none',
                   fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
-                }}>Log in</Link>
+                }}>Sign In</Link>
               </>
             )}
           </div>
