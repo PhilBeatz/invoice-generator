@@ -46,7 +46,29 @@ export default function DashboardInvoices({ darkMode = true, user }) {
   // Load
   useEffect(() => {
     if (!user) return;
-    fetchInvoices().then(data => setInvoices(data)).catch(e => console.error('Error loading invoices:', e));
+    fetchInvoices().then(async (data) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const updatedData = [];
+      for (const inv of data) {
+        if (inv.dueDate && ['sent', 'pending'].includes(inv.status)) {
+          const due = new Date(inv.dueDate + 'T00:00:00');
+          if (due < today) {
+            try {
+              await updateInvoiceDb(inv.id, { status: 'overdue' });
+              updatedData.push({ ...inv, status: 'overdue' });
+            } catch (e) {
+              updatedData.push(inv);
+            }
+          } else {
+            updatedData.push(inv);
+          }
+        } else {
+          updatedData.push(inv);
+        }
+      }
+      setInvoices(updatedData);
+    }).catch(e => console.error('Error loading invoices:', e));
   }, [user]);
 
   // Close dropdowns
