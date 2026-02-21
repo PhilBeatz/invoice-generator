@@ -513,12 +513,12 @@ export default function LandingPage({ darkMode = true }) {
           gap: '20px',
         }}>
           {[
-            { title: 'Construction & Trades', desc: 'Job costing, progress billing, and material tracking', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop' },
-            { title: 'Legal Services', desc: 'Billable hours, retainer management, and trust accounting', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&h=400&fit=crop' },
-            { title: 'Freelancers & Creatives', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop' },
-            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop' },
-            { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop' },
-            { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop' },
+            { title: 'Construction & Trades', desc: 'Job costing, progress billing, and material tracking', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', link: '/industries/construction' },
+            { title: 'Legal Services', desc: 'Billable hours, retainer management, and trust accounting', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&h=400&fit=crop', link: null },
+            { title: 'Freelancers & Creatives', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop', link: null },
+            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop', link: null },
+            { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop', link: null },
+            { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop', link: null },
           ].map((industry, i) => (
             <div key={i} style={{
               background: darkMode ? '#161b22' : '#ffffff',
@@ -559,13 +559,23 @@ export default function LandingPage({ darkMode = true }) {
                 }}>
                   {industry.desc}
                 </p>
-                <span onClick={(e) => e.preventDefault()} style={{
-                  fontSize: '13px', fontWeight: '600', color: '#10b981',
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  cursor: 'pointer',
-                }}>
-                  Learn more →
-                </span>
+                {industry.link ? (
+                  <Link to={industry.link} style={{
+                    fontSize: '13px', fontWeight: '600', color: '#10b981',
+                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                    textDecoration: 'none',
+                  }}>
+                    Learn more →
+                  </Link>
+                ) : (
+                  <span style={{
+                    fontSize: '13px', fontWeight: '600', color: '#10b981',
+                    display: 'inline-flex', alignItems: 'center', gap: '4px',
+                    cursor: 'default', opacity: 0.6,
+                  }}>
+                    Coming soon
+                  </span>
+                )}
               </div>
             </div>
           ))}
