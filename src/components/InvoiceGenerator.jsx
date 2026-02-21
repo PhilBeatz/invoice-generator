@@ -338,10 +338,11 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   useEffect(() => {
     if (!inDashboard || isEditMode || !user) return;
     
-    const hasData = invoice.businessName || invoice.customerName || 
-      invoice.items.some(item => item.description || item.price > 0 || item.rate > 0);
+    // Only auto-draft when user has entered customer or item data, not just business info (which auto-fills)
+    const hasCustomerData = invoice.customerName;
+    const hasItemData = invoice.items.some(item => item.description || item.price > 0 || item.rate > 0);
     
-    if (!hasData) return;
+    if (!hasCustomerData && !hasItemData) return;
 
     const timer = setTimeout(async () => {
       const subtotal = invoice.items.reduce((sum, item) => {
