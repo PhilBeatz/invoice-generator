@@ -399,7 +399,7 @@ export default function DashboardOverview({ darkMode = true }) {
                     </div>
                   </div>
                   <span style={{ fontSize: '11px', color: colors.textMuted }}>
-                    {customer.invoiceCount || 0} invoice{(customer.invoiceCount || 0) !== 1 ? 's' : ''}
+                    {invoices.filter(inv => inv.customerName === customer.name).length} invoice{invoices.filter(inv => inv.customerName === customer.name).length !== 1 ? 's' : ''}
                   </span>
                 </div>
               ))}
