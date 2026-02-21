@@ -410,6 +410,7 @@ const toDbCustomer = (c, userId) => ({
   phone: c.phone || null,
   country: c.country || null,
   address: c.address || null,
+  zip_code: c.zipCode || null,
   description: c.description || null,
 });
 
@@ -421,6 +422,7 @@ const fromDbCustomer = (row) => ({
   phone: row.phone || '',
   country: row.country || '',
   address: row.address || '',
+  zipCode: row.zip_code || '',
   description: row.description || '',
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -440,7 +442,7 @@ export async function createCustomer(customer, userId) {
 
 export async function updateCustomer(id, updates, userId) {
   const row = {};
-  const map = { name: 'name', identifier: 'identifier', email: 'email', phone: 'phone', country: 'country', address: 'address', description: 'description' };
+  const map = { name: 'name', identifier: 'identifier', email: 'email', phone: 'phone', country: 'country', address: 'address', zipCode: 'zip_code', description: 'description' };
   for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }
   const { data, error } = await supabase.from('customers').update(row).eq('id', id).select().single();
   if (error) throw error;
