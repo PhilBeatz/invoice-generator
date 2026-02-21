@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { fetchCustomers, createCustomer, updateCustomer, deleteCustomer as deleteCustomerApi } from '../supabaseService';
+import { fetchCustomers, createCustomer, updateCustomer, deleteCustomer as deleteCustomerApi, fetchInvoices } from '../supabaseService';
 
 function getUserId() {
   try {
@@ -12,7 +13,9 @@ function getUserId() {
 }
 
 export default function DashboardCustomers({ darkMode = true }) {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
+  const [invoiceCounts, setInvoiceCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -150,6 +153,14 @@ export default function DashboardCustomers({ darkMode = true }) {
   // Load customers from Supabase
   useEffect(() => {
     fetchCustomers().then(data => { setCustomers(data); setLoading(false); }).catch(e => { console.error('Error loading customers:', e); setLoading(false); });
+    fetchInvoices().then(invoices => {
+      const counts = {};
+      invoices.forEach(inv => {
+        const name = inv.customerName;
+        if (name) counts[name] = (counts[name] || 0) + 1;
+      });
+      setInvoiceCounts(counts);
+    }).catch(e => console.error('Error loading invoice counts:', e));
   }, []);
 
   // Close actions menu when clicking outside
@@ -531,8 +542,8 @@ export default function DashboardCustomers({ darkMode = true }) {
                 
                 {/* Invoices Count */}
                 <div>
-                  {(customer.invoiceCount || 0) > 0 ? (
-                    <span style={{
+                  {(invoiceCounts[customer.name] || 0) > 0 ? (
+                    <span onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/invoices?client=${encodeURIComponent(customer.name)}`); }} style={{
                       display: 'inline-block',
                       padding: '4px 10px',
                       background: `${colors.accent}20`,
@@ -540,8 +551,9 @@ export default function DashboardCustomers({ darkMode = true }) {
                       borderRadius: '4px',
                       fontSize: '12px',
                       fontWeight: '500',
+                      cursor: 'pointer',
                     }}>
-                      {customer.invoiceCount} invoice{customer.invoiceCount !== 1 ? 's' : ''}
+                      {invoiceCounts[customer.name]} invoice{invoiceCounts[customer.name] !== 1 ? 's' : ''}
                     </span>
                   ) : (
                     <span style={{ color: colors.textMuted, fontSize: '13px' }}>—</span>

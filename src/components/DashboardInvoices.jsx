@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { fetchInvoices, updateInvoice as updateInvoiceDb, deleteInvoice as deleteInvoiceDb } from '../supabaseService';
 
 export default function DashboardInvoices({ darkMode = true, user }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const clientFilter = searchParams.get('client') || '';
   const [invoices, setInvoices] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(clientFilter);
   const [statusFilters, setStatusFilters] = useState([]);
   const [dateRange, setDateRange] = useState(null);
   const [sortBy, setSortBy] = useState('createdAt');
