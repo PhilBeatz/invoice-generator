@@ -237,13 +237,19 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   const [selectedCatalogProducts, setSelectedCatalogProducts] = useState([]);
   const [tempProduct, setTempProduct] = useState({ name: '', model: '', price: '', quantity: 1 });
 
-  // Load catalog products from localStorage
+  // Load catalog products from Supabase (or localStorage for non-dashboard)
   useEffect(() => {
-    const saved = localStorage.getItem('dayonetools_products');
-    if (saved) {
-      setCatalogProducts(JSON.parse(saved));
+    if (inDashboard) {
+      import('../supabaseService').then(mod => {
+        mod.fetchProducts().then(data => setCatalogProducts(data)).catch(e => console.error('Error loading products:', e));
+      });
+    } else {
+      const saved = localStorage.getItem('dayonetools_products');
+      if (saved) {
+        setCatalogProducts(JSON.parse(saved));
+      }
     }
-  }, [showProductSelectorModal]);
+  }, [showProductSelectorModal, inDashboard]);
 
   // Load invoice for editing (from URL param ?edit=invoiceId)
   useEffect(() => {
