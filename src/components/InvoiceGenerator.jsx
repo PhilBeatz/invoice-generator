@@ -2005,8 +2005,25 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                               }}
                             />
                           </div>
-                          <div style={{ textAlign: 'right', fontSize: '13px', color: colors.text }}>
-                            ${parseFloat(item.price || 0).toFixed(2)}
+                          <div style={{ textAlign: 'right' }}>
+                            <input 
+                              type="number" 
+                              min="0" 
+                              step="0.01"
+                              value={item.price || ''} 
+                              onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
+                              placeholder="0.00"
+                              style={{ 
+                                width: '75px', 
+                                padding: '6px 8px', 
+                                background: colors.bgInput, 
+                                border: `1px solid ${colors.border}`, 
+                                borderRadius: '4px', 
+                                color: colors.text, 
+                                fontSize: '13px', 
+                                textAlign: 'right' 
+                              }}
+                            />
                           </div>
                           <div style={{ textAlign: 'right', fontSize: '14px', fontWeight: '600', color: colors.text }}>
                             ${((item.quantity || 1) * (item.price || 0)).toFixed(2)}
