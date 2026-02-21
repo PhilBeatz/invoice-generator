@@ -364,51 +364,8 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     }
   }, [customers, inDashboard]);
 
-  // Auto-save as draft when user starts editing (dashboard only)
-  useEffect(() => {
-    if (!inDashboard || isEditMode || !user) return;
-    
-    // Only auto-draft when user has entered customer or item data, not just business info (which auto-fills)
-    const hasCustomerData = invoice.customerName;
-    const hasItemData = invoice.items.some(item => item.description || item.price > 0 || item.rate > 0);
-    
-    if (!hasCustomerData && !hasItemData) return;
-
-    const timer = setTimeout(async () => {
-      const subtotal = invoice.items.reduce((sum, item) => {
-        const amount = invoice.invoiceMode === 'products' 
-          ? (item.quantity || 0) * (item.price || 0)
-          : (item.hours || 0) * (item.rate || 0);
-        return sum + amount;
-      }, 0);
-      const shipping = parseFloat(invoice.shippingCost) || 0;
-      const discount = parseFloat(invoice.discount) || 0;
-      let taxAmount = 0;
-      if (invoice.taxType === 'percent') {
-        taxAmount = (subtotal - discount + shipping) * ((parseFloat(invoice.taxRate) || 0) / 100);
-      } else {
-        taxAmount = parseFloat(invoice.taxRate) || 0;
-      }
-      const total = subtotal + shipping - discount + taxAmount;
-
-      try {
-        await upsertAutoDraft({
-          ...invoice,
-          subtotal, shippingAmount: shipping, discount, taxAmount, total,
-          logoPreview,
-          items: invoice.items.map(item => ({
-            ...item,
-            amount: invoice.invoiceMode === 'products' 
-              ? (item.quantity || 0) * (item.price || 0)
-              : (item.hours || 0) * (item.rate || 0),
-          })),
-        }, user.id);
-      } catch (e) {
-        console.error('Auto-draft save error:', e);
-      }
-    }, 3000); // 3 second debounce
-
-    return () => clearTimeout(timer);
+  // Auto-save disabled - form state persistence via localStorage/sessionStorage handles this
+  // The auto-draft was creating duplicate invoices, so we rely on client-side persistence instead
   }, [invoice, inDashboard, isEditMode, user]);
 
   // Check if mobile on mount and resize
