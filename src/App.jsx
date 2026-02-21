@@ -12,6 +12,7 @@ import SignUp from './components/SignUp';
 import ForgotPassword from './components/ForgotPassword';
 import SharedInvoiceView from './components/SharedInvoiceView';
 import IndustryConstruction from './components/IndustryConstruction';
+import IndustryLegal from './components/IndustryLegal';
 
 // Protected route wrapper - defined OUTSIDE App to keep stable React identity
 function ProtectedRoute({ user, authLoading, children }) {
@@ -76,6 +77,7 @@ export default function App() {
               <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
               <Route path="/contact" element={<Contact darkMode={darkMode} />} />
               <Route path="/industries/construction" element={<IndustryConstruction darkMode={darkMode} />} />
+              <Route path="/industries/legal" element={<IndustryLegal darkMode={darkMode} />} />
               <Route path="/login" element={
                 user ? <Navigate to="/dashboard" replace /> : <Login darkMode={darkMode} />
               } />
