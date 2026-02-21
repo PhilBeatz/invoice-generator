@@ -256,6 +256,27 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     const editId = searchParams.get('edit');
     if (!editId) return;
     fetchInvoiceById(editId).then(parsed => {
+      // Check if we have unsaved edits in sessionStorage
+      const savedEdit = sessionStorage.getItem('dayonetools_edit_formstate');
+      if (savedEdit) {
+        try {
+          const savedParsed = JSON.parse(savedEdit);
+          // Only use saved state if it's for the same invoice
+          if (savedParsed.invoiceNumber === parsed.invoiceNumber) {
+            setInvoice(prev => ({
+              ...prev,
+              ...savedParsed,
+              items: savedParsed.items || [{ id: 1, description: '', sku: '', quantity: 1, price: 0, hours: 1, rate: 0 }],
+            }));
+            if (savedParsed.logoPreview) setLogoPreview(savedParsed.logoPreview);
+            else if (parsed.logoPreview) setLogoPreview(parsed.logoPreview);
+            setIsEditMode(true);
+            setEditingInvoiceId(parsed.id);
+            return;
+          }
+        } catch (e) { /* fall through to normal load */ }
+      }
+      sessionStorage.removeItem('dayonetools_edit_formstate');
       setInvoice(prev => ({
         ...prev,
         ...parsed,
@@ -270,7 +291,9 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   // Persist invoice form data to survive tab switches, minimizes, and HMR in dev
   // Save form state on every change
   useEffect(() => {
-    if (!isEditMode) {
+    if (isEditMode) {
+      sessionStorage.setItem('dayonetools_edit_formstate', JSON.stringify(invoice));
+    } else {
       localStorage.setItem('dayonetools_invoice_formstate', JSON.stringify(invoice));
     }
   }, [invoice, isEditMode]);
@@ -311,6 +334,7 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   const clearFormState = () => {
     localStorage.removeItem('dayonetools_invoice_formstate');
     localStorage.removeItem('dayonetools_logo_formstate');
+    sessionStorage.removeItem('dayonetools_edit_formstate');
   };
 
   // Load draft invoice from localStorage (for mobile back button)
