@@ -519,16 +519,20 @@ export default function LandingPage({ darkMode = true }) {
             { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop', link: null },
             { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop', link: null },
             { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop', link: null },
-          ].map((industry, i) => (
-            <div key={i} style={{
+          ].map((industry, i) => {
+            const CardWrapper = industry.link ? Link : 'div';
+            const wrapperProps = industry.link ? { to: industry.link, style: { textDecoration: 'none', color: 'inherit' } } : {};
+            return (
+            <CardWrapper key={i} {...wrapperProps}>
+            <div style={{
               background: darkMode ? '#161b22' : '#ffffff',
               borderRadius: '12px',
               border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
               overflow: 'hidden',
-              cursor: 'pointer',
+              cursor: industry.link ? 'pointer' : 'default',
               transition: 'transform 0.2s, box-shadow 0.2s',
             }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)'; }}
+              onMouseEnter={e => { if (industry.link) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)'; } }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <div style={{
@@ -560,13 +564,12 @@ export default function LandingPage({ darkMode = true }) {
                   {industry.desc}
                 </p>
                 {industry.link ? (
-                  <Link to={industry.link} style={{
+                  <span style={{
                     fontSize: '13px', fontWeight: '600', color: '#10b981',
                     display: 'inline-flex', alignItems: 'center', gap: '4px',
-                    textDecoration: 'none',
                   }}>
                     Learn more →
-                  </Link>
+                  </span>
                 ) : (
                   <span style={{
                     fontSize: '13px', fontWeight: '600', color: '#10b981',
@@ -578,6 +581,8 @@ export default function LandingPage({ darkMode = true }) {
                 )}
               </div>
             </div>
+            </CardWrapper>
+            );})
           ))}
         </div>
 
