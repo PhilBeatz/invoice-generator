@@ -582,8 +582,7 @@ export default function LandingPage({ darkMode = true }) {
               </div>
             </div>
             </CardWrapper>
-            );})
-          ))}
+            );})}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '32px' }}>
