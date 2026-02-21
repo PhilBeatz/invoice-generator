@@ -85,7 +85,7 @@ export default function DashboardOverview({ darkMode = true }) {
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     .slice(0, 3);
 
-  const formatCurrency = (amount) => `$${parseFloat(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(parseFloat(amount || 0));
   
   const formatTimeAgo = (dateStr) => {
     if (!dateStr) return '';
