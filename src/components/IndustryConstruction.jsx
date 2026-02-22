@@ -40,6 +40,19 @@ export default function IndustryConstruction({ darkMode = true }) {
   return (
     <div style={{ background: darkMode ? '#0d1117' : '#ffffff', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
+      {/* ===== BREADCRUMB ===== */}
+      <div style={{
+        padding: '12px 40px',
+        maxWidth: '1100px', margin: '0 auto',
+        fontSize: '13px', color: colors.textMuted,
+      }}>
+        <Link to="/" style={{ color: colors.textMuted, textDecoration: 'none' }}>Home</Link>
+        <span style={{ margin: '0 8px' }}>›</span>
+        <Link to="/industries" style={{ color: colors.textMuted, textDecoration: 'none' }}>Industries</Link>
+        <span style={{ margin: '0 8px' }}>›</span>
+        <span style={{ color: colors.text }}>Construction & Trades</span>
+      </div>
+
       {/* ===== HERO ===== */}
       <div style={{
         background: darkMode ? 'linear-gradient(180deg, #0d1117 0%, #111a12 100%)' : 'linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)',

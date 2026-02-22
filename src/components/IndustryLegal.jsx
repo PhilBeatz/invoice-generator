@@ -48,7 +48,7 @@ export default function IndustryLegal({ darkMode = true }) {
       }}>
         <Link to="/" style={{ color: colors.textMuted, textDecoration: 'none' }}>Home</Link>
         <span style={{ margin: '0 8px' }}>›</span>
-        <span>Industries</span>
+        <Link to="/industries" style={{ color: colors.textMuted, textDecoration: "none" }}>Industries</Link>
         <span style={{ margin: '0 8px' }}>›</span>
         <span style={{ color: colors.text }}>Legal & Law Firms</span>
       </div>
