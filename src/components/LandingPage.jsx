@@ -516,7 +516,7 @@ export default function LandingPage({ darkMode = true }) {
             { title: 'Construction & Trades', desc: 'Job costing, progress billing, and material tracking', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', link: '/industries/construction' },
             { title: 'Legal Services', desc: 'Billable hours, retainer management, and trust accounting', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&h=400&fit=crop', link: '/industries/legal' },
             { title: 'Freelancers & Creatives', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop', link: null },
-            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop', link: null },
+            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop', link: '/industries/it' },
             { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop', link: null },
             { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop', link: null },
           ].map((industry, i) => {
