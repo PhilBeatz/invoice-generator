@@ -32,7 +32,6 @@ export default function InvoiceDetail({ darkMode = true, user }) {
   // Send email
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailTo, setEmailTo] = useState('');
-  const [emailCc, setEmailCc] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [emailHistory, setEmailHistory] = useState([]);
   // More actions
@@ -161,16 +160,11 @@ export default function InvoiceDetail({ darkMode = true, user }) {
       if (!user) return;
       const emailRecord = await sendInvoiceEmail(invoiceId, user.id, {
         to: emailTo,
-        cc: emailCc.trim() || null,
         message: emailMessage,
         sentBy: 'You',
       });
       setEmailHistory(prev => [emailRecord, ...prev]);
-      // Auto-update status to 'sent' if currently draft or pending
-      if (invoice.status === 'draft' || invoice.status === 'pending') {
-        await updateInvoice({ status: 'sent' });
-      }
-      setShowEmailModal(false); setEmailMessage(''); setEmailCc('');
+      setShowEmailModal(false); setEmailMessage('');
     } catch (e) {
       console.error('Error sending email:', e);
       alert('Failed to send email. Please try again.');
@@ -242,10 +236,17 @@ export default function InvoiceDetail({ darkMode = true, user }) {
   };
 
   const handleDownloadPDF = () => {
-    // Store invoice data and navigate to create page with download trigger
-    localStorage.setItem('dayonetools_view_invoice', JSON.stringify(invoice));
-    // For now, just alert - we can integrate with the actual PDF generator later
-    alert('PDF download functionality will be integrated with the invoice generator.');
+    if (!invoice) return;
+    import('../invoicePdfUtils').then(({ downloadInvoicePDF }) => {
+      downloadInvoicePDF(invoice);
+    });
+  };
+
+  const handleViewPDF = () => {
+    if (!invoice) return;
+    import('../invoicePdfUtils').then(({ viewInvoicePDF }) => {
+      viewInvoicePDF(invoice);
+    });
   };
 
   const handleEdit = () => {
@@ -354,7 +355,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
             <button onClick={(e) => { e.stopPropagation(); setShowMoreDropdown(!showMoreDropdown); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '34px', height: '34px', background: 'transparent', color: colors.text, border: `1px solid ${colors.border}`, borderRadius: '6px', fontSize: '14px', cursor: 'pointer' }}>▾</button>
             {showMoreDropdown && (
               <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', zIndex: 200, minWidth: '180px', overflow: 'hidden', padding: '4px 0' }}>
-                <button onClick={() => { setShowMoreDropdown(false); handleDownloadPDF(); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>👁️ View PDF</button>
+                <button onClick={() => { setShowMoreDropdown(false); handleViewPDF(); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>👁️ View PDF</button>
                 <button onClick={() => { setShowMoreDropdown(false); setShowManageShares(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>📋 Manage Shares</button>
                 <button onClick={() => { setShowMoreDropdown(false); setShowEmailModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '10px 16px', background: 'transparent', border: 'none', color: colors.text, fontSize: '13px', cursor: 'pointer', textAlign: 'left' }}>✉️ Send via Email</button>
               </div>
@@ -764,7 +765,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
                 ⬇️ Download PDF
               </button>
               <button
-                onClick={() => alert('View PDF feature coming soon!')}
+                onClick={handleViewPDF}
                 style={{
                   flex: 1,
                   display: 'flex',
@@ -1009,10 +1010,6 @@ export default function InvoiceDetail({ darkMode = true, user }) {
               <div>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Recipient Email</label>
                 <input type="email" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} placeholder="customer@example.com" style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
-              </div>
-              <div>
-                <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>CC <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></label>
-                <input type="email" value={emailCc} onChange={(e) => setEmailCc(e.target.value)} placeholder="cc@example.com" style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ fontSize: '13px', fontWeight: '600', color: colors.text, display: 'block', marginBottom: '6px' }}>Custom Message (Optional)</label>
