@@ -24,6 +24,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
   const [shareExpiration, setShareExpiration] = useState('');
   const [shareLimitViewsEnabled, setShareLimitViewsEnabled] = useState(false);
   const [shareLimitViews, setShareLimitViews] = useState(100);
+  const [sharePaymentLinkEnabled, setSharePaymentLinkEnabled] = useState(false);
   // Manage shares
   const [showManageShares, setShowManageShares] = useState(false);
   const [shares, setShares] = useState([]);
@@ -33,6 +34,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailTo, setEmailTo] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
+  const [emailPaymentLinkEnabled, setEmailPaymentLinkEnabled] = useState(false);
   const [emailHistory, setEmailHistory] = useState([]);
   // More actions
   const [showMoreDropdown, setShowMoreDropdown] = useState(false);
@@ -121,10 +123,11 @@ export default function InvoiceDetail({ darkMode = true, user }) {
         password: sharePasswordEnabled ? sharePassword : null,
         expiresAt: shareExpirationEnabled && shareExpiration ? new Date(shareExpiration).toISOString() : null,
         viewLimit: shareLimitViewsEnabled ? shareLimitViews : null,
+        paymentLinkEnabled: sharePaymentLinkEnabled,
       });
       setShares(prev => [newShare, ...prev]);
       setSharePasswordEnabled(false); setSharePassword(''); setShareExpirationEnabled(false); setShareExpiration('');
-      setShareLimitViewsEnabled(false); setShareLimitViews(100); setShowShareModal(false); setShowManageShares(true);
+      setShareLimitViewsEnabled(false); setShareLimitViews(100); setSharePaymentLinkEnabled(false); setShowShareModal(false); setShowManageShares(true);
     } catch (e) {
       console.error('Error creating share:', e);
     }
@@ -162,9 +165,10 @@ export default function InvoiceDetail({ darkMode = true, user }) {
         to: emailTo,
         message: emailMessage,
         sentBy: 'You',
+        paymentLinkEnabled: emailPaymentLinkEnabled,
       });
       setEmailHistory(prev => [emailRecord, ...prev]);
-      setShowEmailModal(false); setEmailMessage('');
+      setShowEmailModal(false); setEmailMessage(''); setEmailPaymentLinkEnabled(false);
     } catch (e) {
       console.error('Error sending email:', e);
       alert('Failed to send email. Please try again.');
@@ -916,6 +920,16 @@ export default function InvoiceDetail({ darkMode = true, user }) {
                   <p style={{ fontSize: '12px', color: colors.textMuted, marginTop: '4px' }}>Link will become inaccessible after this many downloads/views</p>
                 </div>
               )}
+              {/* Include Payment Link */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                <input type="checkbox" checked={sharePaymentLinkEnabled} onChange={(e) => setSharePaymentLinkEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: colors.green }} />
+                💳 Include Payment Link
+              </label>
+              {sharePaymentLinkEnabled && (
+                <div style={{ marginLeft: '28px', padding: '12px 16px', background: `${colors.green}15`, border: `1px solid ${colors.green}40`, borderRadius: '8px' }}>
+                  <p style={{ fontSize: '13px', color: colors.green, margin: 0 }}>A <strong>"Pay Now"</strong> button will appear on the shared invoice, allowing your client to pay online via Stripe.</p>
+                </div>
+              )}
             </div>
             <div style={{ padding: '16px 24px', borderTop: `1px solid ${colors.border}`, display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
               <button onClick={() => setShowShareModal(false)} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>Cancel</button>
@@ -954,6 +968,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
                             <span style={{ display: 'inline-block', padding: '3px 8px', background: `${ss.color}20`, color: ss.color, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>{ss.label}</span>
                             {!share.expiresAt && <span style={{ display: 'inline-block', padding: '3px 8px', background: `${colors.accent}20`, color: colors.accent, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>Public</span>}
                             {share.passwordProtected && <span style={{ display: 'inline-block', padding: '3px 8px', background: `${colors.yellow}20`, color: colors.yellow, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>🔒 Protected</span>}
+                            {share.paymentLinkEnabled && <span style={{ display: 'inline-block', padding: '3px 8px', background: `${colors.green}20`, color: colors.green, borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>💳 Payment</span>}
                           </div>
                           {confirmDeleteShareId === share.id ? (
                             <div style={{ display: 'flex', gap: '6px' }}>
@@ -1016,6 +1031,16 @@ export default function InvoiceDetail({ darkMode = true, user }) {
                 <textarea value={emailMessage} onChange={(e) => setEmailMessage(e.target.value.slice(0, 500))} placeholder="Thanks for your order." style={{ width: '100%', padding: '10px 14px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box', minHeight: '80px', resize: 'vertical' }} />
                 <div style={{ fontSize: '11px', color: colors.textMuted, marginTop: '4px' }}>{emailMessage.length}/500 characters</div>
               </div>
+              {/* Include Payment Link */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                <input type="checkbox" checked={emailPaymentLinkEnabled} onChange={(e) => setEmailPaymentLinkEnabled(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: colors.green }} />
+                💳 Include Payment Link
+              </label>
+              {emailPaymentLinkEnabled && (
+                <div style={{ padding: '10px 16px', background: `${colors.green}15`, border: `1px solid ${colors.green}40`, borderRadius: '8px' }}>
+                  <p style={{ fontSize: '12px', color: colors.green, margin: 0 }}>A <strong>"Pay Now"</strong> button will be included in the email and on the shared invoice page, allowing your client to pay online via Stripe.</p>
+                </div>
+              )}
               <div style={{ padding: '12px 16px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '8px' }}>
                 <p style={{ fontSize: '13px', fontWeight: '600', color: colors.text, marginBottom: '6px' }}>What will be sent:</p>
                 <ul style={{ fontSize: '12px', color: colors.textMuted, margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
@@ -1023,6 +1048,7 @@ export default function InvoiceDetail({ darkMode = true, user }) {
                   <li>PDF attachment of the invoice</li>
                   <li>Secure link to view invoice online</li>
                   {emailMessage && <li>Your custom message (if provided)</li>}
+                  {emailPaymentLinkEnabled && <li style={{ color: colors.green }}>Pay Now button for online payment</li>}
                 </ul>
               </div>
             </div>
