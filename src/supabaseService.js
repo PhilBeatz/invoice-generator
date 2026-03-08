@@ -368,7 +368,7 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
 // ============================================
 
 export async function createPaymentSession(shareToken) {
-  const { data, error } = await supabase.functions.invoke('create-payment-session', {
+  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
     body: { shareToken },
   });
   if (error) throw error;
