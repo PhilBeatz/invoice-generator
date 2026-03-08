@@ -210,6 +210,7 @@ const fromDbShare = (row) => ({
   token: row.token,
   createdBy: row.created_by,
   passwordProtected: row.password_protected,
+  paymentLinkEnabled: row.payment_link_enabled || false,
   expiresAt: row.expires_at,
   viewLimit: row.view_limit,
   viewCount: row.view_count,
@@ -241,6 +242,7 @@ export async function createShare(invoiceId, userId, options = {}) {
     created_by: options.createdBy || 'Owner',
     password_protected: options.passwordProtected || false,
     password_hash: options.password || null, // In production, hash this server-side
+    payment_link_enabled: options.paymentLinkEnabled || false,
     expires_at: options.expiresAt || null,
     view_limit: options.viewLimit || null,
   };
@@ -295,6 +297,7 @@ const fromDbEmail = (row) => ({
   type: row.email_type,
   sentBy: row.sent_by,
   resendEmailId: row.resend_email_id,
+  paymentLinkEnabled: row.payment_link_enabled || false,
   linkClicks: row.link_clicks,
   lastClickedAt: row.last_clicked_at,
   sentAt: row.sent_at,
@@ -319,6 +322,7 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
     custom_message: options.message || null,
     email_type: options.type || 'Invoice Sent',
     sent_by: options.sentBy || 'Owner',
+    payment_link_enabled: options.paymentLinkEnabled || false,
   };
 
   const { data: emailRecord, error: dbError } = await supabase
@@ -337,6 +341,7 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
         to: options.to,
         cc: options.cc || null,
         message: options.message,
+        paymentLinkEnabled: options.paymentLinkEnabled || false,
       },
     });
 
@@ -355,6 +360,19 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
   }
 
   return fromDbEmail(emailRecord);
+}
+
+
+// ============================================
+// PAYMENTS
+// ============================================
+
+export async function createPaymentSession(shareToken) {
+  const { data, error } = await supabase.functions.invoke('create-payment-session', {
+    body: { shareToken },
+  });
+  if (error) throw error;
+  return data; // { url: 'https://checkout.stripe.com/...' }
 }
 
 
