@@ -375,6 +375,33 @@ export async function createPaymentSession(shareToken) {
   return data; // { url: 'https://checkout.stripe.com/...' }
 }
 
+// Stripe Connect: get onboarding URL or resume onboarding
+export async function stripeConnectOnboard() {
+  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
+    body: { action: 'onboard' },
+  });
+  if (error) throw error;
+  return data; // { url: 'https://connect.stripe.com/...' }
+}
+
+// Stripe Connect: check connection status
+export async function stripeConnectStatus() {
+  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
+    body: { action: 'status' },
+  });
+  if (error) throw error;
+  return data; // { connected, onboardingComplete, accountId, chargesEnabled, payoutsEnabled }
+}
+
+// Stripe Connect: disconnect Stripe account
+export async function stripeConnectDisconnect() {
+  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
+    body: { action: 'disconnect' },
+  });
+  if (error) throw error;
+  return data; // { disconnected: true }
+}
+
 
 // ============================================
 // MIGRATION HELPER

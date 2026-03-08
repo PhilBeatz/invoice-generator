@@ -25,6 +25,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')!;
     const appUrl = Deno.env.get('APP_URL') || 'https://yourdomain.com';
+    const platformFeePercent = parseFloat(Deno.env.get('PLATFORM_FEE_PERCENT') || '0');
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
@@ -52,6 +53,22 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Look up the invoice owner's Stripe Connect account
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('stripe_account_id, stripe_onboarding_complete')
+      .eq('user_id', invoice.user_id)
+      .single();
+
+    if (!profile?.stripe_account_id || !profile?.stripe_onboarding_complete) {
+      return new Response(JSON.stringify({ error: 'The invoice owner has not set up online payments yet.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const connectedAccountId = profile.stripe_account_id;
 
     // Map invoice currency to Stripe-compatible lowercase
     const currency = (invoice.currency || 'USD').toLowerCase();
@@ -99,27 +116,30 @@ serve(async (req) => {
       });
     }
 
-    // Create Stripe Checkout Session
+    // Calculate platform fee (optional)
+    const totalInCents = Math.round((invoice.total || 0) * 100);
+    const applicationFee = platformFeePercent > 0
+      ? Math.round(totalInCents * (platformFeePercent / 100))
+      : undefined;
+
+    // Create a coupon on the connected account if there's a discount
+    let discountConfig = {};
+    if (invoice.discount_amount > 0) {
+      const coupon = await stripe.coupons.create({
+        amount_off: Math.round(invoice.discount_amount * 100),
+        currency,
+        duration: 'once',
+        name: `Discount - Invoice ${invoice.invoice_number}`,
+      }, { stripeAccount: connectedAccountId });
+      discountConfig = { discounts: [{ coupon: coupon.id }] };
+    }
+
+    // Create Stripe Checkout Session on the connected account
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: lineItems,
-      ...(invoice.discount_amount > 0
-        ? {
-            discounts: [
-              {
-                coupon: (
-                  await stripe.coupons.create({
-                    amount_off: Math.round(invoice.discount_amount * 100),
-                    currency,
-                    duration: 'once',
-                    name: `Discount - Invoice ${invoice.invoice_number}`,
-                  })
-                ).id,
-              },
-            ],
-          }
-        : {}),
+      ...discountConfig,
       metadata: {
         invoice_id: invoice.id,
         share_token: shareToken,
@@ -128,7 +148,8 @@ serve(async (req) => {
       customer_email: invoice.customer_email || undefined,
       success_url: `${appUrl}/share/invoice/${shareToken}?payment=success`,
       cancel_url: `${appUrl}/share/invoice/${shareToken}?payment=cancelled`,
-    });
+      ...(applicationFee ? { payment_intent_data: { application_fee_amount: applicationFee } } : {}),
+    }, { stripeAccount: connectedAccountId });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

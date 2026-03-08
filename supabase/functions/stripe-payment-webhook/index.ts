@@ -21,10 +21,13 @@ serve(async (req) => {
 
     const event = stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret);
 
+    // Handle checkout completion (from connected accounts via Connect)
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const invoiceId = session.metadata?.invoice_id;
       const shareToken = session.metadata?.share_token;
+      // For Connect events, event.account contains the connected account ID
+      const connectedAccountId = (event as any).account || null;
 
       if (invoiceId) {
         // Update invoice status to paid
@@ -38,12 +41,25 @@ serve(async (req) => {
           invoice_id: invoiceId,
           stripe_session_id: session.id,
           stripe_payment_intent: session.payment_intent,
+          stripe_connected_account: connectedAccountId,
           amount: (session.amount_total || 0) / 100,
           currency: session.currency?.toUpperCase() || 'USD',
           status: 'completed',
           customer_email: session.customer_email || null,
           share_token: shareToken || null,
         });
+      }
+    }
+
+    // Handle account updates (onboarding completed, etc.)
+    if (event.type === 'account.updated') {
+      const account = event.data.object as Stripe.Account;
+      if (account.charges_enabled && account.payouts_enabled) {
+        // Mark onboarding as complete for this connected account
+        await supabase
+          .from('user_profiles')
+          .update({ stripe_onboarding_complete: true })
+          .eq('stripe_account_id', account.id);
       }
     }
 
