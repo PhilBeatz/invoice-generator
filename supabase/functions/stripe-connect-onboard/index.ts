@@ -139,7 +139,8 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error('Stripe Connect error:', err);
-    return new Response(JSON.stringify({ error: 'Failed to process Stripe Connect request' }), {
+    const message = err instanceof Error ? err.message : 'Failed to process Stripe Connect request';
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

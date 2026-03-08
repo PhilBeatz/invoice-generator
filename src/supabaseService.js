@@ -380,7 +380,18 @@ export async function stripeConnectOnboard() {
   const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
     body: { action: 'onboard' },
   });
-  if (error) throw error;
+  if (error) {
+    // Extract the actual error message from the edge function response
+    let message = error.message;
+    try {
+      if (error.context) {
+        const body = await error.context.json();
+        if (body?.error) message = body.error;
+      }
+    } catch (_) { /* ignore parse errors */ }
+    throw new Error(message);
+  }
+  if (data?.error) throw new Error(data.error);
   return data; // { url: 'https://connect.stripe.com/...' }
 }
 

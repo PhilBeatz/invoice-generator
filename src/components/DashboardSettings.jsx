@@ -171,10 +171,12 @@ export default function DashboardSettings({ darkMode = true, user }) {
       const result = await stripeConnectOnboard();
       if (result?.url) {
         window.location.href = result.url;
+      } else {
+        throw new Error('No onboarding URL returned from Stripe. Check that STRIPE_SECRET_KEY and APP_URL are configured in Supabase Edge Function secrets.');
       }
     } catch (e) {
       console.error('Stripe Connect error:', e);
-      alert('Failed to start Stripe onboarding. Please try again.');
+      alert(e.message || 'Failed to start Stripe onboarding. Please try again.');
     }
     setStripeLoading(false);
   };
