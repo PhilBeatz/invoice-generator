@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PLAN_LIMITS, fetchAndCachePlan, getCurrentPlan, getTrialDaysLeft } from './planLimits';
 import { fetchInvoices, fetchCustomers, fetchProducts, fetchCategories, fetchPaymentMethods, fetchEmployees } from '../supabaseService';
 
@@ -17,6 +17,7 @@ function checkIsOwner() {
 
 export default function DashboardSubscription({ darkMode = true }) {
   var navigate = useNavigate();
+  var location = useLocation();
   var [isMobile, setIsMobile] = useState(false);
   var isOwner = checkIsOwner();
   var [currentPlan, setCurrentPlan] = useState(isOwner ? 'pro' : getCurrentPlan());
@@ -24,6 +25,35 @@ export default function DashboardSubscription({ darkMode = true }) {
   var [usage, setUsage] = useState({ invoices: 0, customers: 0, products: 0, categories: 0, paymentMethods: 0, employees: 0, emailsSent: 0 });
   var [showCancelModal, setShowCancelModal] = useState(false);
   var [cancelReason, setCancelReason] = useState('');
+  var [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  // Detect checkout success from URL params
+  useEffect(function() {
+    var params = new URLSearchParams(location.search);
+    if (params.get('checkout') === 'success') {
+      setCheckoutSuccess(true);
+      // Re-fetch plan after successful checkout (webhook may take a moment)
+      var attempts = 0;
+      var pollPlan = function() {
+        fetchAndCachePlan().then(function(plan) {
+          setCurrentPlan(plan || 'none');
+          try {
+            var sub = JSON.parse(localStorage.getItem('dayonetools_subscription') || '{}');
+            setSubData(sub);
+          } catch(e) {}
+          // If still not showing paid, retry a few times
+          if ((plan === 'trial' || plan === 'none' || plan === 'trial_expired') && attempts < 5) {
+            attempts++;
+            setTimeout(pollPlan, 2000);
+          }
+        });
+      };
+      // Initial delay to let webhook process
+      setTimeout(pollPlan, 1500);
+      // Clean URL
+      navigate('/dashboard/subscription', { replace: true });
+    }
+  }, []);
 
   useEffect(function() {
     var ck = function() { setIsMobile(window.innerWidth <= 768); }; ck();
@@ -125,6 +155,19 @@ export default function DashboardSubscription({ darkMode = true }) {
       React.createElement('p', { style: { fontSize: '14px', color: C.tm, marginTop: '4px' } }, 'Manage your subscription plan and track usage metrics')
     ),
 
+    // Checkout success banner
+    checkoutSuccess && React.createElement('div', { style: { background: C.grn + '15', border: '1px solid ' + C.grn + '40', borderRadius: '10px', padding: '16px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' } },
+      React.createElement('span', { style: { fontSize: '20px' } }, '\u2705'),
+      React.createElement('div', null,
+        React.createElement('div', { style: { fontSize: '15px', fontWeight: '700', color: C.grn } }, 'Payment Successful!'),
+        React.createElement('div', { style: { fontSize: '13px', color: C.tm, marginTop: '2px' } }, 'Your subscription is now active. Thank you for subscribing!')
+      ),
+      React.createElement('button', {
+        onClick: function() { setCheckoutSuccess(false); },
+        style: { marginLeft: 'auto', background: 'none', border: 'none', color: C.tm, cursor: 'pointer', fontSize: '16px' }
+      }, '\u2715')
+    ),
+
     // === TOP ROW: Current Plan + Management ===
     React.createElement('div', { style: { display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: '16px', marginBottom: '20px' } },
 
@@ -178,7 +221,31 @@ export default function DashboardSubscription({ darkMode = true }) {
         ),
         // Billing Portal button
         React.createElement('button', {
-          onClick: function() { /* Will open Stripe Customer Portal */ },
+          onClick: async function() {
+            try {
+              var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+              var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+              var accessToken = session.access_token;
+              var userId = session.user && session.user.id;
+              var projectRef = authKeys[0].replace('sb-', '').replace('-auth-token', '');
+              var response = await fetch(
+                'https://' + projectRef + '.supabase.co/functions/v1/customer-portal',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+                  body: JSON.stringify({ userId: userId }),
+                }
+              );
+              var data = await response.json();
+              if (data.url) {
+                window.location.href = data.url;
+              } else {
+                alert(data.error || 'Unable to open billing portal. Make sure you have an active subscription.');
+              }
+            } catch(e) {
+              alert('Error opening billing portal: ' + e.message);
+            }
+          },
           style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '12px 14px', background: C.bg, border: '1px solid ' + C.bdr, borderRadius: '8px', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.15s' }
         },
           React.createElement('div', { style: { textAlign: 'left' } },
@@ -324,10 +391,31 @@ export default function DashboardSubscription({ darkMode = true }) {
             style: { flex: 1, padding: '10px', background: '#21262d', border: '1px solid ' + C.bdr, borderRadius: '6px', color: C.text, fontSize: '13px', fontWeight: '600', cursor: 'pointer' }
           }, 'Keep Subscription'),
           React.createElement('button', {
-            onClick: function() {
-              // TODO: Call Stripe to cancel subscription
+            onClick: async function() {
+              try {
+                var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+                var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+                var accessToken = session.access_token;
+                var userId = session.user && session.user.id;
+                var projectRef = authKeys[0].replace('sb-', '').replace('-auth-token', '');
+                var response = await fetch(
+                  'https://' + projectRef + '.supabase.co/functions/v1/customer-portal',
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+                    body: JSON.stringify({ userId: userId }),
+                  }
+                );
+                var data = await response.json();
+                if (data.url) {
+                  window.location.href = data.url;
+                } else {
+                  alert(data.error || 'Unable to open billing portal.');
+                }
+              } catch(e) {
+                alert('Error: ' + e.message);
+              }
               setShowCancelModal(false);
-              alert('Cancellation will be handled through Stripe Customer Portal. This feature will be connected when Billing Portal is set up.');
             },
             style: { flex: 1, padding: '10px', background: C.red, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }
           }, 'Confirm Cancellation')

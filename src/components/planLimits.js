@@ -171,7 +171,6 @@ export async function fetchAndCachePlan() {
           status: sub.status,
           trial_end: sub.trial_end,
           current_period_end: sub.current_period_end,
-          stripe_subscription_id: sub.stripe_subscription_id,
         }));
         // Return the effective plan using getCurrentPlan logic
         return getCurrentPlan();

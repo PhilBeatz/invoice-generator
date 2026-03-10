@@ -210,7 +210,6 @@ const fromDbShare = (row) => ({
   token: row.token,
   createdBy: row.created_by,
   passwordProtected: row.password_protected,
-  paymentLinkEnabled: row.payment_link_enabled || false,
   expiresAt: row.expires_at,
   viewLimit: row.view_limit,
   viewCount: row.view_count,
@@ -242,7 +241,6 @@ export async function createShare(invoiceId, userId, options = {}) {
     created_by: options.createdBy || 'Owner',
     password_protected: options.passwordProtected || false,
     password_hash: options.password || null, // In production, hash this server-side
-    payment_link_enabled: options.paymentLinkEnabled || false,
     expires_at: options.expiresAt || null,
     view_limit: options.viewLimit || null,
   };
@@ -297,7 +295,6 @@ const fromDbEmail = (row) => ({
   type: row.email_type,
   sentBy: row.sent_by,
   resendEmailId: row.resend_email_id,
-  paymentLinkEnabled: row.payment_link_enabled || false,
   linkClicks: row.link_clicks,
   lastClickedAt: row.last_clicked_at,
   sentAt: row.sent_at,
@@ -322,7 +319,6 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
     custom_message: options.message || null,
     email_type: options.type || 'Invoice Sent',
     sent_by: options.sentBy || 'Owner',
-    payment_link_enabled: options.paymentLinkEnabled || false,
   };
 
   const { data: emailRecord, error: dbError } = await supabase
@@ -341,7 +337,6 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
         to: options.to,
         cc: options.cc || null,
         message: options.message,
-        paymentLinkEnabled: options.paymentLinkEnabled || false,
       },
     });
 
@@ -360,46 +355,6 @@ export async function sendInvoiceEmail(invoiceId, userId, options = {}) {
   }
 
   return fromDbEmail(emailRecord);
-}
-
-
-// ============================================
-// PAYMENTS
-// ============================================
-
-export async function createPaymentSession(shareToken) {
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-    body: { shareToken },
-  });
-  if (error) throw error;
-  return data; // { url: 'https://checkout.stripe.com/...' }
-}
-
-// Stripe Connect: get onboarding URL or resume onboarding
-export async function stripeConnectOnboard() {
-  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
-    body: { action: 'onboard' },
-  });
-  if (error) throw error;
-  return data; // { url: 'https://connect.stripe.com/...' }
-}
-
-// Stripe Connect: check connection status
-export async function stripeConnectStatus() {
-  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
-    body: { action: 'status' },
-  });
-  if (error) throw error;
-  return data; // { connected, onboardingComplete, accountId, chargesEnabled, payoutsEnabled }
-}
-
-// Stripe Connect: disconnect Stripe account
-export async function stripeConnectDisconnect() {
-  const { data, error } = await supabase.functions.invoke('stripe-connect-onboard', {
-    body: { action: 'disconnect' },
-  });
-  if (error) throw error;
-  return data; // { disconnected: true }
 }
 
 
@@ -678,6 +633,8 @@ const toDbPaymentMethod = (pm, userId) => ({
   branch: pm.branch || null,
   address: pm.address || null,
   paypal_email: pm.paypalEmail || null,
+  venmo_handle: pm.venmoHandle || null,
+  cashapp_tag: pm.cashappTag || null,
   crypto_currency: pm.cryptoCurrency || null,
   wallet_address: pm.walletAddress || null,
   custom_fields: pm.customFields || [],
@@ -699,6 +656,8 @@ const fromDbPaymentMethod = (row) => ({
   branch: row.branch || '',
   address: row.address || '',
   paypalEmail: row.paypal_email || '',
+  venmoHandle: row.venmo_handle || '',
+  cashappTag: row.cashapp_tag || '',
   cryptoCurrency: row.crypto_currency || '',
   walletAddress: row.wallet_address || '',
   customFields: row.custom_fields || [],
@@ -724,7 +683,8 @@ export async function updatePaymentMethod(id, updates, userId) {
     name: 'name', type: 'type', active: 'active', isDefault: 'is_default',
     bankName: 'bank_name', accountName: 'account_name', accountNumber: 'account_number',
     swift: 'swift', iban: 'iban', routing: 'routing', sortCode: 'sort_code', branch: 'branch', address: 'address',
-    paypalEmail: 'paypal_email', cryptoCurrency: 'crypto_currency', walletAddress: 'wallet_address',
+    paypalEmail: 'paypal_email', venmoHandle: 'venmo_handle', cashappTag: 'cashapp_tag',
+    cryptoCurrency: 'crypto_currency', walletAddress: 'wallet_address',
     customFields: 'custom_fields',
   };
   for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }

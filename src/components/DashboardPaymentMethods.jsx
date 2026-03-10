@@ -13,6 +13,8 @@ function getUserId() {
 var TYPES = [
   { value: 'bank', label: 'Bank Account', color: '#3b82f6' },
   { value: 'paypal', label: 'PayPal', color: '#0070ba' },
+  { value: 'venmo', label: 'Venmo', color: '#008CFF' },
+  { value: 'cashapp', label: 'Cash App', color: '#00D632' },
   { value: 'crypto', label: 'Crypto', color: '#f7931a' },
   { value: 'custom', label: 'Custom', color: '#8b5cf6' },
 ];
@@ -90,6 +92,8 @@ export default function DashboardPaymentMethods() {
     name:'', type:'bank', active:true, isDefault:false,
     bankName:'', accountName:'', accountNumber:'', swift:'', iban:'', routing:'', sortCode:'', branch:'', address:'',
     paypalEmail:'',
+    venmoHandle:'',
+    cashappTag:'',
     cryptoCurrency:'BTC', walletAddress:'',
     customFields:[{label:'',value:''}],
   };
@@ -125,6 +129,8 @@ export default function DashboardPaymentMethods() {
   var getDetails = function(m) {
     if(m.type==='bank') return m.bankName||'';
     if(m.type==='paypal') return m.paypalEmail||'';
+    if(m.type==='venmo') return '@'+(m.venmoHandle||'');
+    if(m.type==='cashapp') return '$'+(m.cashappTag||'');
     if(m.type==='crypto') return (m.cryptoCurrency||'')+(m.walletAddress?' - '+m.walletAddress.substring(0,12)+'...':'');
     if(m.type==='custom'&&m.customFields&&m.customFields.length>0) return m.customFields.map(function(f){return f.label;}).filter(Boolean).join(', ');
     return '';
@@ -145,6 +151,8 @@ export default function DashboardPaymentMethods() {
       bankName:m.bankName||'', accountName:m.accountName||'', accountNumber:m.accountNumber||'',
       swift:m.swift||'', iban:m.iban||'', routing:m.routing||'', sortCode:m.sortCode||'', branch:m.branch||'', address:m.address||'',
       paypalEmail:m.paypalEmail||'',
+      venmoHandle:m.venmoHandle||'',
+      cashappTag:m.cashappTag||'',
       cryptoCurrency:m.cryptoCurrency||'BTC', walletAddress:m.walletAddress||'',
       customFields:m.customFields&&m.customFields.length>0?m.customFields.map(function(f){return{label:f.label||'',value:f.value||''};}): [{label:'',value:''}],
     });
@@ -166,6 +174,12 @@ export default function DashboardPaymentMethods() {
       if(!form.paypalEmail.trim()) er.paypalEmail='PayPal email is required';
       if(form.paypalEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.paypalEmail)) er.paypalEmail='Invalid email address';
     }
+    if(form.type==='venmo'){
+      if(!form.venmoHandle.trim()) er.venmoHandle='Venmo username is required';
+    }
+    if(form.type==='cashapp'){
+      if(!form.cashappTag.trim()) er.cashappTag='Cash App $cashtag is required';
+    }
     if(form.type==='crypto'){
       if(!form.walletAddress.trim()) er.walletAddress='Wallet address is required';
     }
@@ -180,6 +194,8 @@ export default function DashboardPaymentMethods() {
     };
     if(form.type==='bank') Object.assign(data,{bankName:form.bankName.trim(),accountName:form.accountName.trim(),accountNumber:form.accountNumber.trim(),swift:form.swift.trim(),iban:form.iban.trim(),routing:form.routing.trim(),sortCode:form.sortCode.trim(),branch:form.branch.trim(),address:form.address.trim()});
     if(form.type==='paypal') data.paypalEmail=form.paypalEmail.trim();
+    if(form.type==='venmo') data.venmoHandle=form.venmoHandle.trim().replace(/^@/,'');
+    if(form.type==='cashapp') data.cashappTag=form.cashappTag.trim().replace(/^\$/,'');
     if(form.type==='crypto'){data.cryptoCurrency=form.cryptoCurrency;data.walletAddress=form.walletAddress.trim();}
     if(form.type==='custom') data.customFields=form.customFields.filter(function(f){return f.label.trim()||f.value.trim();}).map(function(f){return{label:f.label.trim(),value:f.value.trim()};});
 
@@ -290,6 +306,32 @@ export default function DashboardPaymentMethods() {
         React.createElement('label',{style:lblS},'\u2709 PayPal Email *'),
         React.createElement('input',{style:Object.assign({},inpS,errors.paypalEmail?{borderColor:C.red}:{}),value:form.paypalEmail,onChange:function(e){uf('paypalEmail',e.target.value);},placeholder:'payments@company.com',type:'email'}),
         errors.paypalEmail&&React.createElement('span',{style:{fontSize:'11px',color:C.red}},errors.paypalEmail)
+      );
+    } else if(form.type==='venmo'){
+      typeFields = React.createElement('div', {style:{margin:'16px 0 12px'}},
+        React.createElement('h4', {style:{fontSize:'13px',fontWeight:'600',color:C.text,margin:'0 0 12px'}}, 'Venmo Details'),
+        React.createElement('label',{style:lblS},'Venmo Username *'),
+        React.createElement('div', {style:{position:'relative'}},
+          React.createElement('span', {style:{position:'absolute',left:'12px',top:'50%',transform:'translateY(-50%)',color:C.tm,fontSize:'14px',fontWeight:'600'}}, '@'),
+          React.createElement('input',{style:Object.assign({},inpS,{paddingLeft:'28px'},errors.venmoHandle?{borderColor:C.red}:{}),value:form.venmoHandle,onChange:function(e){uf('venmoHandle',e.target.value.replace(/^@/,''));},placeholder:'username'})
+        ),
+        errors.venmoHandle&&React.createElement('span',{style:{fontSize:'11px',color:C.red}},errors.venmoHandle),
+        React.createElement('div', {style:{marginTop:'12px',padding:'12px 16px',background:'#008CFF15',border:'1px solid #008CFF40',borderRadius:'8px'}},
+          React.createElement('p', {style:{fontSize:'12px',color:'#008CFF',margin:0,lineHeight:'1.6'}}, 'A QR code will be generated on shared invoices and PDFs so clients can scan and pay directly with Venmo.')
+        )
+      );
+    } else if(form.type==='cashapp'){
+      typeFields = React.createElement('div', {style:{margin:'16px 0 12px'}},
+        React.createElement('h4', {style:{fontSize:'13px',fontWeight:'600',color:C.text,margin:'0 0 12px'}}, 'Cash App Details'),
+        React.createElement('label',{style:lblS},'Cash App $cashtag *'),
+        React.createElement('div', {style:{position:'relative'}},
+          React.createElement('span', {style:{position:'absolute',left:'12px',top:'50%',transform:'translateY(-50%)',color:C.tm,fontSize:'14px',fontWeight:'600'}}, '$'),
+          React.createElement('input',{style:Object.assign({},inpS,{paddingLeft:'28px'},errors.cashappTag?{borderColor:C.red}:{}),value:form.cashappTag,onChange:function(e){uf('cashappTag',e.target.value.replace(/^\$/,''));},placeholder:'cashtag'})
+        ),
+        errors.cashappTag&&React.createElement('span',{style:{fontSize:'11px',color:C.red}},errors.cashappTag),
+        React.createElement('div', {style:{marginTop:'12px',padding:'12px 16px',background:'#00D63215',border:'1px solid #00D63240',borderRadius:'8px'}},
+          React.createElement('p', {style:{fontSize:'12px',color:'#00D632',margin:0,lineHeight:'1.6'}}, 'A QR code will be generated on shared invoices and PDFs so clients can scan and pay directly with Cash App.')
+        )
       );
     } else if(form.type==='crypto'){
       typeFields = React.createElement('div', {style:{margin:'16px 0 12px'}},

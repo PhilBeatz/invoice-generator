@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { fetchOrganization, upsertOrganization, deleteOrganization, deleteAllUserData, stripeConnectOnboard, stripeConnectStatus, stripeConnectDisconnect } from '../supabaseService';
+import { useNavigate } from 'react-router-dom';
+import { fetchOrganization, upsertOrganization, deleteOrganization, deleteAllUserData } from '../supabaseService';
 import { supabase } from '../supabaseClient';
 
 export default function DashboardSettings({ darkMode = true, user }) {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteOrgModal, setShowDeleteOrgModal] = useState(false);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
@@ -24,11 +23,6 @@ export default function DashboardSettings({ darkMode = true, user }) {
   });
   const [formData, setFormData] = useState({ ...orgData });
   const [logoPreview, setLogoPreview] = useState('');
-  // Stripe Connect
-  const [stripeStatus, setStripeStatus] = useState(null); // null = loading, object = loaded
-  const [stripeLoading, setStripeLoading] = useState(false);
-  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-
   const colors = darkMode ? {
     bg: '#0d1117',
     bgCard: '#161b22',
@@ -140,57 +134,6 @@ export default function DashboardSettings({ darkMode = true, user }) {
     };
     loadOrg();
   }, []);
-
-  // Load Stripe Connect status
-  useEffect(() => {
-    const loadStripeStatus = async () => {
-      try {
-        const status = await stripeConnectStatus();
-        setStripeStatus(status);
-      } catch (e) {
-        console.error('Error loading Stripe status:', e);
-        setStripeStatus({ connected: false });
-      }
-    };
-    loadStripeStatus();
-
-    // Handle return from Stripe onboarding
-    const stripeParam = searchParams.get('stripe');
-    if (stripeParam === 'complete' || stripeParam === 'refresh') {
-      // Re-check status after return from Stripe
-      loadStripeStatus();
-      // Clean up URL params
-      searchParams.delete('stripe');
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, []);
-
-  const handleStripeConnect = async () => {
-    setStripeLoading(true);
-    try {
-      const result = await stripeConnectOnboard();
-      if (result?.url) {
-        window.location.href = result.url;
-      }
-    } catch (e) {
-      console.error('Stripe Connect error:', e);
-      alert('Failed to start Stripe onboarding. Please try again.');
-    }
-    setStripeLoading(false);
-  };
-
-  const handleStripeDisconnect = async () => {
-    setStripeLoading(true);
-    try {
-      await stripeConnectDisconnect();
-      setStripeStatus({ connected: false });
-      setShowDisconnectModal(false);
-    } catch (e) {
-      console.error('Stripe disconnect error:', e);
-      alert('Failed to disconnect Stripe. Please try again.');
-    }
-    setStripeLoading(false);
-  };
 
   const handleSave = async () => {
     const updatedData = {
@@ -630,137 +573,6 @@ export default function DashboardSettings({ darkMode = true, user }) {
           </div>
         </div>
 
-        {/* ===== STRIPE PAYMENTS SECTION ===== */}
-        <div style={{
-          background: colors.bgCard,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '8px',
-          marginTop: '24px',
-          marginBottom: '24px',
-        }}>
-          <div style={{
-            padding: '20px 24px',
-            borderBottom: `1px solid ${colors.border}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '18px' }}>💳</span>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', color: colors.text, margin: 0 }}>
-                Online Payments
-              </h2>
-            </div>
-            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>
-              Connect your Stripe account to accept online payments from invoice recipients
-            </p>
-          </div>
-          <div style={{ padding: '24px' }}>
-            {stripeStatus === null ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: colors.textMuted, fontSize: '14px' }}>
-                Loading payment status...
-              </div>
-            ) : stripeStatus.connected && stripeStatus.onboardingComplete ? (
-              /* Connected & Active */
-              <div>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '16px', background: `${colors.green}15`, border: `1px solid ${colors.green}40`,
-                  borderRadius: '8px', marginBottom: '16px',
-                }}>
-                  <span style={{ fontSize: '24px' }}>✅</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.green }}>Stripe Connected</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
-                      Your account is set up to receive payments. When you share an invoice with a payment link enabled, clients can pay you directly online.
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                  <div style={{ padding: '12px 16px', background: colors.bgInput, borderRadius: '6px', border: `1px solid ${colors.border}` }}>
-                    <div style={{ fontSize: '11px', color: colors.textMuted, marginBottom: '4px' }}>Card Payments</div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: stripeStatus.chargesEnabled ? colors.green : colors.yellow }}>
-                      {stripeStatus.chargesEnabled ? 'Enabled' : 'Pending'}
-                    </div>
-                  </div>
-                  <div style={{ padding: '12px 16px', background: colors.bgInput, borderRadius: '6px', border: `1px solid ${colors.border}` }}>
-                    <div style={{ fontSize: '11px', color: colors.textMuted, marginBottom: '4px' }}>Payouts</div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: stripeStatus.payoutsEnabled ? colors.green : colors.yellow }}>
-                      {stripeStatus.payoutsEnabled ? 'Enabled' : 'Pending'}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" style={{
-                    padding: '10px 18px', background: colors.bgInput, border: `1px solid ${colors.border}`,
-                    borderRadius: '6px', color: colors.text, fontSize: '13px', fontWeight: '500',
-                    cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  }}>
-                    Open Stripe Dashboard ↗
-                  </a>
-                  <button onClick={() => setShowDisconnectModal(true)} style={{
-                    padding: '10px 18px', background: 'transparent', border: `1px solid ${colors.red}60`,
-                    borderRadius: '6px', color: colors.red, fontSize: '13px', fontWeight: '500', cursor: 'pointer',
-                  }}>
-                    Disconnect
-                  </button>
-                </div>
-              </div>
-            ) : stripeStatus.connected && !stripeStatus.onboardingComplete ? (
-              /* Connected but onboarding incomplete */
-              <div>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '16px', background: `${colors.yellow}15`, border: `1px solid ${colors.yellow}40`,
-                  borderRadius: '8px', marginBottom: '16px',
-                }}>
-                  <span style={{ fontSize: '24px' }}>⚠️</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.yellow }}>Onboarding Incomplete</div>
-                    <div style={{ fontSize: '12px', color: colors.textMuted, marginTop: '2px' }}>
-                      Your Stripe account has been created but setup is not complete. Please finish onboarding to start accepting payments.
-                    </div>
-                  </div>
-                </div>
-                <button onClick={handleStripeConnect} disabled={stripeLoading} style={{
-                  padding: '12px 24px', background: '#635bff', border: 'none', borderRadius: '6px',
-                  color: '#fff', fontSize: '14px', fontWeight: '600', cursor: stripeLoading ? 'not-allowed' : 'pointer',
-                  opacity: stripeLoading ? 0.7 : 1,
-                }}>
-                  {stripeLoading ? 'Loading...' : 'Continue Setup'}
-                </button>
-              </div>
-            ) : (
-              /* Not connected */
-              <div>
-                <div style={{
-                  padding: '16px', background: colors.bgInput, border: `1px solid ${colors.border}`,
-                  borderRadius: '8px', marginBottom: '16px',
-                }}>
-                  <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0, lineHeight: '1.7' }}>
-                    Connect your Stripe account to let clients pay invoices online. When you share an invoice and enable the payment link option, a <strong style={{ color: colors.text }}>"Pay Now"</strong> button will appear for your client.
-                  </p>
-                  <div style={{ marginTop: '12px', fontSize: '12px', color: colors.textMuted, lineHeight: '1.8' }}>
-                    <div>&#8226; Payments go directly to your bank account via Stripe</div>
-                    <div>&#8226; You control your own Stripe account and payouts</div>
-                    <div>&#8226; Standard Stripe processing fees apply (2.9% + $0.30)</div>
-                    <div>&#8226; No additional platform fees</div>
-                  </div>
-                </div>
-                <button onClick={handleStripeConnect} disabled={stripeLoading} style={{
-                  padding: '12px 24px', background: '#635bff', border: 'none', borderRadius: '6px',
-                  color: '#fff', fontSize: '14px', fontWeight: '600', cursor: stripeLoading ? 'not-allowed' : 'pointer',
-                  opacity: stripeLoading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '8px',
-                }}>
-                  {stripeLoading ? 'Loading...' : (
-                    <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.918 3.757 7.164c0 4.469 2.978 6.2 6.334 7.476 2.172.831 2.922 1.487 2.922 2.444 0 .949-.771 1.487-2.172 1.487-2.09 0-4.948-.948-6.974-2.204l-.89 5.544C5.013 23.257 7.727 24 10.934 24c2.626 0 4.776-.631 6.334-1.867 1.652-1.332 2.508-3.227 2.508-5.637 0-4.584-3.039-6.258-5.8-7.346z"/></svg>
-                      Connect with Stripe
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* ===== DANGER ZONE ===== */}
         <div style={{
           background: colors.bgCard,
@@ -843,27 +655,6 @@ export default function DashboardSettings({ darkMode = true, user }) {
                 setDeleting(false);
               }} style={{ padding: '10px 20px', background: colors.red, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.6 : 1 }}>
                 {deleting ? 'Resetting...' : 'Reset Organization'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== DISCONNECT STRIPE MODAL ===== */}
-      {showDisconnectModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowDisconnectModal(false)}>
-          <div style={{ background: colors.bgCard, border: `1px solid ${colors.border}`, borderRadius: '12px', padding: '24px', maxWidth: '440px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: '18px', fontWeight: '600', color: colors.text, margin: '0 0 8px' }}>Disconnect Stripe</h3>
-            <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px', lineHeight: '1.6' }}>
-              This will disconnect your Stripe account from Day One Tools. You will no longer be able to accept online payments through shared invoices.
-            </p>
-            <div style={{ padding: '12px', background: `${colors.yellow}15`, border: `1px solid ${colors.yellow}30`, borderRadius: '6px', marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', color: colors.yellow, margin: 0 }}>Your Stripe account and any received payments are not affected. You can reconnect at any time.</p>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => setShowDisconnectModal(false)} style={{ padding: '10px 20px', background: colors.bgInput, border: `1px solid ${colors.border}`, borderRadius: '6px', color: colors.text, fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
-              <button disabled={stripeLoading} onClick={handleStripeDisconnect} style={{ padding: '10px 20px', background: colors.red, border: 'none', borderRadius: '6px', color: '#fff', fontSize: '14px', fontWeight: '500', cursor: stripeLoading ? 'not-allowed' : 'pointer', opacity: stripeLoading ? 0.6 : 1 }}>
-                {stripeLoading ? 'Disconnecting...' : 'Disconnect Stripe'}
               </button>
             </div>
           </div>

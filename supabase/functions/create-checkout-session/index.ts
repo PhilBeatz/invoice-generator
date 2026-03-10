@@ -1,164 +1,123 @@
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno';
+// supabase/functions/create-checkout-session/index.ts
+// Creates a Stripe Checkout Session for subscription purchases
+//
+// Required env vars (set in Supabase Dashboard > Edge Functions > Secrets):
+//   STRIPE_SECRET_KEY  - Your Stripe secret key (sk_live_... or sk_test_...)
+//   STRIPE_PRICE_SOLO_MONTHLY  - Stripe Price ID for Solo monthly
+//   STRIPE_PRICE_SOLO_YEARLY   - Stripe Price ID for Solo yearly
+//   STRIPE_PRICE_PRO_MONTHLY   - Stripe Price ID for Pro monthly
+//   STRIPE_PRICE_PRO_YEARLY    - Stripe Price ID for Pro yearly
+//   SITE_URL                    - Your site URL (e.g. https://dayonetools.app)
+
+import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+  apiVersion: "2024-04-10",
+});
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+// Map plan + billing to Stripe Price IDs (set these in Supabase secrets)
+function getPriceId(plan: string, billing: string): string | null {
+  const map: Record<string, string | undefined> = {
+    "solo_monthly": Deno.env.get("STRIPE_PRICE_SOLO_MONTHLY"),
+    "solo_yearly": Deno.env.get("STRIPE_PRICE_SOLO_YEARLY"),
+    "pro_monthly": Deno.env.get("STRIPE_PRICE_PRO_MONTHLY"),
+    "pro_yearly": Deno.env.get("STRIPE_PRICE_PRO_YEARLY"),
+  };
+  return map[`${plan}_${billing}`] || null;
+}
+
+Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { shareToken } = await req.json();
-    if (!shareToken) {
-      return new Response(JSON.stringify({ error: 'Missing shareToken' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const { plan, billing, userId, email } = await req.json();
+
+    if (!plan || !billing || !userId || !email) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields: plan, billing, userId, email" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')!;
-    const appUrl = Deno.env.get('APP_URL') || 'https://yourdomain.com';
-    const platformFeePercent = parseFloat(Deno.env.get('PLATFORM_FEE_PERCENT') || '0');
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const stripe = new Stripe(stripeSecretKey, { apiVersion: '2023-10-16' });
-
-    // Look up the share and associated invoice
-    const { data: share, error: shareError } = await supabase
-      .from('invoice_shares')
-      .select('*, invoices(*)')
-      .eq('token', shareToken)
-      .eq('status', 'active')
-      .eq('payment_link_enabled', true)
-      .single();
-
-    if (shareError || !share) {
-      return new Response(JSON.stringify({ error: 'Invalid or inactive share link' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const priceId = getPriceId(plan, billing);
+    if (!priceId) {
+      return new Response(
+        JSON.stringify({ error: `Invalid plan/billing combination: ${plan}/${billing}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const invoice = share.invoices;
-    if (!invoice) {
-      return new Response(JSON.stringify({ error: 'Invoice not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Check if this user already has a Stripe customer ID
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: existingSub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("stripe_customer_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    let customerId = existingSub?.stripe_customer_id;
+
+    // Create or retrieve Stripe customer
+    if (!customerId) {
+      // Search for existing customer by email
+      const customers = await stripe.customers.list({ email, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({
+          email,
+          metadata: { supabase_user_id: userId },
+        });
+        customerId = customer.id;
+      }
     }
 
-    // Look up the invoice owner's Stripe Connect account
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('stripe_account_id, stripe_onboarding_complete')
-      .eq('user_id', invoice.user_id)
-      .single();
+    const siteUrl = Deno.env.get("SITE_URL") || "http://localhost:5173";
 
-    if (!profile?.stripe_account_id || !profile?.stripe_onboarding_complete) {
-      return new Response(JSON.stringify({ error: 'The invoice owner has not set up online payments yet.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const connectedAccountId = profile.stripe_account_id;
-
-    // Map invoice currency to Stripe-compatible lowercase
-    const currency = (invoice.currency || 'USD').toLowerCase();
-
-    // Build line items from invoice items
-    const items = invoice.items || [];
-    const isHours = invoice.invoice_mode === 'hours';
-    const lineItems = items.map((item: any) => {
-      const qty = isHours ? (item.hours || 1) : (item.quantity || 1);
-      const unitPrice = isHours ? (item.rate || 0) : (item.price || 0);
-      return {
-        price_data: {
-          currency,
-          product_data: {
-            name: item.description || 'Invoice Item',
-            ...(item.sku ? { metadata: { sku: item.sku } } : {}),
-          },
-          unit_amount: Math.round(unitPrice * 100), // Stripe uses cents
-        },
-        quantity: qty,
-      };
-    });
-
-    // Add shipping as a line item if applicable
-    if (invoice.shipping_amount > 0) {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: { name: 'Shipping' },
-          unit_amount: Math.round(invoice.shipping_amount * 100),
-        },
-        quantity: 1,
-      });
-    }
-
-    // Add tax as a line item if applicable and not included in prices
-    if (invoice.tax_amount > 0 && !invoice.tax_included) {
-      lineItems.push({
-        price_data: {
-          currency,
-          product_data: { name: 'Tax' },
-          unit_amount: Math.round(invoice.tax_amount * 100),
-        },
-        quantity: 1,
-      });
-    }
-
-    // Calculate platform fee (optional)
-    const totalInCents = Math.round((invoice.total || 0) * 100);
-    const applicationFee = platformFeePercent > 0
-      ? Math.round(totalInCents * (platformFeePercent / 100))
-      : undefined;
-
-    // Create a coupon on the connected account if there's a discount
-    let discountConfig = {};
-    if (invoice.discount_amount > 0) {
-      const coupon = await stripe.coupons.create({
-        amount_off: Math.round(invoice.discount_amount * 100),
-        currency,
-        duration: 'once',
-        name: `Discount - Invoice ${invoice.invoice_number}`,
-      }, { stripeAccount: connectedAccountId });
-      discountConfig = { discounts: [{ coupon: coupon.id }] };
-    }
-
-    // Create Stripe Checkout Session on the connected account
+    // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: lineItems,
-      ...discountConfig,
-      metadata: {
-        invoice_id: invoice.id,
-        share_token: shareToken,
-        invoice_number: invoice.invoice_number,
+      customer: customerId,
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${siteUrl}/#/dashboard/subscription?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/#/dashboard/pricing?checkout=canceled`,
+      subscription_data: {
+        metadata: {
+          supabase_user_id: userId,
+          plan,
+          billing,
+        },
       },
-      customer_email: invoice.customer_email || undefined,
-      success_url: `${appUrl}/share/invoice/${shareToken}?payment=success`,
-      cancel_url: `${appUrl}/share/invoice/${shareToken}?payment=cancelled`,
-      ...(applicationFee ? { payment_intent_data: { application_fee_amount: applicationFee } } : {}),
-    }, { stripeAccount: connectedAccountId });
+      metadata: {
+        supabase_user_id: userId,
+        plan,
+        billing,
+      },
+    });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ url: session.url }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (err) {
-    console.error('Payment session error:', err);
-    return new Response(JSON.stringify({ error: 'Failed to create payment session' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("Checkout session error:", err);
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

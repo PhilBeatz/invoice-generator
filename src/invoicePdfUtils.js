@@ -1,5 +1,6 @@
 // src/invoicePdfUtils.js
 // Shared utility for generating invoice HTML and triggering PDF download/view
+import QRCode from 'qrcode';
 
 const currencies = [
   { code: 'USD', symbol: '$' }, { code: 'EUR', symbol: '€' }, { code: 'GBP', symbol: '£' },
@@ -35,10 +36,21 @@ function calcTotals(invoice) {
   return { subtotal, discountAmount, afterDiscount, taxAmount, shippingAmount, total };
 }
 
-function generatePaymentHTML(invoice) {
+function getPaymentUrl(pm, amount, invoiceNumber) {
+  const note = invoiceNumber ? `Invoice ${invoiceNumber}` : 'Invoice Payment';
+  if (pm.type === 'venmo' && pm.venmoHandle) {
+    return `venmo://paycharge?txn=pay&recipients=${encodeURIComponent(pm.venmoHandle)}&amount=${amount}&note=${encodeURIComponent(note)}`;
+  }
+  if (pm.type === 'cashapp' && pm.cashappTag) {
+    return `https://cash.app/$${encodeURIComponent(pm.cashappTag)}/${amount}`;
+  }
+  return null;
+}
+
+async function generatePaymentHTML(invoice) {
   if (!invoice.paymentMethods || invoice.paymentMethods.length === 0) return '';
   let html = '<div class="payment-details"><h3>Payment Details</h3>';
-  invoice.paymentMethods.forEach(pm => {
+  for (const pm of invoice.paymentMethods) {
     if (pm.type === 'bank') {
       html += `<div class="payment-section"><div class="payment-method">Method: Bank</div><div class="payment-grid-two-col">
         <div class="payment-row"><span class="payment-label">Bank:</span><span class="payment-value">${pm.bankName || ''}</span></div>
@@ -55,6 +67,25 @@ function generatePaymentHTML(invoice) {
       html += `<div class="payment-section"><div class="payment-method">Method: PayPal</div><div class="payment-grid">
         ${pm.paypalEmail ? `<div class="payment-row"><span class="payment-label">PayPal Email:</span><span class="payment-value">${pm.paypalEmail}</span></div>` : ''}
       </div></div>`;
+    } else if (pm.type === 'venmo' || pm.type === 'cashapp') {
+      const label = pm.type === 'venmo' ? 'Venmo' : 'Cash App';
+      const color = pm.type === 'venmo' ? '#008CFF' : '#00D632';
+      const handle = pm.type === 'venmo' ? `@${pm.venmoHandle}` : `$${pm.cashappTag}`;
+      const total = calcTotals(invoice).total;
+      const url = getPaymentUrl(pm, total, invoice.invoiceNumber);
+      let qrImg = '';
+      if (url) {
+        try {
+          const dataUrl = await QRCode.toDataURL(url, { width: 140, margin: 2 });
+          qrImg = `<div style="text-align:center;margin-top:12px">
+            <img src="${dataUrl}" style="width:120px;height:120px" />
+            <div style="font-size:12px;color:${color};margin-top:6px;font-weight:600">Scan to pay with ${label}</div>
+          </div>`;
+        } catch (e) { /* QR generation failed, skip */ }
+      }
+      html += `<div class="payment-section"><div class="payment-method">Method: ${label}</div><div class="payment-grid">
+        <div class="payment-row"><span class="payment-label">${label}:</span><span class="payment-value">${handle}</span></div>
+      </div>${qrImg}</div>`;
     } else if (pm.type === 'crypto') {
       html += `<div class="payment-section"><div class="payment-method">Method: Cryptocurrency (${pm.cryptoType || pm.cryptoCurrency || ''})</div><div class="payment-grid">
         ${pm.walletAddress ? `<div class="payment-row"><span class="payment-label">Wallet Address:</span><span class="payment-value" style="word-break:break-all">${pm.walletAddress}</span></div>` : ''}
@@ -65,7 +96,7 @@ function generatePaymentHTML(invoice) {
         ${pm.customDetails ? `<div class="payment-row"><span class="payment-value">${pm.customDetails}</span></div>` : ''}
       </div></div>`;
     }
-  });
+  }
   html += '</div>';
   return html;
 }
@@ -112,7 +143,7 @@ function getTemplateCSS(template) {
  * @param {Object} invoice - invoice data object
  * @param {Object} options - { template, logoDataUrl }
  */
-export function generateInvoiceHTML(invoice, options = {}) {
+export async function generateInvoiceHTML(invoice, options = {}) {
   const template = options.template || invoice.selectedTemplate || 'regular';
   const logo = options.logoDataUrl || invoice.logoPreview || invoice.businessLogo || '';
   const sym = getCurrencySymbol(invoice.currency);
@@ -225,7 +256,7 @@ ${shippingAmount > 0 ? `<div class="totals-row"><span>Shipping:</span><span>${fm
 </div>
 </div>
 
-${generatePaymentHTML(invoice)}
+${await generatePaymentHTML(invoice)}
 
 ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:1px solid #e2e8f0;font-size:13px;color:#6b7280;line-height:1.5">${invoice.endMessage}</div>` : ''}
 
@@ -235,8 +266,8 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
 /**
  * Open invoice in a new tab for viewing
  */
-export function viewInvoicePDF(invoice, options = {}) {
-  const html = generateInvoiceHTML(invoice, options);
+export async function viewInvoicePDF(invoice, options = {}) {
+  const html = await generateInvoiceHTML(invoice, options);
   const newWindow = window.open('', '_blank');
   if (newWindow) {
     newWindow.document.write(html);
@@ -247,8 +278,8 @@ export function viewInvoicePDF(invoice, options = {}) {
 /**
  * Download invoice as PDF via browser print dialog
  */
-export function downloadInvoicePDF(invoice, options = {}) {
-  const html = generateInvoiceHTML(invoice, options);
+export async function downloadInvoicePDF(invoice, options = {}) {
+  const html = await generateInvoiceHTML(invoice, options);
   const printFrame = document.createElement('iframe');
   printFrame.style.position = 'fixed';
   printFrame.style.right = '0';
