@@ -633,6 +633,8 @@ const toDbPaymentMethod = (pm, userId) => ({
   branch: pm.branch || null,
   address: pm.address || null,
   paypal_email: pm.paypalEmail || null,
+  venmo_handle: pm.venmoHandle || null,
+  cashapp_tag: pm.cashappTag || null,
   crypto_currency: pm.cryptoCurrency || null,
   wallet_address: pm.walletAddress || null,
   custom_fields: pm.customFields || [],
@@ -654,6 +656,8 @@ const fromDbPaymentMethod = (row) => ({
   branch: row.branch || '',
   address: row.address || '',
   paypalEmail: row.paypal_email || '',
+  venmoHandle: row.venmo_handle || '',
+  cashappTag: row.cashapp_tag || '',
   cryptoCurrency: row.crypto_currency || '',
   walletAddress: row.wallet_address || '',
   customFields: row.custom_fields || [],
@@ -679,7 +683,8 @@ export async function updatePaymentMethod(id, updates, userId) {
     name: 'name', type: 'type', active: 'active', isDefault: 'is_default',
     bankName: 'bank_name', accountName: 'account_name', accountNumber: 'account_number',
     swift: 'swift', iban: 'iban', routing: 'routing', sortCode: 'sort_code', branch: 'branch', address: 'address',
-    paypalEmail: 'paypal_email', cryptoCurrency: 'crypto_currency', walletAddress: 'wallet_address',
+    paypalEmail: 'paypal_email', venmoHandle: 'venmo_handle', cashappTag: 'cashapp_tag',
+    cryptoCurrency: 'crypto_currency', walletAddress: 'wallet_address',
     customFields: 'custom_fields',
   };
   for (const [k, v] of Object.entries(map)) { if (updates[k] !== undefined) row[v] = updates[k]; }

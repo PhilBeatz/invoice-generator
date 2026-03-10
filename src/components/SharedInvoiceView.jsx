@@ -1,6 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSharedInvoice } from '../supabaseService';
+import QRCode from 'qrcode';
+
+function getPaymentUrl(pm, amount, invoiceNumber) {
+  const note = invoiceNumber ? `Invoice ${invoiceNumber}` : 'Invoice Payment';
+  if (pm.type === 'venmo' && pm.venmoHandle) {
+    return `venmo://paycharge?txn=pay&recipients=${encodeURIComponent(pm.venmoHandle)}&amount=${amount}&note=${encodeURIComponent(note)}`;
+  }
+  if (pm.type === 'cashapp' && pm.cashappTag) {
+    return `https://cash.app/$${encodeURIComponent(pm.cashappTag)}/${amount}`;
+  }
+  return null;
+}
+
+function PaymentQRCode({ url, label, color }) {
+  const [dataUrl, setDataUrl] = useState(null);
+  useEffect(() => {
+    if (!url) return;
+    QRCode.toDataURL(url, { width: 160, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+      .then(setDataUrl)
+      .catch(console.error);
+  }, [url]);
+  if (!dataUrl) return null;
+  return React.createElement('div', { style: { textAlign: 'center', padding: '16px', background: '#fff', borderRadius: '8px', border: `1px solid ${color}40` } },
+    React.createElement('img', { src: dataUrl, alt: `${label} QR Code`, style: { width: '140px', height: '140px' } }),
+    React.createElement('div', { style: { fontSize: '13px', fontWeight: '600', color, marginTop: '8px' } }, `Pay with ${label}`),
+    React.createElement('a', { href: url, target: '_blank', rel: 'noopener noreferrer', style: { fontSize: '12px', color, textDecoration: 'underline', display: 'block', marginTop: '4px' } }, `Open ${label}`)
+  );
+}
 
 export default function SharedInvoiceView() {
   const { token } = useParams();
@@ -379,6 +407,13 @@ export default function SharedInvoiceView() {
             <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '12px' }}>You can view and download this invoice.</div>
             <button onClick={handleDownloadPDF} style={{ width: '100%', padding: '10px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>📥 Download PDF</button>
           </div>
+          {invoice.paymentMethods && invoice.paymentMethods.filter(pm => pm.type === 'venmo' || pm.type === 'cashapp').map((pm, idx) => {
+            const url = getPaymentUrl(pm, invoice.total || 0, invoice.invoiceNumber);
+            if (!url) return null;
+            const label = pm.type === 'venmo' ? 'Venmo' : 'Cash App';
+            const color = pm.type === 'venmo' ? '#008CFF' : '#00D632';
+            return React.createElement(PaymentQRCode, { key: idx, url, label, color });
+          })}
         </div>
       </div>
 
