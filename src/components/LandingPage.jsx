@@ -585,24 +585,6 @@ export default function LandingPage({ darkMode = true }) {
             );})}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '32px' }}>
-          <button style={{
-            padding: '12px 28px',
-            background: 'transparent',
-            border: `1.5px solid ${darkMode ? '#30363d' : '#e5e7eb'}`,
-            borderRadius: '8px',
-            color: colors.text,
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            fontFamily: "'Inter', sans-serif",
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}>
-            View All Industries →
-          </button>
-        </div>
       </div>
     </div>
   );
