@@ -395,10 +395,13 @@ export default function UserGuide({ darkMode = true }) {
 
   const current = sections.find(s => s.id === activeSection) || sections[0];
 
+  // Generate a stable slug from heading text
+  const toSlug = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
   // Extract headings for the "On this page" sidebar
   const tocItems = current.content
     .filter(c => c.type === 'subtitle' || c.type === 'heading' || c.type === 'subheading')
-    .map(c => ({ text: c.text, level: c.type === 'subtitle' ? 0 : c.type === 'heading' ? 1 : 2 }));
+    .map(c => ({ text: c.text, level: c.type === 'subtitle' ? 0 : c.type === 'heading' ? 1 : 2, id: toSlug(c.text) }));
 
   const handleNav = (id) => {
     setActiveSection(id);
@@ -409,11 +412,11 @@ export default function UserGuide({ darkMode = true }) {
   const renderContent = (items) => items.map((item, i) => {
     switch (item.type) {
       case 'subtitle':
-        return <h1 key={i} style={{ fontSize: '28px', fontWeight: '700', color: colors.text, margin: '0 0 8px 0', lineHeight: '1.3' }}>{item.text}</h1>;
+        return <h1 key={i} id={toSlug(item.text)} style={{ fontSize: '28px', fontWeight: '700', color: colors.text, margin: '0 0 8px 0', lineHeight: '1.3' }}>{item.text}</h1>;
       case 'heading':
-        return <h2 key={i} id={`heading-${i}`} style={{ fontSize: '20px', fontWeight: '600', color: colors.text, margin: '32px 0 12px 0', lineHeight: '1.4' }}>{item.text}</h2>;
+        return <h2 key={i} id={toSlug(item.text)} style={{ fontSize: '20px', fontWeight: '600', color: colors.text, margin: '32px 0 12px 0', lineHeight: '1.4' }}>{item.text}</h2>;
       case 'subheading':
-        return <h3 key={i} id={`heading-${i}`} style={{ fontSize: '17px', fontWeight: '600', color: colors.text, margin: '24px 0 10px 0', lineHeight: '1.4' }}>{item.text}</h3>;
+        return <h3 key={i} id={toSlug(item.text)} style={{ fontSize: '17px', fontWeight: '600', color: colors.text, margin: '24px 0 10px 0', lineHeight: '1.4' }}>{item.text}</h3>;
       case 'paragraph':
         return <p key={i} style={{ fontSize: '15px', color: colors.textMuted, lineHeight: '1.75', margin: '0 0 16px 0' }}>{item.text}</p>;
       case 'divider':
@@ -556,15 +559,25 @@ export default function UserGuide({ darkMode = true }) {
             <span style={{ fontSize: '14px' }}>{'\u2261'}</span> On this page
           </div>
           {tocItems.map((item, i) => (
-            <div key={i} style={{
-              fontSize: '13px',
-              color: item.level === 0 ? colors.text : colors.textMuted,
-              fontWeight: item.level === 0 ? '600' : '400',
-              padding: '4px 0',
-              paddingLeft: item.level === 2 ? '12px' : '0',
-              lineHeight: '1.5',
-              cursor: 'default',
-            }}>
+            <div
+              key={i}
+              onClick={() => {
+                const el = document.getElementById(item.id);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              style={{
+                fontSize: '13px',
+                color: item.level === 0 ? colors.text : colors.textMuted,
+                fontWeight: item.level === 0 ? '600' : '400',
+                padding: '4px 0',
+                paddingLeft: item.level === 2 ? '12px' : '0',
+                lineHeight: '1.5',
+                cursor: 'pointer',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = colors.accent}
+              onMouseLeave={(e) => e.currentTarget.style.color = item.level === 0 ? colors.text : colors.textMuted}
+            >
               {item.text}
             </div>
           ))}
