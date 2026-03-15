@@ -15,12 +15,10 @@
 //   - invoice.payment_succeeded
 //   - invoice.payment_failed
 
-import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
+import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-  apiVersion: "2024-04-10",
-});
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!);
 
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
 
