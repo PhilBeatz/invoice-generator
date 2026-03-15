@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+var OWNER_EMAIL = 'phildouthard@gmail.com';
+
+function checkIsOwner() {
+  try {
+    var authKeys = Object.keys(localStorage).filter(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+    if (authKeys.length === 0) return false;
+    var session = JSON.parse(localStorage.getItem(authKeys[0]) || '{}');
+    return session.user && session.user.email === OWNER_EMAIL;
+  } catch(e) { return false; }
+}
+
 export default function DashboardSidebar({ darkMode = true, isMobile = false, isOpen = true, onClose, user }) {
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState({
@@ -9,6 +20,7 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
     proposals: false,
     organization: false,
   });
+  const isOwner = checkIsOwner();
 
   // Get company name from user metadata or localStorage
   const getCompanyName = () => {
@@ -143,6 +155,13 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
         <Link to="/dashboard/vault" style={navItemStyle('/dashboard/vault')} onClick={onClose}>
           <span style={{ fontSize: '16px' }}>🔒</span> Vault
         </Link>
+
+        {/* Admin Stats - owner only */}
+        {isOwner && (
+          <Link to="/dashboard/admin-stats" style={navItemStyle('/dashboard/admin-stats')} onClick={onClose}>
+            <span style={{ fontSize: '16px' }}>👑</span> Admin Stats
+          </Link>
+        )}
 
         {/* Invoice Section */}
         <div style={sectionHeaderStyle}>Invoice</div>

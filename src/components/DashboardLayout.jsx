@@ -19,6 +19,7 @@ import DashboardConfiguration from './DashboardConfiguration';
 import DashboardProposals from './DashboardProposals';
 import ProposalAnalytics from './ProposalAnalytics';
 import InvoiceGenerator from './InvoiceGenerator';
+import DashboardAdminStats from './DashboardAdminStats';
 import { getCurrentPlan, fetchAndCachePlan, hasDashboardAccess, getTrialDaysLeft } from './planLimits';
 
 // Owner email - always gets full access (must match planLimits.js)
@@ -195,6 +196,10 @@ export default function DashboardLayout({ darkMode = true, user }) {
           } />
           <Route path="employees" element={
             <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardEmployees darkMode={darkMode} /></PaidRoute>
+          } />
+          {/* Admin-only route (owner) */}
+          <Route path="admin-stats" element={
+            <PaidRoute hasAccess={isOwnerUser} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardAdminStats darkMode={darkMode} /></PaidRoute>
           } />
           {/* These routes are always accessible */}
           <Route path="pricing" element={
