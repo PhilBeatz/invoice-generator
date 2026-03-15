@@ -118,7 +118,7 @@ export default function DashboardEmployees({ darkMode }) {
   useEffect(function() { loadData(); }, [loadData]);
 
   var allDepts = Array.from(new Set(DEFAULT_DEPTS.concat(employees.map(function(e) { return e.department; }).filter(Boolean)))).sort();
-  var invCount = function(id) { return invoices.filter(function(i) { return i.employeeId === id || i.assignedEmployee === id; }).length; };
+  var invCount = function(id) { return invoices.filter(function(i) { return i.employeeId === id; }).length; };
 
   var filtered = employees.filter(function(e) {
     if (search) { var q = search.toLowerCase(); if (![e.fullName, e.employeeId, e.email, e.phone, e.position, e.department].some(function(f) { return (f||'').toLowerCase().includes(q); })) return false; }
@@ -228,7 +228,7 @@ export default function DashboardEmployees({ darkMode }) {
   // Detail View
   if (showDetail) {
     var emp = showDetail;
-    var eInv = invoices.filter(function(i){ return i.employeeId===emp.employeeId||i.assignedEmployee===emp.employeeId; });
+    var eInv = invoices.filter(function(i){ return i.employeeId===emp.employeeId; });
     var totRev = eInv.reduce(function(s,i){ return s+(parseFloat(i.total)||0); }, 0);
     var paidInv = eInv.filter(function(i){ return i.status==='paid'; });
     var paidRev = paidInv.reduce(function(s,i){ return s+(parseFloat(i.total)||0); }, 0);

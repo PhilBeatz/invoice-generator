@@ -2123,26 +2123,6 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
                   {/* Divider */}
                   <div style={{ borderTop: `1px solid ${colors.border}`, margin: '20px 0' }}></div>
 
-                  {/* Assigned Employee (Placeholder) */}
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={labelStyle}>Assigned Employee</label>
-                    <div style={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '12px 14px',
-                      background: colors.bgInput,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: '6px',
-                      color: colors.textMuted,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                    }}>
-                      <span>👤</span>
-                      Click to assign an employee
-                    </div>
-                  </div>
-
                   {/* Invoice Mode Toggle */}
                   <div>
                     <label style={labelStyle}>Invoice Mode:</label>
