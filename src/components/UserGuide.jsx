@@ -412,11 +412,11 @@ export default function UserGuide({ darkMode = true }) {
   const renderContent = (items) => items.map((item, i) => {
     switch (item.type) {
       case 'subtitle':
-        return <h1 key={i} id={toSlug(item.text)} style={{ fontSize: '28px', fontWeight: '700', color: colors.text, margin: '0 0 8px 0', lineHeight: '1.3' }}>{item.text}</h1>;
+        return <h1 key={i} id={toSlug(item.text)} style={{ fontSize: '28px', fontWeight: '700', color: colors.text, margin: '0 0 8px 0', lineHeight: '1.3', scrollMarginTop: '80px' }}>{item.text}</h1>;
       case 'heading':
-        return <h2 key={i} id={toSlug(item.text)} style={{ fontSize: '20px', fontWeight: '600', color: colors.text, margin: '32px 0 12px 0', lineHeight: '1.4' }}>{item.text}</h2>;
+        return <h2 key={i} id={toSlug(item.text)} style={{ fontSize: '20px', fontWeight: '600', color: colors.text, margin: '32px 0 12px 0', lineHeight: '1.4', scrollMarginTop: '80px' }}>{item.text}</h2>;
       case 'subheading':
-        return <h3 key={i} id={toSlug(item.text)} style={{ fontSize: '17px', fontWeight: '600', color: colors.text, margin: '24px 0 10px 0', lineHeight: '1.4' }}>{item.text}</h3>;
+        return <h3 key={i} id={toSlug(item.text)} style={{ fontSize: '17px', fontWeight: '600', color: colors.text, margin: '24px 0 10px 0', lineHeight: '1.4', scrollMarginTop: '80px' }}>{item.text}</h3>;
       case 'paragraph':
         return <p key={i} style={{ fontSize: '15px', color: colors.textMuted, lineHeight: '1.75', margin: '0 0 16px 0' }}>{item.text}</p>;
       case 'divider':
