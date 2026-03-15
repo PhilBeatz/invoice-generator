@@ -122,6 +122,7 @@ export default function Header({ darkMode = true, user, supabase }) {
                   </div>
                 )}
               </div>
+              <Link to="/docs" style={navLinkStyle}>Docs</Link>
               <Link to="/contact" style={navLinkStyle}>Contact</Link>
               <Link to="/dashboard/pricing" style={navLinkStyle}>Pricing</Link>
             </nav>
@@ -203,6 +204,10 @@ export default function Header({ darkMode = true, user, supabase }) {
               display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
               fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
             }}>Dashboard</Link>
+            <Link to="/docs" onClick={() => setMenuOpen(false)} style={{
+              display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
+              fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+            }}>Docs</Link>
             <Link to="/contact" onClick={() => setMenuOpen(false)} style={{
               display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
               fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
