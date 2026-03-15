@@ -87,6 +87,7 @@ export default function App() {
               <Route path="/login" element={
                 user ? <Navigate to="/dashboard" replace /> : <Login darkMode={darkMode} />
               } />
+              <Route path="/invoicing/free-trial" element={<Navigate to="/signup" replace />} />
               <Route path="/signup" element={
                 user ? <Navigate to="/dashboard" replace /> : <SignUp darkMode={darkMode} />
               } />
