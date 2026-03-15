@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft, fetchCustomers, createCustomer as createCustomerDb, updateCustomer as updateCustomerDb, deleteCustomer as deleteCustomerDb, fetchOrganization } from '../supabaseService';
 
 const defaultInvoice = {
@@ -1151,6 +1151,25 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
         }}>
           Use our free online invoice generator to create professional invoices in seconds — no signup required. Customize, and download a PDF invoice for your business needs.
         </p>
+        {!user && (
+          <Link to="/signup" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: '20px',
+            padding: '12px 32px',
+            background: colors.accent,
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: '600',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontFamily: "'Inter', sans-serif",
+            transition: 'opacity 0.2s',
+          }}>
+            Sign Up Free — Access Your Dashboard
+          </Link>
+        )}
       </div>
       )}
 
