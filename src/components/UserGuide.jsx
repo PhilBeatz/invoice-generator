@@ -56,26 +56,129 @@ const sections = [
     category: 'Invoice',
     content: [
       { type: 'subtitle', text: 'Creating & Managing Invoices' },
-      { type: 'paragraph', text: 'The invoice system is the core of Day One Tools. Here\'s everything you need to know about creating, managing, and sending invoices.' },
+      { type: 'paragraph', text: 'The invoice system is the core of Day One Tools. Here\'s everything you need to know about creating, managing, and sending professional invoices.' },
+
       { type: 'heading', text: 'Creating an Invoice' },
       { type: 'paragraph', text: 'From the dashboard, click "Create" in the sidebar to open the invoice generator. You can also access the free public invoice generator at /invoicegenerator without an account.' },
+
       { type: 'subheading', text: 'Invoice Modes' },
+      { type: 'paragraph', text: 'Toggle between two billing modes depending on how you charge:' },
       { type: 'list', items: [
-        { bold: 'Products Mode:', text: 'Add line items with name, quantity, unit price, and optional tax. Ideal for product-based businesses.' },
-        { bold: 'Hourly Mode:', text: 'Track hours worked with hourly rates. Perfect for freelancers and service providers.' },
+        { bold: 'Products Mode:', text: 'Add line items with description, SKU, quantity, and unit price. Ideal for product-based businesses that sell physical or digital goods.' },
+        { bold: 'Hourly Mode:', text: 'Track hours worked with hourly rates. Perfect for freelancers, consultants, and service providers who bill by time.' },
       ]},
+
+      { type: 'subheading', text: 'Business & Customer Details' },
+      { type: 'paragraph', text: 'Fill in your business information (company name, email, address, phone) and your customer\'s details. If you have saved customers, select them from the dropdown to auto-populate their information. You can also upload your company logo, which will appear on the invoice.' },
+      { type: 'list', items: [
+        { bold: 'Customer Fields:', text: 'Name, email, phone, address, zip code, and tax ID / customer identifier.' },
+        { bold: 'Saved Customers:', text: 'Load previously saved customers from your database for quick reuse across invoices.' },
+      ]},
+
+      { type: 'subheading', text: 'Line Items' },
+      { type: 'paragraph', text: 'Add as many line items as needed. Each item includes a description, quantity (or hours), and unit price (or rate). Totals are calculated automatically. You can add items from your product catalog using the "Add from catalog" button, or create temporary products on the fly.' },
+
+      { type: 'subheading', text: 'Invoice Number & Dates' },
+      { type: 'list', items: [
+        { bold: 'Invoice Number:', text: 'Auto-generated for you, but can be manually overridden if you have your own numbering system.' },
+        { bold: 'Issue Date:', text: 'Defaults to today. Use the date picker to set a different date.' },
+        { bold: 'Due Date:', text: 'Optional. Set a due date to track payment deadlines. Invoices past their due date are automatically flagged as overdue.' },
+      ]},
+
       { type: 'heading', text: 'Invoice Templates' },
-      { type: 'paragraph', text: 'Day One Tools offers multiple professionally designed templates. Select your preferred template from the template picker in the invoice generator. Each template supports full customization including colors, fonts, and layout.' },
+      { type: 'paragraph', text: 'Choose from four professionally designed templates. Select your preferred style from the template picker in the invoice generator:' },
+      { type: 'list', items: [
+        { bold: 'Regular:', text: 'A balanced, classic design with a blue accent. Great for most businesses.' },
+        { bold: 'Bold Professional:', text: 'Features a dark header with a green accent for a strong, corporate look.' },
+        { bold: 'Mono:', text: 'Clean and minimal with a gray color scheme. Ideal for a understated, professional feel.' },
+        { bold: 'Startup Modern:', text: 'A sleek, modern design with a blue gradient. Perfect for tech companies and startups.' },
+      ]},
+      { type: 'paragraph', text: 'Each template adjusts the header, table styling, badge colors, and overall layout. Preview any template before selecting it using the template preview panel.' },
+
+      { type: 'heading', text: 'PDF Download & Printing' },
+      { type: 'paragraph', text: 'Once your invoice is ready, use the "Download PDF" button to generate a high-quality PDF file of your invoice. The PDF includes all your business branding, line items, totals, and payment method details. You can also use the "Print" button to send the invoice directly to your printer via the browser\'s print dialog. Both options use the template you\'ve selected.' },
+
+      { type: 'heading', text: 'Live Preview' },
+      { type: 'paragraph', text: 'The invoice generator includes a real-time live preview panel on the right side of the screen. As you fill in details, the preview updates instantly so you can see exactly how your final invoice will look. You can toggle the live preview on or off, or switch to a full-screen preview mode to inspect the invoice more closely before downloading or sending.' },
+
+      { type: 'heading', text: 'Multi-Currency Support' },
+      { type: 'paragraph', text: 'Generate invoices in any of the supported currencies. Select your currency from the dropdown and all amounts, totals, and calculations will display with the correct symbol:' },
+      { type: 'list', items: [
+        { bold: 'Supported Currencies:', text: 'USD ($), EUR (\u20AC), GBP (\u00A3), CAD (C$), AUD (A$), JPY (\u00A5), and INR (\u20B9).' },
+      ]},
+
+      { type: 'heading', text: 'Multi-Language Support' },
+      { type: 'paragraph', text: 'Invoices can be generated in 10 languages: English, Spanish, French, German, Italian, Portuguese, Chinese, Japanese, Korean, and Arabic. When you select a language, all invoice labels (e.g., "Invoice", "Due Date", "Total") are automatically translated. This is useful when invoicing international clients in their preferred language.' },
+
+      { type: 'heading', text: 'Date Format Options' },
+      { type: 'paragraph', text: 'Choose how dates appear on your invoice. Available formats include:' },
+      { type: 'list', items: [
+        { bold: 'US Format:', text: 'MM/DD/YYYY (e.g., 03/15/2026)' },
+        { bold: 'EU Format:', text: 'DD/MM/YYYY (e.g., 15/03/2026)' },
+        { bold: 'ISO Format:', text: 'YYYY-MM-DD (e.g., 2026-03-15)' },
+        { bold: 'Written Formats:', text: 'Month DD, YYYY or DD Month YYYY, plus abbreviated versions.' },
+      ]},
+
       { type: 'heading', text: 'Taxes, Discounts & Shipping' },
       { type: 'list', items: [
-        { bold: 'Tax:', text: 'Add tax as a percentage. Toggle "Tax included in prices" if your prices already include tax.' },
-        { bold: 'Discount:', text: 'Apply a flat amount or percentage discount to the invoice subtotal.' },
-        { bold: 'Shipping:', text: 'Add shipping charges as a separate line on the invoice.' },
+        { bold: 'Tax:', text: 'Add tax as a percentage or a fixed amount. Toggle between "Percentage" and "Number" modes. You can also enable "Tax included in prices" if your line item prices already include tax \u2014 the tax will be calculated in reverse.' },
+        { bold: 'Discount:', text: 'Apply a flat discount amount to the invoice subtotal. The discount is deducted before tax is calculated.' },
+        { bold: 'Shipping:', text: 'Add a shipping charge as a separate line. It is added to the total after tax.' },
       ]},
-      { type: 'heading', text: 'Sharing Invoices' },
-      { type: 'paragraph', text: 'Share invoices with customers via secure, password-protected links. You can set expiration dates and view limits for added security. Customers can view and download the invoice without needing an account.' },
-      { type: 'heading', text: 'Managing Invoices' },
-      { type: 'paragraph', text: 'View all your invoices from Dashboard > Invoices. Filter by status (draft, sent, paid, overdue), search by customer or invoice number, and sort by date or amount. Click any invoice to view details, edit, duplicate, or download as PDF.' },
+      { type: 'paragraph', text: 'The invoice automatically calculates the subtotal, discount, tax amount, and final total in real time as you update these fields.' },
+
+      { type: 'heading', text: 'Payment Methods on Invoices' },
+      { type: 'paragraph', text: 'Display your accepted payment methods directly on the invoice so customers know exactly how to pay. Supported payment types include:' },
+      { type: 'list', items: [
+        { bold: 'Bank Transfer:', text: 'Add your bank name, branch, account name, account number, routing number, sort code, SWIFT code, and IBAN.' },
+        { bold: 'PayPal:', text: 'Display your PayPal email address for easy online payments.' },
+        { bold: 'Cryptocurrency:', text: 'Accept Bitcoin, Ethereum, USDT, USDC, Litecoin, or other crypto with wallet addresses. QR codes are generated on shared invoices.' },
+        { bold: 'Custom Payment:', text: 'Add any custom payment method with a name and instructions (e.g., Venmo, Zelle, cash on delivery).' },
+      ]},
+
+      { type: 'heading', text: 'Custom Fields' },
+      { type: 'paragraph', text: 'Need to include extra information? Add unlimited custom key-value fields to your invoice. Common uses include purchase order numbers, project references, contract IDs, or any other details your client requires. Custom fields appear on the invoice alongside the standard details.' },
+
+      { type: 'heading', text: 'Payment Terms & Notes' },
+      { type: 'list', items: [
+        { bold: 'Payment Terms:', text: 'Add a payment terms note (e.g., "Net 30", "50% upfront, 50% on delivery") that appears on the invoice.' },
+        { bold: 'End Message:', text: 'Include a closing message or terms at the bottom of the invoice, such as a thank-you note, return policy, or legal disclaimer.' },
+      ]},
+
+      { type: 'heading', text: 'Sharing & Sending Invoices' },
+      { type: 'paragraph', text: 'After saving an invoice, share it with customers via secure links or email:' },
+      { type: 'list', items: [
+        { bold: 'Share Link:', text: 'Generate a shareable link to the invoice. Optionally set a password, expiration date, and view limit for added security. Copy the link and send it via any channel.' },
+        { bold: 'Email Invoice:', text: 'Send the invoice directly to your customer\'s email with a custom message. Email history is tracked so you can see when invoices were sent.' },
+        { bold: 'Manage Shares:', text: 'View all active share links and revoke access at any time from the invoice detail page.' },
+      ]},
+      { type: 'paragraph', text: 'Customers can view and download the shared invoice without needing an account. Cryptocurrency payment methods display QR codes on shared views for easy scanning.' },
+
+      { type: 'heading', text: 'Invoice Status Tracking' },
+      { type: 'paragraph', text: 'Track the lifecycle of every invoice with status labels:' },
+      { type: 'list', items: [
+        { bold: 'Draft:', text: 'Invoice is being prepared and hasn\'t been sent yet.' },
+        { bold: 'Sent:', text: 'Invoice has been delivered to the customer.' },
+        { bold: 'Pending:', text: 'Awaiting payment from the customer.' },
+        { bold: 'Paid:', text: 'Payment has been received.' },
+        { bold: 'Overdue:', text: 'The due date has passed without payment. Automatically detected.' },
+        { bold: 'Cancelled:', text: 'Invoice has been voided. Cancelled invoices cannot be edited.' },
+      ]},
+
+      { type: 'heading', text: 'Managing Your Invoices' },
+      { type: 'paragraph', text: 'View all your invoices from Dashboard > Invoices. The invoice list provides powerful tools to stay organized:' },
+      { type: 'list', items: [
+        { bold: 'Search:', text: 'Find invoices by invoice number, customer name, or email address.' },
+        { bold: 'Filter by Status:', text: 'Filter the list to show only Draft, Sent, Paid, Overdue, or Cancelled invoices.' },
+        { bold: 'Date Range Filter:', text: 'Use preset ranges (last 7 days, 30 days, etc.) or set a custom date range.' },
+        { bold: 'Sorting:', text: 'Sort by invoice number, customer name, amount, status, or date in ascending/descending order.' },
+        { bold: 'Bulk Actions:', text: 'Select multiple invoices to delete them or change their status in bulk.' },
+        { bold: 'Pagination:', text: 'Navigate large invoice lists with customizable items per page.' },
+      ]},
+      { type: 'paragraph', text: 'Click any invoice to view its full details, edit it, duplicate it, download as PDF, share it, or send it via email.' },
+
+      { type: 'heading', text: 'Auto-Save & Draft Recovery' },
+      { type: 'paragraph', text: 'Your invoice form data is automatically saved to local storage as you work. If you accidentally close the browser or navigate away, your progress will be preserved and restored when you return to the invoice generator.' },
     ],
   },
   {
