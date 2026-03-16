@@ -62,6 +62,13 @@ def mark_as_posted(history, video_id):
     history["posted"] = posted
 
 
+def get_all_known_ids(history):
+    """Get a set of all video IDs that have been posted or are in the queue."""
+    posted_ids = {entry["id"] for entry in history.get("posted", [])}
+    queued_ids = {entry["id"] for entry in history.get("queue", [])}
+    return posted_ids | queued_ids
+
+
 def get_stats(history):
     """Get posting statistics."""
     return {

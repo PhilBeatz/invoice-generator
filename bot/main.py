@@ -25,7 +25,7 @@ from history import (
     add_to_queue,
     get_next_from_queue,
     mark_as_posted,
-    is_already_posted,
+    get_all_known_ids,
     get_stats,
 )
 
@@ -47,6 +47,10 @@ def download_videos(config, history):
     download_dir = config["paths"]["downloads"]
     topics = tiktok_cfg["topics"]
 
+    # Get all known video IDs to prevent duplicate downloads
+    known_ids = get_all_known_ids(history)
+    print(f"[*] {len(known_ids)} videos already known (posted + queued). Will skip these.")
+
     # Pick a random topic to keep content varied
     random.shuffle(topics)
 
@@ -56,16 +60,22 @@ def download_videos(config, history):
         videos = search_and_download(
             topic=topic,
             download_dir=download_dir,
-            max_duration=tiktok_cfg.get("max_duration", 90),
-            min_views=tiktok_cfg.get("min_views", 1000),
-            limit=config["posting"].get("queue_size", 5),
+            filters=tiktok_cfg,
+            known_ids=known_ids,
         )
 
+        print(f"    [*] {len(videos)} videos passed all filters")
+
         for video in videos:
-            if not is_already_posted(history, video["id"]):
-                if add_to_queue(history, video):
-                    total_added += 1
-                    print(f"    [+] Queued: {video['id']} by @{video['author']} ({video['views']} views)")
+            if add_to_queue(history, video):
+                total_added += 1
+                rate = f"{video['engagement_rate']:.1%}"
+                print(
+                    f"    [+] Queued: {video['id']} by @{video['author']}"
+                    f" — {video['views']} views, {video['likes']} likes, {rate} engagement"
+                )
+                # Track newly queued IDs so later topics skip them too
+                known_ids.add(video["id"])
 
         # Stop if we have enough queued
         queue_size = len(history.get("queue", []))
@@ -128,7 +138,11 @@ def show_status(history):
     if queue:
         print("\n  Next up in queue:")
         for i, video in enumerate(queue[:5]):
-            print(f"    {i+1}. {video['id']} by @{video.get('author', '?')} — #{video.get('topic', '?')}")
+            rate = f"{video.get('engagement_rate', 0):.1%}"
+            print(
+                f"    {i+1}. {video['id']} by @{video.get('author', '?')}"
+                f" — #{video.get('topic', '?')} | {video.get('views', 0)} views | {rate} eng."
+            )
     print()
 
 
