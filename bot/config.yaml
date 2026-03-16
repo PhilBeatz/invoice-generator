@@ -1,0 +1,40 @@
+# TikTok to Instagram Bot Configuration
+
+# Instagram credentials
+instagram:
+  username: "YOUR_INSTAGRAM_USERNAME"
+  password: "YOUR_INSTAGRAM_PASSWORD"
+
+# TikTok search settings
+tiktok:
+  # Add hashtags or keywords to search for (without #)
+  topics:
+    - "producer"
+    - "beatmaker"
+    - "musicproducer"
+    - "producing"
+  # Minimum views a video should have before downloading
+  min_views: 1000
+  # Maximum video duration in seconds (Instagram Reels max is 90s)
+  max_duration: 90
+
+# Posting settings
+posting:
+  # How many videos to download and queue at a time
+  queue_size: 5
+  # Caption template — {original_author} and {topic} are replaced automatically
+  caption_template: |
+    🎵 Credit: @{original_author} on TikTok
+    .
+    Follow for daily {topic} content!
+    .
+    #producer #beatmaker #musicproducer #beats #studiolife
+  # Add "Reposted from TikTok" watermark text overlay
+  add_credit_overlay: true
+
+# Storage paths
+paths:
+  # Where downloaded videos are saved
+  downloads: "./bot/downloads"
+  # Database file tracking posted videos
+  history_db: "./bot/history.json"
