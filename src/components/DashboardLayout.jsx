@@ -63,6 +63,13 @@ export default function DashboardLayout({ darkMode = true, user }) {
       setCurrentPlan(getCurrentPlan());
       setPlanLoaded(true);
     });
+
+    // Fire Google Ads conversion event on dashboard load (post-signup)
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-11290882844/signup'
+      });
+    }
   }, []);
 
   // Trial starts automatically on signup via Supabase trigger
