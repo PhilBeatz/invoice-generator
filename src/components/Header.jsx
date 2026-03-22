@@ -124,7 +124,7 @@ export default function Header({ darkMode = true, user, supabase }) {
               </div>
               <Link to="/docs" style={navLinkStyle}>Docs</Link>
               <Link to="/contact" style={navLinkStyle}>Contact</Link>
-              <Link to="/dashboard/pricing" style={navLinkStyle}>Pricing</Link>
+              <Link to="/pricing" style={navLinkStyle}>Pricing</Link>
             </nav>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -212,6 +212,10 @@ export default function Header({ darkMode = true, user, supabase }) {
               display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
               fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
             }}>Contact</Link>
+            <Link to="/pricing" onClick={() => setMenuOpen(false)} style={{
+              display: 'block', padding: '14px 24px', color: colors.text, textDecoration: 'none',
+              fontSize: '15px', fontWeight: '500', fontFamily: "'Inter', sans-serif",
+            }}>Pricing</Link>
           </div>
 
           {/* Auth */}
