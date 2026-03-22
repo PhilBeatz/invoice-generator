@@ -226,6 +226,16 @@ export default function DashboardAdminStats({ darkMode = true }) {
   const paidCount = (stats.planCounts.solo || 0) + (stats.planCounts.pro || 0);
   const conversionRate = stats.totalUsers > 0 ? ((paidCount / stats.totalUsers) * 100).toFixed(1) : '0.0';
 
+  // Free invoice generator stats
+  const freeStats = stats.freeInvoiceStats || { total: 0, dailyDownloads: {}, monthlyDownloads: {} };
+  const freeDailyKeys = Object.keys(freeStats.dailyDownloads || {}).sort();
+  const freeDailyValues = freeDailyKeys.map(k => freeStats.dailyDownloads[k]);
+  const freeDailyLabels = freeDailyKeys.map(k => k.slice(5));
+  const todayFreeDownloads = freeStats.dailyDownloads?.[todayKey] || 0;
+  const weekFreeDownloads = freeDailyKeys
+    .filter(k => new Date(k) >= sevenDaysAgo)
+    .reduce((s, k) => s + (freeStats.dailyDownloads[k] || 0), 0);
+
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -350,6 +360,34 @@ export default function DashboardAdminStats({ darkMode = true }) {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Free Invoice Generator Usage */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: '16px', marginBottom: '24px' }}>
+        <div style={cardStyle}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '16px' }}>Free Generator Usage</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <div style={{ fontSize: '12px', color: colors.textMuted, fontWeight: '500', marginBottom: '4px' }}>Total Downloads</div>
+              <div style={{ fontSize: '28px', fontWeight: '700', color: colors.orange }}>{freeStats.total}</div>
+            </div>
+            <div style={{ display: 'flex', gap: '24px' }}>
+              <div>
+                <div style={{ fontSize: '12px', color: colors.textMuted, fontWeight: '500', marginBottom: '4px' }}>Today</div>
+                <div style={{ fontSize: '20px', fontWeight: '700', color: colors.green }}>{todayFreeDownloads}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '12px', color: colors.textMuted, fontWeight: '500', marginBottom: '4px' }}>This Week</div>
+                <div style={{ fontSize: '20px', fontWeight: '700', color: colors.accent }}>{weekFreeDownloads}</div>
+              </div>
+            </div>
+            <Sparkline data={freeDailyValues.slice(-14)} color={colors.orange} />
+          </div>
+        </div>
+        <div style={cardStyle}>
+          <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '16px' }}>Free Downloads (Last 30 Days)</div>
+          <BarChart data={freeDailyValues} labels={freeDailyLabels} colors={freeDailyValues.map(() => colors.orange)} height={180} />
         </div>
       </div>
 

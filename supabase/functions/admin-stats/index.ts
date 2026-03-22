@@ -155,6 +155,47 @@ Deno.serve(async (req) => {
       (a, b) => new Date(b.signedUp).getTime() - new Date(a.signedUp).getTime()
     );
 
+    // ── Free invoice generator usage stats ──
+    // Query the free_invoice_events table for download counts
+    const { data: freeEvents, error: freeError } = await supabaseAdmin
+      .from("free_invoice_events")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(10000);
+
+    const freeInvoiceStats: {
+      total: number;
+      dailyDownloads: Record<string, number>;
+      monthlyDownloads: Record<string, number>;
+    } = {
+      total: 0,
+      dailyDownloads: {},
+      monthlyDownloads: {},
+    };
+
+    // Initialize daily/monthly buckets (same ranges as signups)
+    for (let d = new Date(thirtyDaysAgo); d <= now; d.setDate(d.getDate() + 1)) {
+      freeInvoiceStats.dailyDownloads[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      freeInvoiceStats.monthlyDownloads[d.toISOString().slice(0, 7)] = 0;
+    }
+
+    if (!freeError && freeEvents) {
+      freeInvoiceStats.total = freeEvents.length;
+      for (const evt of freeEvents) {
+        const day = (evt.created_at as string).slice(0, 10);
+        const month = (evt.created_at as string).slice(0, 7);
+        if (freeInvoiceStats.dailyDownloads[day] !== undefined) {
+          freeInvoiceStats.dailyDownloads[day]++;
+        }
+        if (freeInvoiceStats.monthlyDownloads[month] !== undefined) {
+          freeInvoiceStats.monthlyDownloads[month]++;
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         totalUsers: allUsers.length,
@@ -162,6 +203,7 @@ Deno.serve(async (req) => {
         monthlySignups,
         planCounts,
         recentUsers: recentUsers.slice(0, 50), // last 50 signups
+        freeInvoiceStats,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
