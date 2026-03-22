@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -16,6 +16,7 @@ import IndustryLegal from './components/IndustryLegal';
 import IndustryIT from './components/IndustryIT';
 import Industries from './components/Industries';
 import UserGuide from './components/UserGuide';
+import PricingPage from './components/PricingPage';
 
 // Protected route wrapper - defined OUTSIDE App to keep stable React identity
 function ProtectedRoute({ user, authLoading, children }) {
@@ -25,6 +26,7 @@ function ProtectedRoute({ user, authLoading, children }) {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('dayonetools_darkmode');
     return saved !== null ? JSON.parse(saved) : true;
@@ -90,6 +92,9 @@ export default function App() {
               <Route path="/invoicing/free-trial" element={<Navigate to="/signup" replace />} />
               <Route path="/signup" element={
                 user ? <Navigate to="/dashboard" replace /> : <SignUp darkMode={darkMode} />
+              } />
+              <Route path="/pricing" element={
+                user ? <Navigate to="/dashboard/pricing" replace /> : <PricingPage darkMode={darkMode} onSelectPlan={() => navigate('/signup')} />
               } />
               <Route path="/forgot-password" element={<ForgotPassword darkMode={darkMode} />} />
               <Route path="/dashboard/*" element={
