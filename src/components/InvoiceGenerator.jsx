@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { fetchInvoiceById, finalizeInvoice, upsertAutoDraft, fetchCustomers, createCustomer as createCustomerDb, updateCustomer as updateCustomerDb, deleteCustomer as deleteCustomerDb, fetchOrganization } from '../supabaseService';
+import { supabase } from '../supabaseClient';
 
 const defaultInvoice = {
   businessName: '', businessEmail: '', businessAddress: '', businessPhone: '', businessLogo: null,
@@ -633,6 +634,11 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   };
 
   const downloadPDF = () => {
+    // Track free invoice generator usage (non-dashboard users)
+    if (!inDashboard) {
+      supabase.from('free_invoice_events').insert({ event: 'pdf_download' }).then(() => {});
+    }
+
     // Save current state to localStorage before showing PDF (for mobile back button)
     if (isMobile) {
       localStorage.setItem('dayonetools_invoice_draft', JSON.stringify(invoice));
