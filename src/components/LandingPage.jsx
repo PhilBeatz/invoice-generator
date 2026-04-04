@@ -378,60 +378,62 @@ export default function LandingPage({ darkMode = true }) {
             </p>
           </div>
 
-          {[
-            { num: '1', title: 'Create', desc: 'Build invoices in seconds with smart numbering, multi-currency, and 12 language options.', Mockup: CreateMockup },
-            { num: '2', title: 'Analyze', desc: 'Track payment statuses, spot overdue invoices, and monitor cash flow at a glance.', Mockup: AnalyzeMockup },
-            { num: '3', title: 'Share', desc: 'Send invoices with shareable links, password protection, and automated payment reminders.', Mockup: ShareMockup },
-          ].map((step, i) => {
-            const isReversed = i % 2 === 1;
-            return (
-              <div key={i} style={{
-                display: 'flex',
-                flexDirection: isMobile ? 'column' : (isReversed ? 'row-reverse' : 'row'),
-                alignItems: 'center',
-                gap: isMobile ? '24px' : '60px',
-                marginBottom: isMobile ? '48px' : '80px',
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '36px', height: '36px', borderRadius: '10px',
-                    background: darkMode ? '#21262d' : '#f1f5f9',
-                    fontSize: '15px', fontWeight: '800', color: colors.accent,
-                    marginBottom: '16px',
-                  }}>
-                    {step.num}
-                  </div>
-                  <h3 style={{
-                    fontSize: isMobile ? '22px' : '28px',
-                    fontWeight: '700',
-                    color: colors.text,
-                    margin: '0 0 12px',
-                  }}>
-                    {step.title}
-                  </h3>
-                  <p style={{
-                    fontSize: isMobile ? '15px' : '16px',
-                    color: colors.textMuted,
-                    lineHeight: '1.7',
-                    margin: 0,
-                    maxWidth: '400px',
-                  }}>
-                    {step.desc}
-                  </p>
-                </div>
-                <div style={{
-                  flex: 1, minWidth: 0, width: '100%',
-                  background: darkMode ? '#161b22' : '#ffffff',
-                  borderRadius: '12px',
-                  padding: isMobile ? '16px' : '24px',
-                  border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
-                }}>
-                  <step.Mockup />
-                </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: isMobile ? '16px' : '24px',
+          }}>
+            {/* Step 1: Create */}
+            <div style={{
+              background: darkMode ? '#161b22' : '#ffffff',
+              borderRadius: '12px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
+              border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>1</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Create</h3>
               </div>
-            );
-          })}
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
+                Build invoices in seconds with smart numbering, multi-currency, and 12 language options.
+              </p>
+              <CreateMockup />
+            </div>
+
+            {/* Step 2: Share */}
+            <div style={{
+              background: darkMode ? '#161b22' : '#ffffff',
+              borderRadius: '12px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
+              border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>2</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Share</h3>
+              </div>
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
+                Send invoices with shareable links, password protection, and automated payment reminders.
+              </p>
+              <ShareMockup />
+            </div>
+
+            {/* Step 3: Analyze */}
+            <div style={{
+              background: darkMode ? '#161b22' : '#ffffff',
+              borderRadius: '12px',
+              padding: isMobile ? '20px 16px' : '28px 24px',
+              border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: darkMode ? '#21262d' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: colors.accent, flexShrink: 0 }}>3</div>
+                <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Analyze</h3>
+              </div>
+              <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
+                Track payment statuses, spot overdue invoices, and monitor cash flow at a glance.
+              </p>
+              <AnalyzeMockup />
+            </div>
+          </div>
         </div>
       </div>
 
