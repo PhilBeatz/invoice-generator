@@ -304,89 +304,45 @@ export default function LandingPage({ darkMode = true }) {
         textAlign: 'center',
       }}>
         <h1 style={{
-          fontSize: isMobile ? '26px' : '42px',
-          fontWeight: '700',
+          fontSize: isMobile ? '32px' : '52px',
+          fontWeight: '800',
           color: colors.text,
-          lineHeight: '1.2',
-          marginBottom: '14px',
-          maxWidth: '700px',
-          letterSpacing: '-0.5px',
+          lineHeight: '1.15',
+          marginBottom: '18px',
+          maxWidth: '750px',
+          letterSpacing: '-1px',
           padding: isMobile ? '0 4px' : 0,
         }}>
-          <span style={{ fontStyle: 'italic' }}>Easy-To-Use</span> Invoicing Platform That Scales With Your Business
+          Invoicing Built for Growing Businesses
         </h1>
 
         <p style={{
-          fontSize: isMobile ? '14px' : '16px',
+          fontSize: isMobile ? '16px' : '19px',
           color: colors.textMuted,
-          maxWidth: '580px',
+          maxWidth: '600px',
           lineHeight: '1.6',
-          marginBottom: '24px',
+          marginBottom: '28px',
           padding: isMobile ? '0 8px' : 0,
         }}>
-          Day One is an invoicing platform built for small-medium businesses and freelancers to create professional invoices fast, manage clients, and get paid on time.
+          Create professional invoices, manage clients, and get paid faster — all in one place. Free to try, no credit card required.
         </p>
 
-        {/* CTA Buttons — stack vertically on mobile */}
-        <div style={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
+        <Link to="/signup" style={{
+          display: 'inline-flex',
           alignItems: 'center',
-          gap: isMobile ? '10px' : '20px',
-          width: isMobile ? '100%' : 'auto',
-          maxWidth: isMobile ? '320px' : 'none',
-          marginBottom: '0',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: isMobile ? '15px 32px' : '16px 36px',
+          background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
+          color: '#ffffff',
+          fontSize: isMobile ? '16px' : '17px',
+          fontWeight: '600',
+          textDecoration: 'none',
+          borderRadius: '8px',
+          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
         }}>
-          <Link to="/signup" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: isMobile ? '13px 24px' : '14px 28px',
-            background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
-            color: '#ffffff',
-            fontSize: '15px',
-            fontWeight: '600',
-            textDecoration: 'none',
-            borderRadius: '8px',
-            boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
-            width: isMobile ? '100%' : 'auto',
-            boxSizing: 'border-box',
-          }}>
-            Get Started <span style={{ fontSize: '16px' }}>›</span>
-          </Link>
-          <Link to="/invoicegenerator" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: isMobile ? '13px 24px' : '14px 28px',
-            background: 'transparent',
-            color: colors.accent,
-            fontSize: '15px',
-            fontWeight: '600',
-            textDecoration: 'none',
-            borderRadius: '8px',
-            border: `1.5px solid ${colors.accent}`,
-            width: isMobile ? '100%' : 'auto',
-            boxSizing: 'border-box',
-          }}>
-            Try Free Invoice Generator
-          </Link>
-          <Link to="/contact" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            padding: '8px 4px',
-            color: colors.accent,
-            fontSize: '15px',
-            fontWeight: '500',
-            textDecoration: 'none',
-          }}>
-            Talk to Us <span style={{ fontSize: '16px' }}>→</span>
-          </Link>
-        </div>
+          Start Free Trial <span style={{ fontSize: '18px' }}>›</span>
+        </Link>
 
         {/* Dashboard mockup */}
         <div style={{ width: '100%', maxWidth: '1100px', marginTop: isMobile ? '28px' : '36px', padding: isMobile ? '0' : '0 20px', position: 'relative' }}>
@@ -406,8 +362,7 @@ export default function LandingPage({ darkMode = true }) {
       }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: isMobile ? '36px' : '60px' }}>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#10b981', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '12px' }}>How It Works</div>
-            <h2 style={{ fontSize: isMobile ? '24px' : '40px', fontWeight: '700', color: colors.text, marginBottom: '14px', letterSpacing: '-0.5px', padding: isMobile ? '0 8px' : 0 }}>
+            <h2 style={{ fontSize: isMobile ? '26px' : '42px', fontWeight: '800', color: colors.text, marginBottom: '14px', letterSpacing: '-0.5px', padding: isMobile ? '0 8px' : 0 }}>
               Smart invoicing in 3 simple steps
             </h2>
             <p style={{ fontSize: isMobile ? '14px' : '16px', color: colors.textMuted, maxWidth: '650px', margin: '0 auto', lineHeight: '1.6', padding: isMobile ? '0 8px' : 0 }}>
@@ -474,118 +429,6 @@ export default function LandingPage({ darkMode = true }) {
         </div>
       </div>
 
-      {/* ===== INDUSTRIES SECTION ===== */}
-      <div style={{
-        padding: isMobile ? '60px 16px' : '80px 40px',
-        maxWidth: '1100px',
-        margin: '0 auto',
-        width: '100%',
-        boxSizing: 'border-box',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            padding: '6px 14px', borderRadius: '20px',
-            background: darkMode ? '#10b98120' : '#10b98115',
-            color: '#10b981', fontSize: '12px', fontWeight: '600',
-            marginBottom: '16px', letterSpacing: '0.5px',
-          }}>
-            🏢 Built For Your Industry
-          </div>
-          <h2 style={{
-            fontSize: isMobile ? '26px' : '36px', fontWeight: '800',
-            color: colors.text, margin: '0 0 12px', lineHeight: '1.2',
-          }}>
-            Invoice Software Tailored to Your Business
-          </h2>
-          <p style={{
-            fontSize: '15px', color: colors.textMuted, maxWidth: '600px',
-            margin: '0 auto', lineHeight: '1.6',
-          }}>
-            Every industry has unique invoicing needs. Day One provides specialized features
-            and templates designed for how you work.
-          </p>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-          gap: '20px',
-        }}>
-          {[
-            { title: 'Construction & Trades', desc: 'Job costing, progress billing, and material tracking', img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&h=400&fit=crop', link: '/industries/construction' },
-            { title: 'Legal Services', desc: 'Billable hours, retainer management, and trust accounting', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&h=400&fit=crop', link: '/industries/legal' },
-            { title: 'Freelancers & Creatives', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop', link: null },
-            { title: 'IT & Software', desc: 'Recurring billing, SaaS subscriptions, and project invoicing', img: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop', link: '/industries/it' },
-            { title: 'Business Consulting', desc: 'Consulting fees, milestone billing, and expense tracking', img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop', link: null },
-            { title: 'Creative Services', desc: 'Project-based billing, licensing fees, and usage rights', img: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=600&h=400&fit=crop', link: null },
-          ].map((industry, i) => {
-            const CardWrapper = industry.link ? Link : 'div';
-            const wrapperProps = industry.link ? { to: industry.link, style: { textDecoration: 'none', color: 'inherit' } } : {};
-            return (
-            <CardWrapper key={i} {...wrapperProps}>
-            <div style={{
-              background: darkMode ? '#161b22' : '#ffffff',
-              borderRadius: '12px',
-              border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
-              overflow: 'hidden',
-              cursor: industry.link ? 'pointer' : 'default',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-            }}
-              onMouseEnter={e => { if (industry.link) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)'; } }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <div style={{
-                height: '160px',
-                backgroundImage: `url(${industry.img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                display: 'flex',
-                alignItems: 'flex-end',
-                padding: '16px',
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 60%)',
-                }} />
-                <h3 style={{
-                  fontSize: '16px', fontWeight: '700', color: '#ffffff',
-                  margin: 0, position: 'relative', zIndex: 1,
-                }}>
-                  {industry.title}
-                </h3>
-              </div>
-              <div style={{ padding: '16px' }}>
-                <p style={{
-                  fontSize: '13px', color: colors.textMuted,
-                  margin: '0 0 12px', lineHeight: '1.5',
-                }}>
-                  {industry.desc}
-                </p>
-                {industry.link ? (
-                  <span style={{
-                    fontSize: '13px', fontWeight: '600', color: '#10b981',
-                    display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  }}>
-                    Learn more →
-                  </span>
-                ) : (
-                  <span style={{
-                    fontSize: '13px', fontWeight: '600', color: '#10b981',
-                    display: 'inline-flex', alignItems: 'center', gap: '4px',
-                    cursor: 'default', opacity: 0.6,
-                  }}>
-                    Coming soon
-                  </span>
-                )}
-              </div>
-            </div>
-            </CardWrapper>
-            );})}
-        </div>
-
-      </div>
     </div>
   );
 }

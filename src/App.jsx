@@ -11,10 +11,6 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import ForgotPassword from './components/ForgotPassword';
 import SharedInvoiceView from './components/SharedInvoiceView';
-import IndustryConstruction from './components/IndustryConstruction';
-import IndustryLegal from './components/IndustryLegal';
-import IndustryIT from './components/IndustryIT';
-import Industries from './components/Industries';
 import UserGuide from './components/UserGuide';
 import PricingPage from './components/PricingPage';
 
@@ -82,10 +78,7 @@ export default function App() {
               <Route path="/invoicegenerator" element={<InvoiceGenerator darkMode={darkMode} />} />
               <Route path="/contact" element={<Contact darkMode={darkMode} />} />
               <Route path="/docs" element={<UserGuide darkMode={darkMode} />} />
-              <Route path="/industries" element={<Industries darkMode={darkMode} />} />
-              <Route path="/industries/construction" element={<IndustryConstruction darkMode={darkMode} />} />
-              <Route path="/industries/legal" element={<IndustryLegal darkMode={darkMode} />} />
-              <Route path="/industries/it" element={<IndustryIT darkMode={darkMode} />} />
+              <Route path="/industries/*" element={<Navigate to="/" replace />} />
               <Route path="/login" element={
                 user ? <Navigate to="/dashboard" replace /> : <Login darkMode={darkMode} />
               } />
