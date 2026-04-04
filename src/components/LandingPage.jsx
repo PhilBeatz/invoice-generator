@@ -352,30 +352,6 @@ export default function LandingPage({ darkMode = true }) {
           or <Link to="/invoicegenerator" style={{ color: colors.accent, textDecoration: 'none', fontWeight: '500' }}>try our free invoice generator</Link> — no signup needed
         </p>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginTop: '20px',
-          color: colors.textMuted,
-          fontSize: '13px',
-        }}>
-          <div style={{ display: 'flex' }}>
-            {['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'].map((c, i) => (
-              <div key={i} style={{
-                width: '24px', height: '24px', borderRadius: '50%',
-                background: c, border: `2px solid ${darkMode ? '#1a1a2e' : '#f1f5f9'}`,
-                marginLeft: i > 0 ? '-8px' : 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '10px', fontWeight: '700', color: '#fff',
-              }}>
-                {['P', 'M', 'J', 'S'][i]}
-              </div>
-            ))}
-          </div>
-          <span>Trusted by small businesses and freelancers</span>
-        </div>
-
         {/* Dashboard mockup */}
         <div style={{ width: '100%', maxWidth: '1100px', marginTop: isMobile ? '28px' : '36px', padding: isMobile ? '0' : '0 20px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
