@@ -437,6 +437,50 @@ export default function LandingPage({ darkMode = true }) {
         </div>
       </div>
 
+      {/* ===== BOTTOM CTA SECTION ===== */}
+      <div style={{
+        padding: isMobile ? '60px 16px' : '80px 20px',
+        textAlign: 'center',
+        background: darkMode
+          ? 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(59, 130, 246, 0.1), transparent)'
+          : 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(59, 130, 246, 0.06), transparent)',
+      }}>
+        <h2 style={{
+          fontSize: isMobile ? '26px' : '38px',
+          fontWeight: '800',
+          color: colors.text,
+          marginBottom: '14px',
+          letterSpacing: '-0.5px',
+        }}>
+          Ready to simplify your invoicing?
+        </h2>
+        <p style={{
+          fontSize: isMobile ? '15px' : '17px',
+          color: colors.textMuted,
+          maxWidth: '500px',
+          margin: '0 auto 28px',
+          lineHeight: '1.6',
+        }}>
+          Start your free trial today. No credit card required.
+        </p>
+        <Link to="/signup" style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: isMobile ? '15px 32px' : '16px 36px',
+          background: `linear-gradient(135deg, ${colors.accentLight} 0%, ${colors.accent} 100%)`,
+          color: '#ffffff',
+          fontSize: isMobile ? '16px' : '17px',
+          fontWeight: '600',
+          textDecoration: 'none',
+          borderRadius: '8px',
+          boxShadow: '0 4px 14px rgba(59, 130, 246, 0.4)',
+        }}>
+          Start Free Trial <span style={{ fontSize: '18px' }}>›</span>
+        </Link>
+      </div>
+
     </div>
   );
 }
