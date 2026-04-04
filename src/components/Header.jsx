@@ -84,7 +84,11 @@ export default function Header({ darkMode = true, user, supabase }) {
         boxSizing: 'border-box',
       }}>
         {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => setMenuOpen(false)}>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setMenuOpen(false)}>
+          <svg width="24" height="24" viewBox="0 0 32 32" style={{ flexShrink: 0 }}>
+            <rect width="32" height="32" rx="6" fill="#3b82f6"/>
+            <text x="5" y="24" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="22" fill="white">D1</text>
+          </svg>
           <span style={{ fontSize: '18px', fontWeight: '700', color: colors.text, fontFamily: "'Inter', sans-serif" }}>Day One</span>
         </Link>
 
