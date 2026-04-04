@@ -352,6 +352,30 @@ export default function LandingPage({ darkMode = true }) {
           or <Link to="/invoicegenerator" style={{ color: colors.accent, textDecoration: 'none', fontWeight: '500' }}>try our free invoice generator</Link> — no signup needed
         </p>
 
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginTop: '20px',
+          color: colors.textMuted,
+          fontSize: '13px',
+        }}>
+          <div style={{ display: 'flex' }}>
+            {['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'].map((c, i) => (
+              <div key={i} style={{
+                width: '24px', height: '24px', borderRadius: '50%',
+                background: c, border: `2px solid ${darkMode ? '#1a1a2e' : '#f1f5f9'}`,
+                marginLeft: i > 0 ? '-8px' : 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '10px', fontWeight: '700', color: '#fff',
+              }}>
+                {['P', 'M', 'J', 'S'][i]}
+              </div>
+            ))}
+          </div>
+          <span>Trusted by small businesses and freelancers</span>
+        </div>
+
         {/* Dashboard mockup */}
         <div style={{ width: '100%', maxWidth: '1100px', marginTop: isMobile ? '28px' : '36px', padding: isMobile ? '0' : '0 20px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
@@ -395,7 +419,7 @@ export default function LandingPage({ darkMode = true }) {
                 <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Create</h3>
               </div>
               <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
-                Generate invoices with smart numbering, multi-currency support, multi-language options in 12 languages, and custom templates in one interface.
+                Build invoices in seconds with smart numbering, multi-currency, and 12 language options.
               </p>
               <CreateMockup />
             </div>
@@ -412,7 +436,7 @@ export default function LandingPage({ darkMode = true }) {
                 <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Analyze</h3>
               </div>
               <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
-                Monitor invoice statuses with visual dashboards. Identify overdue payments and track cash flow instantly.
+                Track payment statuses, spot overdue invoices, and monitor cash flow at a glance.
               </p>
               <AnalyzeMockup />
             </div>
@@ -429,7 +453,7 @@ export default function LandingPage({ darkMode = true }) {
                 <h3 style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: '700', color: colors.text, margin: 0 }}>Share</h3>
               </div>
               <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
-                Send invoices with password protection, expiration dates, and view limits. Automated reminders ensure faster payments.
+                Send invoices with shareable links, password protection, and automated payment reminders.
               </p>
               <ShareMockup />
             </div>
