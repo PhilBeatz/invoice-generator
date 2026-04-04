@@ -344,6 +344,14 @@ export default function LandingPage({ darkMode = true }) {
           Start Free Trial <span style={{ fontSize: '18px' }}>›</span>
         </Link>
 
+        <p style={{
+          fontSize: '14px',
+          color: colors.textMuted,
+          marginTop: '14px',
+        }}>
+          or <Link to="/invoicegenerator" style={{ color: colors.accent, textDecoration: 'none', fontWeight: '500' }}>try our free invoice generator</Link> — no signup needed
+        </p>
+
         {/* Dashboard mockup */}
         <div style={{ width: '100%', maxWidth: '1100px', marginTop: isMobile ? '28px' : '36px', padding: isMobile ? '0' : '0 20px', position: 'relative' }}>
           <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '80%', height: '60%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
