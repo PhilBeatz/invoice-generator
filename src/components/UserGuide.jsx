@@ -24,7 +24,6 @@ const sections = [
         { bold: 'Proposal Management:', text: 'Create, send, and track business proposals with built-in analytics to monitor engagement' },
         { bold: 'Analytics Dashboard:', text: 'Track revenue, invoice metrics, and business performance with visual charts and insights' },
         { bold: 'Organization Management:', text: 'Set up your company profile, manage employees, and configure team settings' },
-        { bold: 'File Vault:', text: 'Securely store and manage important business documents alongside your invoices' },
         { bold: 'Payment Method Configuration:', text: 'Set up and display your accepted payment methods directly on invoices' },
       ]},
       { type: 'subheading', text: 'Getting Started' },
@@ -291,19 +290,6 @@ const sections = [
       ]},
       { type: 'heading', text: 'Managing Your Subscription' },
       { type: 'paragraph', text: 'Visit Dashboard > Subscription to view your current plan, usage, and billing details. Upgrade or change your plan at any time.' },
-    ],
-  },
-  {
-    id: 'vault',
-    label: 'File Vault',
-    category: 'General',
-    content: [
-      { type: 'subtitle', text: 'File Vault' },
-      { type: 'paragraph', text: 'Securely store and manage your important business documents.' },
-      { type: 'heading', text: 'Using the Vault' },
-      { type: 'paragraph', text: 'Navigate to Dashboard > Vault to access your secure file storage. Upload contracts, receipts, agreements, and other business documents. Files are encrypted and accessible only to your account.' },
-      { type: 'heading', text: 'Supported Files' },
-      { type: 'paragraph', text: 'The vault supports common document formats including PDF, images (PNG, JPG), Word documents, Excel spreadsheets, and more.' },
     ],
   },
   {

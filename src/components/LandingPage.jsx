@@ -70,8 +70,7 @@ const DashboardMockup = ({ isMobile }) => {
         <div style={{ width: '160px', background: '#0d1117', borderRight: '1px solid #21262d', padding: '14px 10px', flexShrink: 0 }}>
           <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '10px', letterSpacing: '0.5px' }}>GENERAL</div>
           <div style={{ padding: '7px 10px', background: '#10b981', borderRadius: '6px', fontSize: '12px', color: '#fff', fontWeight: '600', marginBottom: '4px' }}>📊 Dashboard</div>
-          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '2px' }}>📈 Analytics</div>
-          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '8px' }}>🔒 Vault</div>
+          <div style={{ padding: '7px 10px', fontSize: '12px', color: '#8b949e', marginBottom: '8px' }}>📈 Analytics</div>
           <div style={{ fontSize: '11px', color: '#8b949e', fontWeight: '600', marginBottom: '8px', letterSpacing: '0.5px' }}>INVOICE</div>
           <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>➕ Create</div>
           <div style={{ padding: '7px 10px', fontSize: '12px', color: '#e6edf3', marginBottom: '2px' }}>📄 Invoices</div>

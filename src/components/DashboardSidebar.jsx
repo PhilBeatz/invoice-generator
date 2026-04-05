@@ -152,9 +152,6 @@ export default function DashboardSidebar({ darkMode = true, isMobile = false, is
         <Link to="/dashboard/analytics" style={navItemStyle('/dashboard/analytics')} onClick={onClose}>
           <span style={{ fontSize: '16px' }}>📈</span> Analytics
         </Link>
-        <Link to="/dashboard/vault" style={navItemStyle('/dashboard/vault')} onClick={onClose}>
-          <span style={{ fontSize: '16px' }}>🔒</span> Vault
-        </Link>
 
         {/* Admin Stats - owner only */}
         {isOwner && (
