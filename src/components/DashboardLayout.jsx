@@ -165,9 +165,7 @@ export default function DashboardLayout({ darkMode = true, user }) {
           <Route path="analytics" element={
             <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardAnalytics darkMode={darkMode} /></PaidRoute>
           } />
-          <Route path="vault" element={
-            <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardPlaceholder darkMode={darkMode} title="Vault" icon="🔒" description="Securely store and manage your important business documents in one place." /></PaidRoute>
-          } />
+          <Route path="vault" element={<Navigate to="/dashboard" replace />} />
           <Route path="invoices" element={
             <PaidRoute hasAccess={hasAccess} planLoaded={planLoaded} isOwnerUser={isOwnerUser} darkMode={darkMode}><DashboardInvoices darkMode={darkMode} user={user} /></PaidRoute>
           } />
