@@ -232,6 +232,7 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
   // Product modal states
   const [showTemporaryProductModal, setShowTemporaryProductModal] = useState(false);
   const [showProductSelectorModal, setShowProductSelectorModal] = useState(false);
+  const [showPostDownloadNudge, setShowPostDownloadNudge] = useState(false);
   const [catalogProducts, setCatalogProducts] = useState([]);
   const [productSearch, setProductSearch] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
@@ -637,6 +638,10 @@ export default function InvoiceGenerator({ darkMode = true, inDashboard = false,
     // Track free invoice generator usage (non-dashboard users)
     if (!inDashboard) {
       supabase.from('free_invoice_events').insert({ event: 'pdf_download' }).then(() => {});
+      // Show signup nudge for logged-out users after PDF generation
+      if (!user) {
+        setTimeout(() => setShowPostDownloadNudge(true), 1200);
+      }
     }
 
     // Save current state to localStorage before showing PDF (for mobile back button)
@@ -2699,6 +2704,56 @@ ${invoice.endMessage ? `<div style="margin-top:20px;padding-top:15px;border-top:
       )}
 
       {/* Select Products from Catalog Modal */}
+      {showPostDownloadNudge && !user && !inDashboard && (
+        <div style={{
+          position: 'fixed',
+          bottom: isMobile ? '16px' : '24px',
+          right: isMobile ? '16px' : '24px',
+          left: isMobile ? '16px' : 'auto',
+          maxWidth: isMobile ? 'none' : '380px',
+          background: colors.cardBg || (darkMode ? '#161b22' : '#ffffff'),
+          border: `1px solid ${darkMode ? '#21262d' : '#e5e7eb'}`,
+          borderRadius: '12px',
+          padding: '18px 20px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.25)',
+          zIndex: 9999,
+          fontFamily: "'Inter', sans-serif",
+        }}>
+          <button
+            onClick={() => setShowPostDownloadNudge(false)}
+            style={{
+              position: 'absolute', top: '8px', right: '10px',
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontSize: '18px', color: colors.textMuted, lineHeight: 1,
+            }}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: colors.text, marginBottom: '6px' }}>
+            Want to save this invoice?
+          </div>
+          <div style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '14px', lineHeight: '1.5' }}>
+            Sign up free to save invoices, track when they get paid, and send reminders.
+          </div>
+          <Link
+            to="/signup"
+            style={{
+              display: 'inline-block',
+              padding: '9px 18px',
+              background: colors.accent,
+              color: '#fff',
+              fontSize: '13px',
+              fontWeight: '600',
+              borderRadius: '6px',
+              textDecoration: 'none',
+            }}
+          >
+            Sign up free →
+          </Link>
+        </div>
+      )}
+
       {showProductSelectorModal && (
         <div style={{
           position: 'fixed',
